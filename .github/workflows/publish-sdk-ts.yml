@@ -1,13 +1,12 @@
 name: Publish @opendpp/sdk (TypeScript)
 
-# Publishes @opendpp/sdk to npm (provenance via GitHub OIDC) when a `sdk-ts-<semver>` tag is pushed.
-# Steady state is KEYLESS (OIDC trusted publishing); the very first publish bootstraps with a one-time
-# NPM_TOKEN secret because npm can't attach a Trusted Publisher until the package exists (see the
-# publish step). After the first release, configure the Trusted Publisher + drop the token. The tag must match typescript/package.json's version, which is
+# Publishes @opendpp/sdk to npm (keyless — OIDC trusted publishing, no NODE_AUTH_TOKEN) when a
+# `sdk-ts-<semver>` tag is pushed. The tag must match typescript/package.json's version, which is
 # version-locked to the OpenDPP API contract (openapi.json info.version). Provenance is automatic
-# (public repo + public package). Setup: configure the npm Trusted Publisher for @opendpp/sdk
-# (org OpenDPP, repo opendpp-sdk, workflow publish-sdk-ts.yml, environment release) and add a
-# `sdk-ts-*` deployment tag rule to this repo's `release` environment.
+# (public repo + public package). Trusted Publisher: org OpenDPP, repo opendpp-sdk, workflow
+# publish-sdk-ts.yml, environment release; the repo's `release` environment also carries a `sdk-ts-*`
+# deployment tag rule. (1.6.0 was bootstrapped with a one-time NPM_TOKEN before the Trusted Publisher
+# could exist; keyless from here on.)
 
 on:
   push:
@@ -60,12 +59,5 @@ jobs:
 
       - run: npm run build
       - run: npm test
-      # FIRST-PUBLISH BOOTSTRAP: @opendpp/sdk is version-locked to the contract (1.6.0) and npm won't let
-      # a Trusted Publisher attach until the package exists. So the first publish authenticates with a
-      # one-time `NPM_TOKEN` repo secret; `--provenance` still attests via GitHub OIDC (id-token: write),
-      # so 1.6.0 IS provenance-backed. Once the Trusted Publisher is configured this reverts to keyless
-      # `npm publish` (drop the env + the token secret) — see docs/operations.
-      - name: Publish (provenance via OIDC; token auth for the first publish)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public
+      - name: Publish (keyless via OIDC; provenance automatic)
+        run: npm publish
