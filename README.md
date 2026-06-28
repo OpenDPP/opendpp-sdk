@@ -40,6 +40,12 @@ targets contract `1.6.0`. CI regenerates and fails on any drift, so the committe
 the spec. Releases are keyless (OIDC trusted publishing). Nothing here re-implements a server-side
 capability.
 
+## Related OpenDPP repositories
+
+- [**opendpp-interop**](https://github.com/OpenDPP/opendpp-interop) — interop boundary kit: official AAS + UNTP schemas, validated samples, an offline conformance validator, the OpenAPI contract.
+- [**opendpp-knowledge**](https://github.com/OpenDPP/opendpp-knowledge) — the API as an OKF (Open Knowledge Format) bundle for AI agents.
+- [**Live service**](https://opendpp-node.eu) · [API reference](https://opendpp-node.eu/api-reference) · [`openapi.json`](https://opendpp-node.eu/openapi.json)
+
 ## License & trademark
 
 [Apache-2.0](./LICENSE) © Opendpp UAB. See [`NOTICE`](./NOTICE) and [`TRADEMARK.md`](./TRADEMARK.md).
