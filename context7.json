@@ -1,4 +1,28 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "OpenDPP SDKs",
+  "description": "Official client SDKs for the OpenDPP Digital Product Passport API — fully-typed clients generated from the public OpenAPI contract and version-locked to it. TypeScript (@opendpp/sdk) is live; Python (opendpp) is planned.",
+  "folders": [],
+  "excludeFolders": [
+    "node_modules",
+    "dist",
+    "typescript/src/generated"
+  ],
+  "excludeFiles": [
+    "LICENSE",
+    "NOTICE",
+    "TRADEMARK.md",
+    "package-lock.json",
+    "openapi.json"
+  ],
+  "rules": [
+    "Install the SDK major that matches the `/api/v1` contract major you call. The package version IS the OpenAPI contract version — `@opendpp/sdk@1.6.0` targets contract `1.6.0`.",
+    "Create a client with `createOpenDppClient({ apiKey })` and pass it per call (`getPassport({ client, path: { id } })`), or configure the exported default `client` globally via `client.setConfig({ baseUrl, auth })`.",
+    "`baseUrl` defaults to the public hosted node `https://opendpp-node.eu`. The API key is sent as `Authorization: Bearer <key>` only on operations that declare a security requirement — public operations like `getHealth` need no key.",
+    "Every endpoint is a tree-shakeable, fully-typed function (`createPassport`, `getPassport`, `sealPassport`, `decodeGs1`, `resolveGs1Gtin`, `whoami`, …) and every request/response shape is an exported type. Import named operations from the package root; do not reach into `src/generated`.",
+    "The TypeScript SDK is ESM-only, targets Node >= 20, and has zero runtime dependencies (the fetch client is bundled).",
+    "The SDK is ergonomics only — it embeds no tier/masking logic and no restricted-key knowledge. All privileged behavior lives in the hosted node behind a Developer-Plan key."
+  ],
   "url": "https://context7.com/opendpp/opendpp-sdk",
   "public_key": "pk_2HWZXaKNW5pZTGMH3iU6U"
 }
