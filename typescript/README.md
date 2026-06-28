@@ -54,8 +54,8 @@ const page = await listPassports();
 
 ## Versioning
 
-`@opendpp/sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `@opendpp/sdk@1.6.0` targets API
-contract `1.6.0`. The generated client under `src/generated/` is committed and CI-checked against
+`@opendpp/sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `@opendpp/sdk@1.7.0` targets API
+contract `1.7.0`. The generated client under `src/generated/` is committed and CI-checked against
 `openapi.json` (a drift guard: regenerating must produce no diff). Install the SDK major that matches
 the `/api/v1` major you call.
 
