@@ -1,0 +1,65 @@
+{
+  "name": "@opendpp/sdk",
+  "version": "1.6.0",
+  "description": "Official TypeScript SDK for the OpenDPP Digital Product Passport API — a fully-typed client generated from the public OpenAPI contract (ESM, Node >=20). Zero runtime dependencies; version-locked to the API contract.",
+  "keywords": [
+    "opendpp",
+    "dpp",
+    "digital-product-passport",
+    "espr",
+    "sdk",
+    "openapi",
+    "api-client",
+    "typescript",
+    "esm"
+  ],
+  "license": "Apache-2.0",
+  "author": "Giovanni Savastano <giovanni.savastano@opendpp-node.eu>",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenDPP/opendpp-sdk.git",
+    "directory": "typescript"
+  },
+  "homepage": "https://github.com/OpenDPP/opendpp-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/OpenDPP/opendpp-sdk/issues"
+  },
+  "scripts": {
+    "generate": "openapi-ts",
+    "build": "tsup src/index.ts --format esm --dts --clean --target node20",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx 'test/*.test.ts'",
+    "check:version": "node scripts/check-version-lock.mjs",
+    "check:drift": "npm run generate && test -z \"$(git status --porcelain -- src/generated)\"",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@types/node": "^26.0.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

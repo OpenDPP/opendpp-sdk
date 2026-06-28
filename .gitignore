@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+dist/
+*.tgz
+
+# Python (the python/ SDK lands later)
+__pycache__/
+*.pyc
+.venv/
+build/
+*.egg-info/
