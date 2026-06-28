@@ -43,7 +43,7 @@ export type ValidationErrorItem = {
 };
 
 /**
- * 402 body for a write blocked by billing. Always carries `error` + `message`; a block caused by the subscription tier's published-passport CAP additionally sets `code: "passport_quota_exceeded"` plus `quota` and `upgradeUrl`, so clients distinguish it from a lapsed-subscription 402 and can prompt an upgrade.
+ * 402 body for a write blocked by billing. Always carries `error` + `message`. A block caused by the subscription tier's published-passport CAP additionally sets `code: "passport_quota_exceeded"` plus `quota` and `upgradeUrl`. A programmatic (API-key) write on a tier without API access sets `code: "api_access_required"` plus `upgradeUrl` instead. Clients distinguish each from a lapsed-subscription 402 (no `code`) and can prompt an upgrade.
  */
 export type PassportQuotaError = {
     /**
@@ -59,7 +59,7 @@ export type PassportQuotaError = {
      */
     message: string;
     /**
-     * Machine-readable discriminator. `passport_quota_exceeded` = the tier's passport cap is reached; omitted for a lapsed-subscription 402.
+     * Machine-readable discriminator. `passport_quota_exceeded` = the tier's passport cap is reached; `api_access_required` = a programmatic (API-key) write was attempted on a tier without the API-access entitlement (use the dashboard session, or upgrade to a Growth+ plan); omitted for a lapsed-subscription 402.
      */
     code?: string;
     /**
@@ -2559,7 +2559,7 @@ export type ValidateBatteryUnitsErrors = {
      */
     400: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -2684,7 +2684,7 @@ export type SerializeBatteryUnitsErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -2739,7 +2739,7 @@ export type DeleteBatteryUnitErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -2900,7 +2900,7 @@ export type RecordBatteryUnitEventErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3005,7 +3005,7 @@ export type CreateFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3060,7 +3060,7 @@ export type DeleteFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3170,7 +3170,7 @@ export type UpdateFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3275,7 +3275,7 @@ export type CreateGrantErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3334,7 +3334,7 @@ export type ApproveGrantRequestErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3393,7 +3393,7 @@ export type DenyGrantRequestErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3452,7 +3452,7 @@ export type RevokeGrantErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3553,7 +3553,7 @@ export type RegisterOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3604,7 +3604,7 @@ export type DeleteOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3714,7 +3714,7 @@ export type UpdateOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3769,7 +3769,7 @@ export type RestoreOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3819,7 +3819,7 @@ export type RotateTenantKeysErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -3954,7 +3954,7 @@ export type CreatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4022,7 +4022,7 @@ export type ValidatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4146,7 +4146,7 @@ export type BulkIngestPassportsErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4219,7 +4219,7 @@ export type IngestPassportFromAasErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4279,7 +4279,7 @@ export type DeleteDraftPassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4410,7 +4410,7 @@ export type UpdatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4469,7 +4469,7 @@ export type SealPassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -4528,7 +4528,7 @@ export type UpdatePassportStatusErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5231,6 +5231,69 @@ export type GetPassportQrCodeResponses = {
     200: unknown;
 };
 
+export type BulkExportPassportLabelsData = {
+    body: {
+        /**
+         * Passport UUIDs and/or `productId`s (GTIN-14/GRAI/SKU), 1–200 items. Each is resolved tenant-scoped; unresolvable / not-owned ids are skipped and listed in `manifest.json`.
+         */
+        ids: Array<string>;
+        /**
+         * Image format for every label in the ZIP.
+         */
+        format?: 'png' | 'svg';
+        /**
+         * Rendered width in px; clamped to 128–2048.
+         */
+        size?: number;
+        /**
+         * QR error-correction level (GS1 product-label guidance: `Q`).
+         */
+        ecl?: 'M' | 'Q' | 'H';
+        /**
+         * Overlay the GS1 Human-Readable Interpretation beneath each symbol. Requires `format: "svg"`.
+         */
+        hri?: boolean;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/passports/labels';
+};
+
+export type BulkExportPassportLabelsErrors = {
+    /**
+     * Empty/oversize `ids` (> 200), an invalid `format`/`size`/`ecl`, or `hri: true` without `format: "svg"`.
+     */
+    400: Error;
+    /**
+     * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
+     */
+    401: Error;
+    /**
+     * Fastify rate-limit plugin default body.
+     */
+    429: {
+        statusCode: number;
+        code?: string;
+        error: string;
+        message: string;
+    };
+    /**
+     * Unexpected server error. Unhandled errors are normalized by the global error handler to this envelope with a generic message; some routes catch their own failures and return the same envelope with a route-specific message. Details are logged server-side and never returned.
+     */
+    500: Error;
+};
+
+export type BulkExportPassportLabelsError = BulkExportPassportLabelsErrors[keyof BulkExportPassportLabelsErrors];
+
+export type BulkExportPassportLabelsResponses = {
+    /**
+     * A ZIP archive of QR images (one per resolved passport) plus a `manifest.json` reporting included/skipped ids.
+     */
+    200: Blob | File;
+};
+
+export type BulkExportPassportLabelsResponse = BulkExportPassportLabelsResponses[keyof BulkExportPassportLabelsResponses];
+
 export type GetBatteryUnitQrCodeData = {
     body?: never;
     path: {
@@ -5373,7 +5436,7 @@ export type RegisterTraceabilityEventErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5681,7 +5744,7 @@ export type CreateWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5736,7 +5799,7 @@ export type DeleteWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5795,7 +5858,7 @@ export type UpdateWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5850,7 +5913,7 @@ export type RotateWebhookSecretErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
@@ -5956,7 +6019,7 @@ export type TestWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — EITHER the workspace subscription is lapsed / its grace period expired (read operations are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap. A cap block is discriminated by `code: "passport_quota_exceeded"` and carries `quota` + `upgradeUrl`; a lapsed-subscription block omits them.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
      */
     402: PassportQuotaError;
     /**
