@@ -35,8 +35,8 @@ Coming next — the same generation pipeline, published to PyPI as `opendpp`.
 ## How it's built
 
 Each SDK is mechanically generated from [`openapi.json`](https://opendpp-node.eu/openapi.json) (the
-curated public API contract) and **version-locked to `OPENAPI_VERSION`** — `@opendpp/sdk@1.7.0`
-targets contract `1.7.0`. CI regenerates and fails on any drift, so the committed client always matches
+curated public API contract) and **version-locked to `OPENAPI_VERSION`** — `@opendpp/sdk@1.8.0`
+targets contract `1.8.0`. CI regenerates and fails on any drift, so the committed client always matches
 the spec. Releases are keyless (OIDC trusted publishing). Nothing here re-implements a server-side
 capability.
 

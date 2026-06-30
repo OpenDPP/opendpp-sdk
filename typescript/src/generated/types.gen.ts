@@ -939,6 +939,10 @@ export type PassportMetadataInput = {
      * ISO 3166-1 alpha-2 country code (validated against the full 249-code set).
      */
     originCountry?: string;
+    /**
+     * Optional HS / TARIC commodity code (4–10 digits). Validated for every category when present (a malformed code is a 400). Not category-mandated, but required to project the passport into the EU DPP registry pointer (ESPR Art. 13).
+     */
+    commodityCode?: string;
     [key: string]: unknown;
 };
 
