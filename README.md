@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/OpenDPP/opendpp-sdk/main/assets/opendpp-mark.png" alt="OpenDPP" width="96" height="96">
+</p>
+
 # OpenDPP SDKs
 
 Official client SDKs for the [OpenDPP](https://opendpp-node.eu) Digital Product Passport API —
