@@ -2244,6 +2244,52 @@ export type SealTimestampReport = {
 };
 
 /**
+ * A GS1 EPCIS 2.0 document (JSON/JSON-LD). This shape is indicative — the OFFICIAL GS1 EPCIS 2.0.1 JSON Schema (vendored on the node, $id https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json) is authoritative and is what capture validates against.
+ */
+export type EpcisDocument = {
+    /**
+     * JSON-LD context — include https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld.
+     */
+    '@context': string | Array<unknown>;
+    type: 'EPCISDocument';
+    schemaVersion: string;
+    creationDate: string;
+    epcisBody: {
+        eventList: Array<{
+            [key: string]: unknown;
+        }>;
+    };
+    [key: string]: unknown;
+};
+
+export type EpcisCaptureResponse = {
+    status: 'success';
+    /**
+     * How many events were persisted.
+     */
+    captured: number;
+    results: Array<{
+        /**
+         * Position of the event in the submitted eventList.
+         */
+        index: number;
+        /**
+         * Server-generated row id (UUID) — the authoritative event identity on this node.
+         */
+        eventId: string;
+        eventType: string;
+        /**
+         * Recognized EPCIS fields present on the event that this node does not persist — disclosed, never silently dropped.
+         */
+        ignoredFields?: Array<string>;
+    }>;
+    errors: Array<{
+        index: number;
+        message: string;
+    }>;
+};
+
+/**
  * A tenant's `did:web` DID document (public-key material only). Verification methods are `JsonWebKey2020` entries with stable `#key-<index>` ids; current and retired keys are both listed so pre-rotation credentials still verify.
  */
 export type DidWebDocument = {
@@ -5472,6 +5518,52 @@ export type RegisterTraceabilityEventResponses = {
 };
 
 export type RegisterTraceabilityEventResponse = RegisterTraceabilityEventResponses[keyof RegisterTraceabilityEventResponses];
+
+export type CaptureEpcisDocumentData = {
+    body: EpcisDocument;
+    path?: never;
+    query?: never;
+    url: '/api/v1/events/epcis';
+};
+
+export type CaptureEpcisDocumentErrors = {
+    /**
+     * Always `{success: false, error, message}` (plus `errors[]` detail where noted) with one of: `EPCIS Schema Validation Failed` (the document does not conform to the official GS1 EPCIS 2.0 JSON Schema; `errors[]` carries the first few violations), `Unsupported Document Type` (`type` is not `EPCISDocument`), `Empty Document` (`epcisBody.eventList` is empty), or `No Events Captured` (every event was rejected; `errors[]` carries the per-event reasons).
+     */
+    400: Error;
+    /**
+     * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
+     */
+    401: Error;
+    /**
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     */
+    402: PassportQuotaError;
+    /**
+     * Authenticated but not allowed: the key lacks the required permission, the request crosses workspaces, or an MFA-gated write was attempted without an MFA session.
+     */
+    403: Error;
+    /**
+     * Fastify rate-limit plugin default body.
+     */
+    429: {
+        statusCode: number;
+        code?: string;
+        error: string;
+        message: string;
+    };
+};
+
+export type CaptureEpcisDocumentError = CaptureEpcisDocumentErrors[keyof CaptureEpcisDocumentErrors];
+
+export type CaptureEpcisDocumentResponses = {
+    /**
+     * At least one event captured. Note the non-standard envelope: `status: "success"` (string). `errors[]` lists per-event rejections when the capture was partial.
+     */
+    201: EpcisCaptureResponse;
+};
+
+export type CaptureEpcisDocumentResponse = CaptureEpcisDocumentResponses[keyof CaptureEpcisDocumentResponses];
 
 export type GetEventLineageData = {
     body?: never;
