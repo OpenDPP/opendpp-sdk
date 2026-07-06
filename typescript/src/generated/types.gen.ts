@@ -22,6 +22,14 @@ export type Error = {
      * Human-readable explanation.
      */
     message: string;
+    /**
+     * Correlation id for this request, also returned as the `X-Request-Id` response header on EVERY response. Present in generic (server-error / framework) bodies; quote it to support to correlate with server logs. Adopts a well-formed inbound `X-Request-Id` if you send one.
+     */
+    requestId?: string;
+    /**
+     * Optional MACHINE-STABLE error code for the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) — branch on this instead of parsing `message`. Present on the errors it covers (see src/constants/api-error-codes.ts), omitted otherwise.
+     */
+    code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
 };
 
 /**
@@ -40,6 +48,28 @@ export type ValidationErrorItem = {
      * Localized, human-friendly explanation (language from `?lang=` or `Accept-Language`; 28 languages, default `en`).
      */
     friendlyMessage?: string;
+};
+
+/**
+ * One non-blocking advisory on a response's `warnings[]` (a heads-up — the request still succeeded) or `notices[]` (informational — something helpful the API did). The `code` is a MACHINE-STABLE handle an interface can switch on, map to its own localized string, or link to docs; the human `message` (developer-facing) and `friendlyMessage` (end-user, localizable) wording may change, but the code will not.
+ */
+export type AdvisoryItem = {
+    /**
+     * Stable advisory code. WARNINGS: `NON_GS1_PRODUCT_ID` (the productId is not a GS1 GTIN/GRAI → no scannable GS1 link), `PII_SHAPE_DETECTED` (metadata looks like personal data), `UNIT_NO_SCANNABLE_LINK` (units under a non-GTIN passport have no scannable unit link), `DRAFT_DEMOTED` (draft:true took an already-published passport offline), `EORI_NOT_FOUND` (a declared EORI was not in the EU EOS register). NOTICES: `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's first bound operator was used), `GTIN_AUTO_COPIED` (a valid GTIN-14/GRAI productId was copied into metadata.gtin/metadata.grai).
+     */
+    code: 'NON_GS1_PRODUCT_ID' | 'PII_SHAPE_DETECTED' | 'UNIT_NO_SCANNABLE_LINK' | 'DRAFT_DEMOTED' | 'EORI_NOT_FOUND' | 'OPERATOR_AUTO_ATTRIBUTED' | 'GTIN_AUTO_COPIED';
+    /**
+     * The field the advisory is about (e.g. `productId`, `draft`, `regId`), when applicable.
+     */
+    path?: string;
+    /**
+     * Developer-facing detail (English).
+     */
+    message: string;
+    /**
+     * End-user-facing, localizable summary.
+     */
+    friendlyMessage: string;
 };
 
 /**
@@ -291,6 +321,10 @@ export type SerializeBatteryUnitsResponse = {
      * Present only when some items were skipped — one plain-English string per skipped item, generally prefixed `[<serialNumber>]`.
      */
     errors?: Array<string>;
+    /**
+     * Non-blocking advisories. Carries a single note when the passport's `productId` is NOT a GS1 GTIN — the created units then have no scannable GS1 unit Digital Link (`/01/{gtin}/21/{serial}`) and resolve only via `/unit/{id}`. Empty `[]` for a GTIN-keyed passport.
+     */
+    warnings: Array<AdvisoryItem>;
 };
 
 /**
@@ -852,6 +886,10 @@ export type RegisterOperatorResponse = {
      */
     message: string;
     operator: OperatorRow;
+    /**
+     * Non-blocking advisories (#404). Carries a single EORI-not-found note when the OPT-IN `EORI_EXISTENCE_CHECK` is enabled and a declared EORI is not found in the EU EOS register. Empty `[]` otherwise. Never blocks registration.
+     */
+    warnings: Array<AdvisoryItem>;
 };
 
 /**
@@ -1009,7 +1047,7 @@ export type PassportCreateRequest = {
 };
 
 /**
- * 201 envelope of `POST /api/v1/passports`. `passport` is the public redacted JSON-LD; `warnings` is always present (empty for drafts); `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness.
+ * 201 envelope of `POST /api/v1/passports`. `passport` is the public redacted JSON-LD; `warnings`/`notices` are always present (possibly empty); `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness.
  */
 export type PassportIngestCreated = {
     success: true;
@@ -1022,9 +1060,13 @@ export type PassportIngestCreated = {
      */
     passport: PublicPassportJsonLd;
     /**
-     * Non-blocking validation findings. Always present; empty array when none and always empty for drafts.
+     * Non-blocking findings — a MIX of ESPR validation warnings (no `code`) and machine-coded advisories (a `code` per src/constants/api-advisories.ts, e.g. `NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`). Always present; empty for drafts. See `AdvisoryItem` for the coded shape.
      */
     warnings: Array<ValidationErrorItem>;
+    /**
+     * Informational advisories about helpful things the API did (always coded): `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's sole bound operator used), `GTIN_AUTO_COPIED` (a valid GTIN/GRAI copied into metadata.gtin/grai). Always present; empty when nothing to note.
+     */
+    notices: Array<AdvisoryItem>;
     /**
      * #247: whether this passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked (`producedAtFacility` + `countryOfProduction` are required by the UNTP DPP schema; a GLN is optional). The passport still publishes and resolves as AAS / JSON-LD / HTML regardless.
      */
@@ -1121,7 +1163,7 @@ export type PassportBulkRequest = {
 };
 
 /**
- * 201 partial-success envelope of `POST /api/v1/passports/bulk`. Returned whenever at least one row was inserted, even if other rows failed. Each result row carries a `vcReady` UNTP Verifiable-Credential readiness signal (#247).
+ * 201 partial-success envelope of `POST /api/v1/passports/bulk`. Returned whenever at least one row was inserted, even if other rows failed. Each result row carries a `vcReady` UNTP Verifiable-Credential readiness signal (#247) and a per-row non-blocking `warnings[]` (#249 non-GS1 advisory + #400 PII-shape privacy advisory; empty when the row is clean).
  */
 export type PassportBulkResult = {
     success: true;
@@ -1147,6 +1189,10 @@ export type PassportBulkResult = {
          * Null when `vcReady` is true; otherwise a short, actionable reason (link a facility with a country of production).
          */
         vcReadyReason?: string | null;
+        /**
+         * Per-row non-blocking advisories — the #249 non-GS1 "no scannable QR" note and the #400 PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
+         */
+        warnings?: Array<AdvisoryItem>;
     }>;
     /**
      * Human-readable per-row failure strings, prefixed `[SKU: <productId>]` (or "Missing or invalid productId in spreadsheet row"). Present ONLY when at least one row failed — omitted otherwise.
@@ -1283,7 +1329,7 @@ export type PassportUpdateRequest = {
 };
 
 /**
- * 200 envelope of PUT /api/v1/passports/{id}. The passport document is serialized at the PUBLIC redaction tier (owner-only/restricted metadata keys masked) even for the owner.
+ * 200 envelope of PUT /api/v1/passports/{id}. The passport document is serialized at the PUBLIC redaction tier (owner-only/restricted metadata keys masked) even for the owner. Also carries the `vcReady`/`vcReadyReason` UNTP readiness signal (#247) and a non-blocking `warnings[]`.
  */
 export type PassportUpdateResponse = {
     /**
@@ -1295,6 +1341,10 @@ export type PassportUpdateResponse = {
      */
     message: 'Draft published' | 'Digital Product Passport successfully updated and history versioned';
     passport: PublicPassportJsonLd;
+    /**
+     * Non-blocking advisories. Carries a single note when saving with `"draft": true` DEMOTED an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport to DRAFT — it is then no longer publicly resolvable. Empty `[]` otherwise.
+     */
+    warnings: Array<AdvisoryItem>;
 };
 
 /**
@@ -1328,6 +1378,10 @@ export type PassportSealResponse = {
      */
     signingPublicKey: string;
     passport: PublicPassportJsonLd;
+    /**
+     * #255 publish-time re-warning: a single non-GS1 advisory when the sealed passport's `productId` is not a GS1 GTIN/GRAI (it has no scannable Digital Link — mint a GTIN you own via `POST /api/v1/gs1/gtin`). Empty `[]` when the productId is GS1-keyed. Non-blocking.
+     */
+    warnings: Array<AdvisoryItem>;
 };
 
 /**
@@ -1909,7 +1963,7 @@ export type MaterialVocabularyListResponse = {
 };
 
 /**
- * A UNTP/EPCIS 2.0 traceability event wrapped as a VC-shaped credential (a vendor proof, not a conformant W3C VC). The only hard structural requirement is `credentialSubject`; a missing or unverifiable `proof` is rejected with the 400 `Cryptographic Verification Failed` body. Extra properties are permitted — the entire credential (with `proof.proofValue` blanked) is what the signature covers.
+ * A UNTP/EPCIS 2.0 traceability event wrapped as a VC-shaped credential. The only hard structural requirement is `credentialSubject`; the `proof` MUST be a conformant W3C `DataIntegrityProof` (`cryptosuite: "ecdsa-jcs-2019"`) and a missing, non-conformant, or unverifiable proof is rejected with the 400 `Cryptographic Verification Failed` body. Extra properties are permitted — the signature covers `sha256(JCS(proof options)) ‖ sha256(JCS(credential without proof))` (RFC 8785 JCS canonicalization).
  */
 export type UntpEventCredential = {
     '@context'?: Array<string>;
@@ -2001,13 +2055,17 @@ export type UntpEventCredentialSubject = {
 };
 
 /**
- * Credential proof. Verified with ECDSA P-256 / SHA-256 over OpenDPP's deterministic key-sorted JSON canonicalization of the credential with `proofValue` blanked (NOT RFC 8785 JCS — not a conformant W3C Data Integrity suite).
+ * Credential proof. MUST be a conformant W3C `DataIntegrityProof` with `cryptosuite: "ecdsa-jcs-2019"` and a multibase base58btc (`z…`) `proofValue`. Verified (ECDSA P-256, IEEE-P1363 raw r‖s) over `sha256(JCS(proof options)) ‖ sha256(JCS(credential without proof))` — RFC 8785 JCS canonicalization, a conformant W3C Data Integrity suite.
  */
 export type UntpEventProof = {
     /**
-     * e.g. `DataIntegrityProof`.
+     * MUST be `DataIntegrityProof`.
      */
-    type?: string;
+    type: 'DataIntegrityProof';
+    /**
+     * MUST be `ecdsa-jcs-2019` (RFC 8785 JCS).
+     */
+    cryptosuite: 'ecdsa-jcs-2019';
     created?: string;
     /**
      * e.g. `assertionMethod`.
@@ -2018,7 +2076,7 @@ export type UntpEventProof = {
      */
     verificationMethod?: string | UntpVerificationMethod;
     /**
-     * Base64 ECDSA signature. Stored verbatim with the event.
+     * Multibase base58btc (`z…`) ecdsa-jcs-2019 signature. Stored verbatim with the event.
      */
     proofValue: string;
 };
@@ -2195,7 +2253,7 @@ export type SealVerifyResponse = {
 };
 
 /**
- * Present only for x5c-carrying proofs AND only when verification proceeds past the key-registration and operator-binding gates (the two policy `verified: false` responses omit it): the certified legal identity of the seal creator (eIDAS Art. 36(1)(b)). On an unparseable chain only `chainValid: false` and `error` are present.
+ * Present only for x5c-carrying proofs on a `verified: true` outcome whose chain is TRUSTED — `chainValid` AND `keyMatchesProof` both true (the two policy `verified: false` responses AND any untrusted-chain outcome omit it): the certified legal identity of the seal creator (eIDAS Art. 36(1)(b)). An untrusted chain is never surfaced, so an emitted report always has `chainValid: true`.
  */
 export type SealCertificateReport = {
     /**
@@ -2229,7 +2287,7 @@ export type SealCertificateReport = {
 };
 
 /**
- * Present only when `payload.proof.rfc3161.token` was supplied AND verification proceeds past the key-registration and operator-binding gates (the two policy `verified: false` responses omit it). Reports presence and the TSA-asserted genTime from the token's TSTInfo — full cryptographic TSR validation is the verifier's own step.
+ * Present only when `payload.proof.rfc3161.token` was supplied AND verification proceeds past the key-registration and operator-binding gates (the two policy `verified: false` responses omit it). Reports presence, the TSA-asserted genTime from the token's TSTInfo, and — when the node has a TSA CA configured (`TSA_CA_PEM`) — `timeAuthenticated`: the result of verifying the token's CMS SignedData signature over its TSTInfo and chaining the signer certificate to that anchor.
  */
 export type SealTimestampReport = {
     present: true;
@@ -2237,6 +2295,10 @@ export type SealTimestampReport = {
      * TSA-asserted generation time (ISO 8601), or null when the token's TSTInfo could not be parsed.
      */
     genTime: string | null;
+    /**
+     * True only when the token's RFC 3161 CMS SignedData signature verifies over its TSTInfo AND the signer passes full trust-path validation to the node's configured TSA CA anchor (`TSA_CA_PEM`): the signer is an end-entity timestamping certificate (a CRITICAL `id-kp-timeStamping` EKU, not a CA) that is VALID at the asserted `genTime` and chains through CA-constrained, genTime-valid intermediates to the anchor (itself a CA valid at `genTime`). False when the signature fails, when the path is not policy-valid, and when no TSA CA is configured (the asserted `genTime` is then unauthenticated). This is the node's own cryptographic check and does not replace a verifier's independent `openssl ts -verify`.
+     */
+    timeAuthenticated?: boolean;
     /**
      * Present only when `genTime` is null.
      */
@@ -4311,6 +4373,60 @@ export type IngestPassportFromAasResponses = {
 
 export type IngestPassportFromAasResponse = IngestPassportFromAasResponses[keyof IngestPassportFromAasResponses];
 
+export type PassportVcReadinessReportData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 1-based page number (digits only).
+         */
+        page?: number;
+        /**
+         * Page size.
+         */
+        limit?: number;
+    };
+    url: '/api/v1/passports/vc-readiness';
+};
+
+export type PassportVcReadinessReportResponses = {
+    /**
+     * The paginated VC-readiness report with a catalog-wide ready/notReady rollup.
+     */
+    200: {
+        success: boolean;
+        page: number;
+        limit: number;
+        /**
+         * Total non-archived passports in the catalog (the rollup base, not the page size).
+         */
+        total: number;
+        totalPages: number;
+        /**
+         * Catalog-wide count of VC-ready SKUs (a facility with a country of production).
+         */
+        ready: number;
+        /**
+         * Catalog-wide count of not-yet-ready SKUs (= `total - ready`).
+         */
+        notReady: number;
+        results: Array<{
+            /**
+             * The passport UUID.
+             */
+            id: string;
+            productId: string;
+            vcReady: boolean;
+            /**
+             * Actionable reasons this SKU can't emit a VC (same text as the single-passport signal); empty when `vcReady` is true.
+             */
+            blockers: Array<string>;
+        }>;
+    };
+};
+
+export type PassportVcReadinessReportResponse = PassportVcReadinessReportResponses[keyof PassportVcReadinessReportResponses];
+
 export type DeleteDraftPassportData = {
     body?: never;
     path: {
@@ -5059,6 +5175,64 @@ export type GetApiVersionResponses = {
 
 export type GetApiVersionResponse = GetApiVersionResponses[keyof GetApiVersionResponses];
 
+export type MintGtinCheckDigitData = {
+    body: {
+        /**
+         * The GS1 company prefix your organisation legally owns (digits only, typically 7-10 digits).
+         */
+        gs1CompanyPrefix: string;
+        /**
+         * The item reference (digits only) that, appended to the prefix, makes exactly 13 digits.
+         */
+        itemRef?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/gs1/gtin';
+};
+
+export type MintGtinCheckDigitErrors = {
+    /**
+     * `gs1CompanyPrefix` missing (we never fabricate a GTIN), non-digit input, or `prefix + itemRef` not exactly 13 digits. Body: `{success:false, error:"Bad Request", message}`.
+     */
+    400: {
+        success?: boolean;
+        error?: string;
+        message?: string;
+    };
+};
+
+export type MintGtinCheckDigitError = MintGtinCheckDigitErrors[keyof MintGtinCheckDigitErrors];
+
+export type MintGtinCheckDigitResponses = {
+    /**
+     * The computed GTIN + Digital Link preview.
+     */
+    200: {
+        success: boolean;
+        /**
+         * The 14-digit GTIN (`prefix + itemRef + check digit`).
+         */
+        gtin: string;
+        gs1CompanyPrefix: string;
+        itemRef: string;
+        /**
+         * The computed GS1 mod-10 check digit (the 14th digit).
+         */
+        checkDigit: string;
+        /**
+         * A Digital Link preview `https://opendpp-node.eu/01/{gtin}` — resolvable once a passport uses this GTIN as its `productId`.
+         */
+        digitalLink: string;
+        /**
+         * The ownership caveat: OpenDPP computes only the check digit and never allocates a prefix or asserts ownership.
+         */
+        note: string;
+    };
+};
+
+export type MintGtinCheckDigitResponse = MintGtinCheckDigitResponses[keyof MintGtinCheckDigitResponses];
+
 export type DecodeGs1Data = {
     /**
      * Provide exactly one of the three input forms.
@@ -5696,7 +5870,7 @@ export type VerifyPassportSealError = VerifyPassportSealErrors[keyof VerifyPassp
 
 export type VerifyPassportSealResponses = {
     /**
-     * Verification processed. `verified` reports the cryptographic outcome; policy failures (unregistered key, unbound operator) come back as `verified: false` with a `message` — still HTTP 200, and WITHOUT `certificate`/`timestamp` even when an x5c chain or RFC 3161 token was supplied. Once verification proceeds past the policy gates, `certificate` is present for x5c-carrying proofs and `timestamp` when an RFC 3161 token was embedded.
+     * Verification processed. `verified` reports the cryptographic outcome; policy failures (unregistered key, unbound operator) come back as `verified: false` with a `message` — still HTTP 200, and WITHOUT `certificate`/`timestamp` even when an x5c chain or RFC 3161 token was supplied. Once verification proceeds past the policy gates, `certificate` is present for x5c-carrying proofs ONLY when the outcome is `verified: true` with a trusted chain (`chainValid` AND `keyMatchesProof`), and `timestamp` when an RFC 3161 token was embedded.
      */
     200: SealVerifyResponse;
 };
