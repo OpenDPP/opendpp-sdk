@@ -4034,6 +4034,12 @@ export type ListPassportsResponse = ListPassportsResponses[keyof ListPassportsRe
 
 export type CreatePassportData = {
     body: PassportCreateRequest;
+    headers?: {
+        /**
+         * Optional client idempotency key (≤255 characters, no control characters). Retrying this request with the same `Idempotency-Key` replays the ORIGINAL response — same status and body, plus an `idempotent-replayed: true` response header — instead of creating a duplicate passport or returning **409**. Scoped per (workspace, endpoint, key) and consulted within a 24-hour window; a malformed key returns **400**. Best-effort: the replay is recorded after the write commits, so in the rare window between commit and recording (or across an instance restart) a retry falls back to normal processing — never a double write, but you may then see the normal **409** instead of a replay.
+         */
+        'Idempotency-Key'?: string;
+    };
     path?: never;
     query?: {
         /**
@@ -4230,6 +4236,12 @@ export type ValidatePassportPublicResponse = ValidatePassportPublicResponses[key
 
 export type BulkIngestPassportsData = {
     body: PassportBulkRequest;
+    headers?: {
+        /**
+         * Optional client idempotency key (≤255 characters, no control characters). Retrying a real (non-`dryRun`) import with the same `Idempotency-Key` replays the ORIGINAL result — same status and body, plus an `idempotent-replayed: true` response header — instead of re-inserting the batch. A `dryRun` preview is never captured or replayed. Scoped per (workspace, endpoint, key) and consulted within a 24-hour window; a malformed key returns **400**. Best-effort: the result is recorded after the batch commits, so in the rare window between commit and recording (or across an instance restart) a retry re-processes the batch normally (the `(productId, operator)` unique constraint still prevents duplicate rows).
+         */
+        'Idempotency-Key'?: string;
+    };
     path?: never;
     query?: {
         /**
