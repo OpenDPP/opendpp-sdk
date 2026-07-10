@@ -23,12 +23,12 @@ val contractVersion: String = run {
 }
 
 group = "eu.opendpp-node"
-version = if (sdkPatch == null) contractVersion else run {
+version = sdkPatch?.let { patch ->
     val parts = contractVersion.split(".")
     require(parts.size == 3 && parts.all { it.toIntOrNull() != null }) { "contract version $contractVersion is not plain MAJOR.MINOR.PATCH" }
-    require(sdkPatch > parts[2].toInt()) { "sdkPatch ($sdkPatch) must exceed the contract's patch digit (${parts[2]}) — SDK-only fixes never trail the vendored spec" }
-    "${parts[0]}.${parts[1]}.$sdkPatch"
-}
+    require(patch > parts[2].toInt()) { "sdkPatch ($patch) must exceed the contract's patch digit (${parts[2]}) — SDK-only fixes never trail the vendored spec" }
+    "${parts[0]}.${parts[1]}.$patch"
+} ?: contractVersion
 
 repositories { mavenCentral() }
 
