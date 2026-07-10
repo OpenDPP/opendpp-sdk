@@ -11,6 +11,7 @@ Official client SDKs for the [OpenDPP](https://opendpp-node.eu) Digital Product 
 | --- | --- | --- |
 | **TypeScript** | [`@opendpp/sdk`](https://www.npmjs.com/package/@opendpp/sdk) (npm) | [`typescript/`](./typescript) |
 | **Java** | [`eu.opendpp-node:opendpp-sdk`](https://central.sonatype.com/artifact/eu.opendpp-node/opendpp-sdk) (Maven Central) | [`java/`](./java) |
+| **Kotlin** | via the Java artifact — same coordinates, idiomatic from Kotlin | [`java/`](./java) |
 | **Python** | `opendpp` (PyPI) — *planned* | — |
 
 > Part of the OpenDPP **open client** surface (Apache-2.0). The SDKs are **ergonomics only** — they
@@ -49,6 +50,13 @@ var health = new ServiceApi(client).getHealth();
 ```
 
 Java 17+, built on the JDK `HttpClient` with Jackson. Full SDK + docs: [`java/`](./java).
+
+**Kotlin** consumes the same artifact idiomatically — no separate package:
+
+```kotlin
+val client = OpenDpp.client(System.getenv("OPENDPP_API_KEY"))
+val health = ServiceApi(client).health
+```
 
 ## Python
 
