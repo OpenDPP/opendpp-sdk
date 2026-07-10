@@ -53,6 +53,23 @@ Each API tag is its own `*Api` class (`PassportsApi`, `WebhooksApi`, `PublicReso
 `BatteryUnitsApi`, …), and every request/response shape is a generated model under
 `eu.opendppnode.sdk.model`.
 
+## Kotlin
+
+The same artifact is the Kotlin SDK — no separate package. Getters surface as properties and the
+builder-style models read naturally:
+
+```kotlin
+import eu.opendppnode.sdk.OpenDpp
+import eu.opendppnode.sdk.api.PublicResolutionApi
+import eu.opendppnode.sdk.api.ServiceApi
+
+val client = OpenDpp.client(System.getenv("OPENDPP_API_KEY"))
+
+val health = ServiceApi(client).health                                  // public, no key needed
+val passport = PublicResolutionApi(client).resolvePublicPassport(id, null)
+println(passport.productId)
+```
+
 ## Versioning
 
 `opendpp-sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `1.11.0` targets API contract `1.11.0`.
