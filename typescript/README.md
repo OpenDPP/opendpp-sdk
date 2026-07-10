@@ -2,7 +2,7 @@
 
 Official **TypeScript SDK** for the [OpenDPP](https://opendpp-node.eu) Digital Product Passport API —
 a fully-typed client for every endpoint, **generated from the public OpenAPI contract** and
-**version-locked** to it (this package's version **is** the API contract version). ESM, Node ≥ 20,
+**version-locked** to it (this package's major.minor **is** the API contract version). ESM, Node ≥ 20,
 **zero runtime dependencies** (the fetch client is bundled).
 
 > Part of the OpenDPP **open client** surface (Apache-2.0). The SDK is **ergonomics only** — it embeds
@@ -78,10 +78,12 @@ const { data: aas } = await resolvePublicPassportAs({ client, path: { id }, acce
 
 ## Versioning
 
-`@opendpp/sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `@opendpp/sdk@1.9.0` targets API
-contract `1.9.0`. The generated client under `src/generated/` is committed and CI-checked against
-`openapi.json` (a drift guard: regenerating must produce no diff). Install the SDK major that matches
-the `/api/v1` major you call.
+`@opendpp/sdk`'s **major.minor is version-locked to `OPENAPI_VERSION`** — e.g. `@opendpp/sdk@1.11.x`
+targets API contract `1.11`. The **patch digit is the SDK's own lane**: client-only fixes ship as
+patch releases against the same contract (e.g. `1.11.1` fixes the client, still targeting contract
+`1.11.0`), so always take the latest patch of your contract's major.minor. The generated client under
+`src/generated/` is committed and CI-checked against `openapi.json` (a drift guard: regenerating must
+produce no diff). Install the SDK major that matches the `/api/v1` major you call.
 
 ## License
 

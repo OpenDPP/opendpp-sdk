@@ -2,7 +2,7 @@
 
 Official **Java SDK** for the [OpenDPP](https://opendpp-node.eu) Digital Product Passport API — a
 fully-typed client for every endpoint, **generated from the public OpenAPI contract** and
-**version-locked** to it (this artifact's version **is** the API contract version). Java 17+, built on
+**version-locked** to it (this artifact's major.minor **is** the API contract version). Java 17+, built on
 the JDK's `java.net.http.HttpClient` with Jackson.
 
 > Part of the OpenDPP **open client** surface (Apache-2.0). The SDK is **ergonomics only** — it embeds
@@ -72,7 +72,10 @@ println(passport.productId)
 
 ## Versioning
 
-`opendpp-sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `1.11.0` targets API contract `1.11.0`.
+`opendpp-sdk`'s **major.minor is version-locked to `OPENAPI_VERSION`** — e.g. `1.11.x` targets API
+contract `1.11`. The **patch digit is the SDK's own lane**: client-only fixes ship as patch releases
+against the same contract (set `sdkPatch` in `build.gradle.kts`; the default derives the version from
+the vendored `openapi.json` unchanged), so always take the latest patch of your contract's major.minor.
 The generated client under `src/main/java` is committed and CI-checked against `openapi.json` (a drift
 guard: regenerating must produce no diff). Use the SDK major that matches the `/api/v1` major you call.
 

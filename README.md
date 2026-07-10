@@ -65,9 +65,10 @@ Coming next — the same generation pipeline, published to PyPI as `opendpp`.
 ## How it's built
 
 Each SDK is mechanically generated from [`openapi.json`](https://opendpp-node.eu/openapi.json) (the
-curated public API contract) and **version-locked to `OPENAPI_VERSION`** — `@opendpp/sdk@1.9.0`
-targets contract `1.9.0`. CI regenerates and fails on any drift, so the committed client always matches
-the spec. Releases are keyless where the registry supports it (npm OIDC trusted publishing for TypeScript); the Java artifacts are GPG-signed and published to Maven Central. Nothing here re-implements a server-side
+curated public API contract) and **version-locked to `OPENAPI_VERSION`** — the SDK's **major.minor is
+the contract version** (`@opendpp/sdk@1.11.x` targets contract `1.11`), while the **patch digit is the
+SDK's own lane** for client-only fixes against the same contract. CI regenerates and fails on any
+drift, so the committed client always matches the spec. Releases are keyless where the registry supports it (npm OIDC trusted publishing for TypeScript); the Java artifacts are GPG-signed and published to Maven Central. Nothing here re-implements a server-side
 capability.
 
 ## Related OpenDPP repositories
