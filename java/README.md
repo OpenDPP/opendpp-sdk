@@ -64,11 +64,22 @@ guard: regenerating must produce no diff). Use the SDK major that matches the `/
 Mechanically generated from [`openapi.json`](https://opendpp-node.eu/openapi.json) with
 [OpenAPI Generator](https://openapi-generator.tech) (`java` / `native` library) via a pinned Gradle
 plugin — `./gradlew openApiGenerate`. The published contract is OpenAPI 3.1; a small, reproducible
-pre-generation step in `build.gradle.kts` drops the inbound `webhooks:` callbacks (a client never
-*calls* those — it receives them; the `WebhookEnvelope` payload model is still generated) and relaxes a
-few 3.1 constructs the Java generator can't yet model (`@context`, free-form `payload`), so the output
-compiles cleanly and exposes the full management surface. Nothing here re-implements a server-side
-capability. Only the ergonomic `OpenDpp` factory (`src/handwritten/java`) is hand-written.
+pre-generation step in `build.gradle.kts` normalizes the generation input (the committed spec stays
+pristine):
+
+- drops the inbound `webhooks:` callbacks — a client never *calls* those, and they collide with the
+  webhook-management operations (the `WebhookEnvelope` payload model is still generated);
+- relaxes the 3.1 constructs the Java generator can't yet model (`@context`, free-form `payload`);
+- strips `additionalProperties` from typed schemas — otherwise models generate as `Map` subtypes,
+  which Jackson deserializes as maps and every typed getter silently returns `null` (the flattened
+  JSON-LD root keys are documented duplicates of `metadata`, so no data is lost);
+- pins the content-negotiated resolvers to their JSON representation, so the server can never answer a
+  typed call with AAS / VC-JWT / HTML (those representations, like the QR/label binaries, are fetched
+  by plain URL — the SDK models the JSON surface).
+
+Nothing here re-implements a server-side capability. Only the ergonomic `OpenDpp` factory
+(`src/handwritten/java`) is hand-written. `OPENDPP_LIVE_TEST=1 ./gradlew test` additionally runs a live
+integration suite against the public hosted node (public endpoints only, no key).
 
 ## Publishing (maintainers)
 

@@ -87,7 +87,9 @@ public class Error {
     
     WEBHOOK_LIMIT_REACHED(String.valueOf("WEBHOOK_LIMIT_REACHED")),
     
-    WEBHOOK_URL_REJECTED(String.valueOf("WEBHOOK_URL_REJECTED"));
+    WEBHOOK_URL_REJECTED(String.valueOf("WEBHOOK_URL_REJECTED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -112,7 +114,7 @@ public class Error {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

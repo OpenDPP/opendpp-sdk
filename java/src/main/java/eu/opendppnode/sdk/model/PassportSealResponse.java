@@ -54,7 +54,9 @@ public class PassportSealResponse {
    * Gets or Sets message
    */
   public enum MessageEnum {
-    PASSPORT_SEALED_WITH_THE_TENANT_S_E_IDAS_ADVANCED_ELECTRONIC_SEAL_AND_PUBLISHED_(String.valueOf("Passport sealed with the tenant's eIDAS advanced electronic seal and published."));
+    PASSPORT_SEALED_WITH_THE_TENANT_S_E_IDAS_ADVANCED_ELECTRONIC_SEAL_AND_PUBLISHED_(String.valueOf("Passport sealed with the tenant's eIDAS advanced electronic seal and published.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -79,7 +81,7 @@ public class PassportSealResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -362,7 +364,7 @@ public class PassportSealResponse {
 
     // add `passport` to the URL query string
     if (getPassport() != null) {
-      joiner.add(String.format("%spassport%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassport()))));
+      joiner.add(getPassport().toUrlQueryString(prefix + "passport" + suffix));
     }
 
     // add `warnings` to the URL query string

@@ -69,7 +69,9 @@ public class CreateGrantRequest {
     
     PASSPORT(String.valueOf("PASSPORT")),
     
-    TENANT(String.valueOf("TENANT"));
+    TENANT(String.valueOf("TENANT")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -94,7 +96,7 @@ public class CreateGrantRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

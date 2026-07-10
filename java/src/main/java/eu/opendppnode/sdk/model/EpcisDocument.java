@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -31,8 +27,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import eu.opendppnode.sdk.model.EpcisDocumentEpcisBody;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -48,7 +42,7 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   EpcisDocument.JSON_PROPERTY_EPCIS_BODY
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class EpcisDocument extends HashMap<String, Object> {
+public class EpcisDocument {
   public static final String JSON_PROPERTY_AT_CONTEXT = "@context";
   @jakarta.annotation.Nullable
   private Object atContext = null;
@@ -57,7 +51,9 @@ public class EpcisDocument extends HashMap<String, Object> {
    * Gets or Sets type
    */
   public enum TypeEnum {
-    EPCIS_DOCUMENT(String.valueOf("EPCISDocument"));
+    EPCIS_DOCUMENT(String.valueOf("EPCISDocument")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -82,7 +78,7 @@ public class EpcisDocument extends HashMap<String, Object> {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -111,7 +107,7 @@ public class EpcisDocument extends HashMap<String, Object> {
   }
 
   /**
-   * JSON-LD context — include https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld.
+   * Get atContext
    * @return atContext
    */
   @jakarta.annotation.Nullable
@@ -224,49 +220,6 @@ public class EpcisDocument extends HashMap<String, Object> {
     this.epcisBody = epcisBody;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public EpcisDocument putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this EpcisDocument object is equal to o.
@@ -284,27 +237,23 @@ public class EpcisDocument extends HashMap<String, Object> {
         Objects.equals(this.type, epcisDocument.type) &&
         Objects.equals(this.schemaVersion, epcisDocument.schemaVersion) &&
         Objects.equals(this.creationDate, epcisDocument.creationDate) &&
-        Objects.equals(this.epcisBody, epcisDocument.epcisBody)&&
-        Objects.equals(this.additionalProperties, epcisDocument.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.epcisBody, epcisDocument.epcisBody);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(atContext, type, schemaVersion, creationDate, epcisBody, super.hashCode(), additionalProperties);
+    return Objects.hash(atContext, type, schemaVersion, creationDate, epcisBody);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class EpcisDocument {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    atContext: ").append(toIndentedString(atContext)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    schemaVersion: ").append(toIndentedString(schemaVersion)).append("\n");
     sb.append("    creationDate: ").append(toIndentedString(creationDate)).append("\n");
     sb.append("    epcisBody: ").append(toIndentedString(epcisBody)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

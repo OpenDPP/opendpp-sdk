@@ -67,7 +67,9 @@ public class BatteryUnitCreateItem {
     
     REMANUFACTURED(String.valueOf("REMANUFACTURED")),
     
-    REUSED(String.valueOf("REUSED"));
+    REUSED(String.valueOf("REUSED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -92,7 +94,7 @@ public class BatteryUnitCreateItem {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

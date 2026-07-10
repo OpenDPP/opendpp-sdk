@@ -59,7 +59,9 @@ public class PassportMetadataInput {
     
     CHEMICALS(String.valueOf("chemicals")),
     
-    CONSTRUCTION(String.valueOf("construction"));
+    CONSTRUCTION(String.valueOf("construction")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -84,7 +86,7 @@ public class PassportMetadataInput {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

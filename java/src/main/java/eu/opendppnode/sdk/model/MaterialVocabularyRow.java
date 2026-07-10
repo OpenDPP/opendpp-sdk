@@ -63,7 +63,9 @@ public class MaterialVocabularyRow {
     
     HAZARD(String.valueOf("hazard")),
     
-    CRM(String.valueOf("crm"));
+    CRM(String.valueOf("crm")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -88,7 +90,7 @@ public class MaterialVocabularyRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

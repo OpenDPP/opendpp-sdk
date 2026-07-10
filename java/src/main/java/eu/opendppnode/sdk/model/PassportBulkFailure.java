@@ -45,7 +45,9 @@ public class PassportBulkFailure {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    FALSE(Boolean.valueOf("false"));
+    FALSE(Boolean.valueOf("false")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -70,7 +72,7 @@ public class PassportBulkFailure {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -82,7 +84,9 @@ public class PassportBulkFailure {
    * Gets or Sets error
    */
   public enum ErrorEnum {
-    BULK_INGESTION_FAILED(String.valueOf("Bulk Ingestion Failed"));
+    BULK_INGESTION_FAILED(String.valueOf("Bulk Ingestion Failed")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -107,7 +111,7 @@ public class PassportBulkFailure {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

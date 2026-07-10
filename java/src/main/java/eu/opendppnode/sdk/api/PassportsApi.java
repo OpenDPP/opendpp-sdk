@@ -30,7 +30,6 @@ import eu.opendppnode.sdk.model.GetPassport429Response;
 import eu.opendppnode.sdk.model.IngestPassportFromAas400Response;
 import eu.opendppnode.sdk.model.InlineObject;
 import eu.opendppnode.sdk.model.ListPassports400Response;
-import eu.opendppnode.sdk.model.PassportAasEnvironment;
 import eu.opendppnode.sdk.model.PassportBulkRequest;
 import eu.opendppnode.sdk.model.PassportBulkResult;
 import eu.opendppnode.sdk.model.PassportCreateRequest;
@@ -491,7 +490,7 @@ public class PassportsApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "application/ld+json, application/aas+json, text/html, application/vc+jwt, application/vc+ld+json, application/dc+sd-jwt, application/json");
+    localVarRequestBuilder.header("Accept", "application/ld+json, application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {

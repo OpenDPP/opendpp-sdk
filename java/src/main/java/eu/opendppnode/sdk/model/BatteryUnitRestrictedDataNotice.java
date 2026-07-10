@@ -44,7 +44,9 @@ public class BatteryUnitRestrictedDataNotice {
    * Gets or Sets reason
    */
   public enum ReasonEnum {
-    LEGITIMATE_INTEREST_REQUIRED(String.valueOf("LEGITIMATE_INTEREST_REQUIRED"));
+    LEGITIMATE_INTEREST_REQUIRED(String.valueOf("LEGITIMATE_INTEREST_REQUIRED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -69,7 +71,7 @@ public class BatteryUnitRestrictedDataNotice {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -81,7 +83,9 @@ public class BatteryUnitRestrictedDataNotice {
    * Gets or Sets reference
    */
   public enum ReferenceEnum {
-    REGULATION_EU_2023_1542_ANNEX_XIII_2_4_(String.valueOf("Regulation (EU) 2023/1542, Annex XIII(2)-(4)"));
+    REGULATION_EU_2023_1542_ANNEX_XIII_2_4_(String.valueOf("Regulation (EU) 2023/1542, Annex XIII(2)-(4)")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -106,7 +110,7 @@ public class BatteryUnitRestrictedDataNotice {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -118,7 +122,9 @@ public class BatteryUnitRestrictedDataNotice {
    * Gets or Sets description
    */
   public enum DescriptionEnum {
-    PER_UNIT_DYNAMIC_DATA_STATE_OF_HEALTH_CYCLE_COUNTS_NEGATIVE_EVENTS_TEMPERATURE_IS_ACCESSIBLE_ONLY_TO_PERSONS_WITH_A_LEGITIMATE_INTEREST_AND_TO_AUTHORITIES_(String.valueOf("Per-unit dynamic data (state of health, cycle counts, negative events, temperature) is accessible only to persons with a legitimate interest and to authorities."));
+    PER_UNIT_DYNAMIC_DATA_STATE_OF_HEALTH_CYCLE_COUNTS_NEGATIVE_EVENTS_TEMPERATURE_IS_ACCESSIBLE_ONLY_TO_PERSONS_WITH_A_LEGITIMATE_INTEREST_AND_TO_AUTHORITIES_(String.valueOf("Per-unit dynamic data (state of health, cycle counts, negative events, temperature) is accessible only to persons with a legitimate interest and to authorities.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -143,7 +149,7 @@ public class BatteryUnitRestrictedDataNotice {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

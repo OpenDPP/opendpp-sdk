@@ -42,7 +42,9 @@ public class VerifyPassportSeal400Response {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    FALSE(Boolean.valueOf("false"));
+    FALSE(Boolean.valueOf("false")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -67,7 +69,7 @@ public class VerifyPassportSeal400Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -81,7 +83,9 @@ public class VerifyPassportSeal400Response {
   public enum MessageEnum {
     MISSING_CRYPTOGRAPHIC_PARAMETER_PAYLOAD_SIGNATURE_AND_PUBLIC_KEY_ARE_REQUIRED(String.valueOf("Missing cryptographic parameter: payload, signature, and publicKey are required")),
     
-    SIGNATURE_VERIFICATION_FAILED_(String.valueOf("Signature verification failed."));
+    SIGNATURE_VERIFICATION_FAILED_(String.valueOf("Signature verification failed.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -106,7 +110,7 @@ public class VerifyPassportSeal400Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

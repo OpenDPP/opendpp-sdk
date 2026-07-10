@@ -44,7 +44,9 @@ public class FacilityCreatedEnvelope {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -69,7 +71,7 @@ public class FacilityCreatedEnvelope {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -81,7 +83,9 @@ public class FacilityCreatedEnvelope {
    * Gets or Sets message
    */
   public enum MessageEnum {
-    FACILITY_REGISTERED_SUCCESSFULLY(String.valueOf("Facility registered successfully"));
+    FACILITY_REGISTERED_SUCCESSFULLY(String.valueOf("Facility registered successfully")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -106,7 +110,7 @@ public class FacilityCreatedEnvelope {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

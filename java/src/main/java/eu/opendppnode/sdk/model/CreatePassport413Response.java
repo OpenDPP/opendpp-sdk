@@ -44,7 +44,9 @@ public class CreatePassport413Response {
    * Gets or Sets statusCode
    */
   public enum StatusCodeEnum {
-    NUMBER_413(Integer.valueOf(413));
+    NUMBER_413(Integer.valueOf(413)),
+    
+    NUMBER_unknown_default_open_api(Integer.valueOf(11184809));
 
     private Integer value;
 
@@ -69,7 +71,7 @@ public class CreatePassport413Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return NUMBER_unknown_default_open_api;
     }
   }
 
@@ -81,7 +83,9 @@ public class CreatePassport413Response {
    * Gets or Sets code
    */
   public enum CodeEnum {
-    FST_ERR_CTP_BODY_TOO_LARGE(String.valueOf("FST_ERR_CTP_BODY_TOO_LARGE"));
+    FST_ERR_CTP_BODY_TOO_LARGE(String.valueOf("FST_ERR_CTP_BODY_TOO_LARGE")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -106,7 +110,7 @@ public class CreatePassport413Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -118,7 +122,9 @@ public class CreatePassport413Response {
    * Gets or Sets error
    */
   public enum ErrorEnum {
-    PAYLOAD_TOO_LARGE(String.valueOf("Payload Too Large"));
+    PAYLOAD_TOO_LARGE(String.valueOf("Payload Too Large")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -143,7 +149,7 @@ public class CreatePassport413Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

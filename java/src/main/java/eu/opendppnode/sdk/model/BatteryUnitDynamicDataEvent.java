@@ -51,7 +51,9 @@ public class BatteryUnitDynamicDataEvent {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    BATTERY_UNIT_EVENT(String.valueOf("BatteryUnitEvent"));
+    BATTERY_UNIT_EVENT(String.valueOf("BatteryUnitEvent")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -76,7 +78,7 @@ public class BatteryUnitDynamicDataEvent {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

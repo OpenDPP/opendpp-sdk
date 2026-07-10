@@ -58,7 +58,9 @@ public class WebhookEnvelope {
     
     PASSPORT_RECALLED(String.valueOf("passport.recalled")),
     
-    PASSPORT_STATUS_UPDATED(String.valueOf("passport.status_updated"));
+    PASSPORT_STATUS_UPDATED(String.valueOf("passport.status_updated")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -83,7 +85,7 @@ public class WebhookEnvelope {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -293,7 +295,7 @@ public class WebhookEnvelope {
 
     // add `data` to the URL query string
     if (getData() != null) {
-      joiner.add(String.format("%sdata%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getData()))));
+      joiner.add(getData().toUrlQueryString(prefix + "data" + suffix));
     }
 
     return joiner.toString();

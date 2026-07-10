@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -50,7 +46,7 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   DecodeGs1200Response.JSON_PROPERTY_AI
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class DecodeGs1200Response extends HashMap<String, Object> {
+public class DecodeGs1200Response {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @jakarta.annotation.Nonnull
   private Boolean success;
@@ -60,7 +56,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
   private String input;
 
   public static final String JSON_PROPERTY_ELEMENT_STRING = "elementString";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String elementString;
 
   public static final String JSON_PROPERTY_HRI = "hri";
@@ -68,11 +64,11 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
   private List<String> hri = new ArrayList<>();
 
   public static final String JSON_PROPERTY_CANONICAL_UPI = "canonicalUpi";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String canonicalUpi;
 
   public static final String JSON_PROPERTY_DIGITAL_LINK_URI = "digitalLinkUri";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String digitalLinkUri;
 
   public static final String JSON_PROPERTY_AI = "ai";
@@ -130,7 +126,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
   }
 
 
-  public DecodeGs1200Response elementString(@jakarta.annotation.Nonnull String elementString) {
+  public DecodeGs1200Response elementString(@jakarta.annotation.Nullable String elementString) {
     this.elementString = elementString;
     return this;
   }
@@ -139,7 +135,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
    * Bracketed AI element string, e.g. &#x60;(01)09501101532007(21)VM-1&#x60;.
    * @return elementString
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ELEMENT_STRING)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getElementString() {
@@ -149,7 +145,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_ELEMENT_STRING)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setElementString(@jakarta.annotation.Nonnull String elementString) {
+  public void setElementString(@jakarta.annotation.Nullable String elementString) {
     this.elementString = elementString;
   }
 
@@ -186,7 +182,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
   }
 
 
-  public DecodeGs1200Response canonicalUpi(@jakarta.annotation.Nonnull String canonicalUpi) {
+  public DecodeGs1200Response canonicalUpi(@jakarta.annotation.Nullable String canonicalUpi) {
     this.canonicalUpi = canonicalUpi;
     return this;
   }
@@ -195,7 +191,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
    * Host-independent canonical Digital Link (&#x60;https://id.gs1.org/…&#x60;).
    * @return canonicalUpi
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CANONICAL_UPI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getCanonicalUpi() {
@@ -205,12 +201,12 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_CANONICAL_UPI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setCanonicalUpi(@jakarta.annotation.Nonnull String canonicalUpi) {
+  public void setCanonicalUpi(@jakarta.annotation.Nullable String canonicalUpi) {
     this.canonicalUpi = canonicalUpi;
   }
 
 
-  public DecodeGs1200Response digitalLinkUri(@jakarta.annotation.Nonnull String digitalLinkUri) {
+  public DecodeGs1200Response digitalLinkUri(@jakarta.annotation.Nullable String digitalLinkUri) {
     this.digitalLinkUri = digitalLinkUri;
     return this;
   }
@@ -219,7 +215,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
    * The canonical path rehosted on this node&#39;s resolver host — GET it to resolve.
    * @return digitalLinkUri
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIGITAL_LINK_URI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getDigitalLinkUri() {
@@ -229,7 +225,7 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_DIGITAL_LINK_URI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setDigitalLinkUri(@jakarta.annotation.Nonnull String digitalLinkUri) {
+  public void setDigitalLinkUri(@jakarta.annotation.Nullable String digitalLinkUri) {
     this.digitalLinkUri = digitalLinkUri;
   }
 
@@ -265,49 +261,6 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
     this.ai = ai;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public DecodeGs1200Response putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this decodeGs1_200_response object is equal to o.
@@ -327,21 +280,18 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
         Objects.equals(this.hri, decodeGs1200Response.hri) &&
         Objects.equals(this.canonicalUpi, decodeGs1200Response.canonicalUpi) &&
         Objects.equals(this.digitalLinkUri, decodeGs1200Response.digitalLinkUri) &&
-        Objects.equals(this.ai, decodeGs1200Response.ai)&&
-        Objects.equals(this.additionalProperties, decodeGs1200Response.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.ai, decodeGs1200Response.ai);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(success, input, elementString, hri, canonicalUpi, digitalLinkUri, ai, super.hashCode(), additionalProperties);
+    return Objects.hash(success, input, elementString, hri, canonicalUpi, digitalLinkUri, ai);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class DecodeGs1200Response {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    success: ").append(toIndentedString(success)).append("\n");
     sb.append("    input: ").append(toIndentedString(input)).append("\n");
     sb.append("    elementString: ").append(toIndentedString(elementString)).append("\n");
@@ -349,7 +299,6 @@ public class DecodeGs1200Response extends HashMap<String, Object> {
     sb.append("    canonicalUpi: ").append(toIndentedString(canonicalUpi)).append("\n");
     sb.append("    digitalLinkUri: ").append(toIndentedString(digitalLinkUri)).append("\n");
     sb.append("    ai: ").append(toIndentedString(ai)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -68,7 +68,9 @@ public class BatteryUnitJsonLd {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    BATTERY_UNIT(String.valueOf("BatteryUnit"));
+    BATTERY_UNIT(String.valueOf("BatteryUnit")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -93,7 +95,7 @@ public class BatteryUnitJsonLd {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -689,7 +691,7 @@ public class BatteryUnitJsonLd {
 
     // add `ofModel` to the URL query string
     if (getOfModel() != null) {
-      joiner.add(String.format("%sofModel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOfModel()))));
+      joiner.add(getOfModel().toUrlQueryString(prefix + "ofModel" + suffix));
     }
 
     // add `currentState` to the URL query string

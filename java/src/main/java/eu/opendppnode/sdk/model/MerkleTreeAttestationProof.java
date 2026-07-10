@@ -59,7 +59,9 @@ public class MerkleTreeAttestationProof {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    MERKLE_TREE_ATTESTATION_PROOF(String.valueOf("MerkleTreeAttestationProof"));
+    MERKLE_TREE_ATTESTATION_PROOF(String.valueOf("MerkleTreeAttestationProof")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -84,7 +86,7 @@ public class MerkleTreeAttestationProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -96,7 +98,9 @@ public class MerkleTreeAttestationProof {
    * Gets or Sets type
    */
   public enum TypeEnum {
-    MERKLE_TREE_ATTESTATION_PROOF(String.valueOf("MerkleTreeAttestationProof"));
+    MERKLE_TREE_ATTESTATION_PROOF(String.valueOf("MerkleTreeAttestationProof")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -121,7 +125,7 @@ public class MerkleTreeAttestationProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -133,7 +137,9 @@ public class MerkleTreeAttestationProof {
    * Gets or Sets signatureAlgorithm
    */
   public enum SignatureAlgorithmEnum {
-    ECDSA_P256_SHA256_OVER_MERKLE_ROOT(String.valueOf("ECDSA-P256-SHA256-over-MerkleRoot"));
+    ECDSA_P256_SHA256_OVER_MERKLE_ROOT(String.valueOf("ECDSA-P256-SHA256-over-MerkleRoot")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -158,7 +164,7 @@ public class MerkleTreeAttestationProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -174,7 +180,9 @@ public class MerkleTreeAttestationProof {
    * Gets or Sets proofPurpose
    */
   public enum ProofPurposeEnum {
-    ASSERTION_METHOD(String.valueOf("assertionMethod"));
+    ASSERTION_METHOD(String.valueOf("assertionMethod")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -199,7 +207,7 @@ public class MerkleTreeAttestationProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

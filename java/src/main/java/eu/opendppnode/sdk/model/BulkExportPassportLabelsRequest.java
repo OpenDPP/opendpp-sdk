@@ -53,7 +53,9 @@ public class BulkExportPassportLabelsRequest {
   public enum FormatEnum {
     PNG(String.valueOf("png")),
     
-    SVG(String.valueOf("svg"));
+    SVG(String.valueOf("svg")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -78,7 +80,7 @@ public class BulkExportPassportLabelsRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -98,7 +100,9 @@ public class BulkExportPassportLabelsRequest {
     
     Q(String.valueOf("Q")),
     
-    H(String.valueOf("H"));
+    H(String.valueOf("H")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -123,7 +127,7 @@ public class BulkExportPassportLabelsRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

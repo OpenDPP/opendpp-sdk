@@ -47,7 +47,9 @@ public class PassportUpdateValidationError {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    FALSE(Boolean.valueOf("false"));
+    FALSE(Boolean.valueOf("false")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -72,7 +74,7 @@ public class PassportUpdateValidationError {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -84,7 +86,9 @@ public class PassportUpdateValidationError {
    * Gets or Sets error
    */
   public enum ErrorEnum {
-    VALIDATION_FAILED(String.valueOf("Validation Failed"));
+    VALIDATION_FAILED(String.valueOf("Validation Failed")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -109,7 +113,7 @@ public class PassportUpdateValidationError {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

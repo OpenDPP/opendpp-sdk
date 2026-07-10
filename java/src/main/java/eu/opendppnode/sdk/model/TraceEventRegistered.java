@@ -43,7 +43,9 @@ public class TraceEventRegistered {
    * Gets or Sets status
    */
   public enum StatusEnum {
-    SUCCESS(String.valueOf("success"));
+    SUCCESS(String.valueOf("success")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -68,7 +70,7 @@ public class TraceEventRegistered {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -84,7 +86,9 @@ public class TraceEventRegistered {
    * Gets or Sets untpVerified
    */
   public enum UntpVerifiedEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -109,7 +113,7 @@ public class TraceEventRegistered {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

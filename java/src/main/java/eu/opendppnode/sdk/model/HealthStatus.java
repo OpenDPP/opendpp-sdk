@@ -47,7 +47,9 @@ public class HealthStatus {
    * Gets or Sets status
    */
   public enum StatusEnum {
-    OK(String.valueOf("OK"));
+    OK(String.valueOf("OK")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -72,7 +74,7 @@ public class HealthStatus {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -84,7 +86,9 @@ public class HealthStatus {
    * Gets or Sets service
    */
   public enum ServiceEnum {
-    OPEN_DPP_B2_B_ENTERPRISE_ENGINE(String.valueOf("OpenDPP B2B Enterprise Engine"));
+    OPEN_DPP_B2_B_ENTERPRISE_ENGINE(String.valueOf("OpenDPP B2B Enterprise Engine")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -109,7 +113,7 @@ public class HealthStatus {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

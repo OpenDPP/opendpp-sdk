@@ -107,6 +107,16 @@ val prepareSpec = tasks.register("prepareSpec") {
                         ((p["@context"] as? Map<*, *>)?.get("description"))?.let { relaxed["description"] = it }
                         p["@context"] = relaxed
                     }
+                    // A schema with typed `properties` PLUS `additionalProperties` (the JSON-LD documents
+                    // flatten metadata onto the root, hence additionalProperties:true) makes the generator
+                    // emit `class X extends HashMap` — and Jackson deserializes any Map subtype AS A MAP,
+                    // never calling the typed setters: every typed getter silently returns null. Strip
+                    // additionalProperties from such schemas so they generate as plain beans; nothing is
+                    // lost — the flattened root keys are documented duplicates of the `metadata` object,
+                    // which the typed surface still exposes in full.
+                    if (props is Map<*, *> && props.isNotEmpty() && m.containsKey("additionalProperties")) {
+                        m.remove("additionalProperties")
+                    }
                     for ((k, v) in m.toList()) {
                         // Direct anyOf/oneOf/allOf branches are compositions: a `{type:"null"}` branch
                         // there is the standard 3.1 nullable idiom, which the generator handles natively
@@ -133,6 +143,49 @@ val prepareSpec = tasks.register("prepareSpec") {
             }
         }
         relax(doc, false)
+        // The public resolvers are content-negotiated (RFC 7231): their responses offer JSON-LD, AAS,
+        // VC-JWT, SD-JWT, and HTML alongside application/json. The generator turns that into an
+        // equal-q multi-representation Accept header, so the server may legitimately answer with a
+        // representation the typed return model does NOT match — which deserializes as an all-null
+        // object (unknown properties are ignored). A typed JSON client can only consume the JSON
+        // document, so wherever a response offers application/json among alternates keep ONLY
+        // application/json (binary-only responses — QR images, ZIP export — are left untouched).
+        // The alternate representations stay reachable by plain URL fetch.
+        // NOTE the two generator behaviors this must defeat:
+        //  • the Accept header is the UNION of content types across ALL of an operation's responses
+        //    (errors and redirects included), so every inline response must be pruned, not just the 2xx;
+        //  • the negotiated resolvers' 200 offers NO plain application/json — their JSON document
+        //    representation is application/ld+json (the errors are what carry application/json).
+        val jsonTypes = listOf("application/json", "application/ld+json")
+        val httpMethods = setOf("get", "put", "post", "delete", "options", "head", "patch", "trace")
+        val paths = doc["paths"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
+        for (pathItem in paths.values) {
+            if (pathItem !is Map<*, *>) continue
+            for ((method, op) in pathItem) {
+                if (method !in httpMethods || op !is Map<*, *>) continue
+                val responses = op["responses"] as? Map<*, *> ?: continue
+                // Only operations whose SUCCESS representation has a JSON variant — binary-only ops
+                // (QR images, ZIP export) and AAS/VC-typed exports keep their declarations untouched.
+                val jsonSuccess = responses.any { (code, resp) ->
+                    code.toString().startsWith("2") &&
+                        (((resp as? Map<*, *>)?.get("content") as? Map<*, *>)?.keys?.any { it in jsonTypes } == true)
+                }
+                if (!jsonSuccess) continue
+                for (resp in responses.values) {
+                    if (resp !is MutableMap<*, *>) continue
+                    @Suppress("UNCHECKED_CAST")
+                    val r = resp as MutableMap<String, Any?>
+                    val content = r["content"]
+                    if (content !is MutableMap<*, *>) continue
+                    @Suppress("UNCHECKED_CAST")
+                    val c = content as MutableMap<String, Any?>
+                    val pick = jsonTypes.firstOrNull { c.containsKey(it) }
+                    // A response with no JSON variant at all (e.g. an HTML-only redirect body) is
+                    // dropped from the declaration so it can't pollute the Accept union.
+                    if (pick != null) c.keys.retainAll(setOf(pick)) else r.remove("content")
+                }
+            }
+        }
         val out = generatorSpec.get().asFile
         out.parentFile.mkdirs()
         out.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(doc)))
@@ -162,6 +215,12 @@ openApiGenerate {
             "useJakartaEe" to "true",
             "serializationLibrary" to "jackson",
             "sourceFolder" to "src/main/java",
+            // The API contract treats a NEW output enum value as a backward-compatible MINOR change
+            // (docs/contributing/Versioning.md in the service repo). Generated Java enums deserialize
+            // through a @JsonCreator that THROWS on unknown values, so without this a routine MINOR
+            // server release (e.g. a new advisory `code`) would crash deployed clients mid-response.
+            // With it, unknown values map to the UNKNOWN_DEFAULT_OPEN_API sentinel instead.
+            "enumUnknownDefaultCase" to "true",
         ),
     )
 }

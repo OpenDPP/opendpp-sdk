@@ -45,7 +45,9 @@ public class EconomicOperatorNode {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    ECONOMIC_OPERATOR(String.valueOf("EconomicOperator"));
+    ECONOMIC_OPERATOR(String.valueOf("EconomicOperator")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -70,7 +72,7 @@ public class EconomicOperatorNode {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

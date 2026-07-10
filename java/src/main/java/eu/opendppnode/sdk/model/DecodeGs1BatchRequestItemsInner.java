@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -29,8 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -44,7 +38,7 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   DecodeGs1BatchRequestItemsInner.JSON_PROPERTY_DIGITAL_LINK
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class DecodeGs1BatchRequestItemsInner extends HashMap<String, Object> {
+public class DecodeGs1BatchRequestItemsInner {
   public static final String JSON_PROPERTY_SCAN_DATA = "scanData";
   @jakarta.annotation.Nullable
   private String scanData;
@@ -131,49 +125,6 @@ public class DecodeGs1BatchRequestItemsInner extends HashMap<String, Object> {
     this.digitalLink = digitalLink;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public DecodeGs1BatchRequestItemsInner putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this decodeGs1Batch_request_items_inner object is equal to o.
@@ -189,25 +140,21 @@ public class DecodeGs1BatchRequestItemsInner extends HashMap<String, Object> {
     DecodeGs1BatchRequestItemsInner decodeGs1BatchRequestItemsInner = (DecodeGs1BatchRequestItemsInner) o;
     return Objects.equals(this.scanData, decodeGs1BatchRequestItemsInner.scanData) &&
         Objects.equals(this.elementString, decodeGs1BatchRequestItemsInner.elementString) &&
-        Objects.equals(this.digitalLink, decodeGs1BatchRequestItemsInner.digitalLink)&&
-        Objects.equals(this.additionalProperties, decodeGs1BatchRequestItemsInner.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.digitalLink, decodeGs1BatchRequestItemsInner.digitalLink);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(scanData, elementString, digitalLink, super.hashCode(), additionalProperties);
+    return Objects.hash(scanData, elementString, digitalLink);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class DecodeGs1BatchRequestItemsInner {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    scanData: ").append(toIndentedString(scanData)).append("\n");
     sb.append("    elementString: ").append(toIndentedString(elementString)).append("\n");
     sb.append("    digitalLink: ").append(toIndentedString(digitalLink)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

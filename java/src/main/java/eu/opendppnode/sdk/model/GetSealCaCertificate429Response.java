@@ -41,7 +41,9 @@ public class GetSealCaCertificate429Response {
    * Gets or Sets error
    */
   public enum ErrorEnum {
-    TOO_MANY_REQUESTS(String.valueOf("Too Many Requests"));
+    TOO_MANY_REQUESTS(String.valueOf("Too Many Requests")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -66,7 +68,7 @@ public class GetSealCaCertificate429Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

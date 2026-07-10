@@ -47,7 +47,9 @@ public class SealVerifyResponse {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -72,7 +74,7 @@ public class SealVerifyResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -90,7 +92,9 @@ public class SealVerifyResponse {
   public enum MessageEnum {
     CRYPTOGRAPHIC_VERIFICATION_FAILED_THE_PUBLIC_KEY_USED_TO_SEAL_THIS_PASSPORT_IS_NOT_REGISTERED_TO_ANY_AUTHORIZED_ECONOMIC_OPERATOR_TENANT_ON_THIS_NODE_(String.valueOf("Cryptographic verification failed: The public key used to seal this passport is not registered to any authorized economic operator tenant on this node.")),
     
-    CRYPTOGRAPHIC_VERIFICATION_FAILED_THE_ECONOMIC_OPERATOR_DECLARED_IN_THIS_PASSPORT_IS_NOT_A_REGISTERED_OPERATOR_BOUND_TO_THE_SIGNING_TENANT_(String.valueOf("Cryptographic verification failed: The economic operator declared in this passport is not a registered operator bound to the signing tenant."));
+    CRYPTOGRAPHIC_VERIFICATION_FAILED_THE_ECONOMIC_OPERATOR_DECLARED_IN_THIS_PASSPORT_IS_NOT_A_REGISTERED_OPERATOR_BOUND_TO_THE_SIGNING_TENANT_(String.valueOf("Cryptographic verification failed: The economic operator declared in this passport is not a registered operator bound to the signing tenant.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -115,7 +119,7 @@ public class SealVerifyResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

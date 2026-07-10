@@ -64,7 +64,9 @@ public class TraceLineageNode {
     
     TRANSFORMATION_EVENT(String.valueOf("TransformationEvent")),
     
-    ASSOCIATION_EVENT(String.valueOf("AssociationEvent"));
+    ASSOCIATION_EVENT(String.valueOf("AssociationEvent")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -89,7 +91,7 @@ public class TraceLineageNode {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

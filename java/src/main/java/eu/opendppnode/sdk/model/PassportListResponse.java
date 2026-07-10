@@ -266,9 +266,8 @@ public class PassportListResponse {
     if (getPassports() != null) {
       for (int i = 0; i < getPassports().size(); i++) {
         if (getPassports().get(i) != null) {
-          joiner.add(String.format("%spassports%s%s=%s", prefix, suffix,
-              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-              ApiClient.urlEncode(ApiClient.valueToString(getPassports().get(i)))));
+          joiner.add(getPassports().get(i).toUrlQueryString(String.format("%spassports%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }

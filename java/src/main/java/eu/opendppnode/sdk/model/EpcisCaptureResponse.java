@@ -48,7 +48,9 @@ public class EpcisCaptureResponse {
    * Gets or Sets status
    */
   public enum StatusEnum {
-    SUCCESS(String.valueOf("success"));
+    SUCCESS(String.valueOf("success")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -73,7 +75,7 @@ public class EpcisCaptureResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

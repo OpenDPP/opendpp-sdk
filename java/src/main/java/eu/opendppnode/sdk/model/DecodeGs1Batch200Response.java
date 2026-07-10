@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -31,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import eu.opendppnode.sdk.model.DecodeGs1Batch200ResponseResultsInner;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -47,7 +41,7 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   DecodeGs1Batch200Response.JSON_PROPERTY_RESULTS
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class DecodeGs1Batch200Response extends HashMap<String, Object> {
+public class DecodeGs1Batch200Response {
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @jakarta.annotation.Nonnull
   private Boolean success;
@@ -142,49 +136,6 @@ public class DecodeGs1Batch200Response extends HashMap<String, Object> {
     this.results = results;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public DecodeGs1Batch200Response putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this decodeGs1Batch_200_response object is equal to o.
@@ -200,25 +151,21 @@ public class DecodeGs1Batch200Response extends HashMap<String, Object> {
     DecodeGs1Batch200Response decodeGs1Batch200Response = (DecodeGs1Batch200Response) o;
     return Objects.equals(this.success, decodeGs1Batch200Response.success) &&
         Objects.equals(this.count, decodeGs1Batch200Response.count) &&
-        Objects.equals(this.results, decodeGs1Batch200Response.results)&&
-        Objects.equals(this.additionalProperties, decodeGs1Batch200Response.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.results, decodeGs1Batch200Response.results);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(success, count, results, super.hashCode(), additionalProperties);
+    return Objects.hash(success, count, results);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class DecodeGs1Batch200Response {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    success: ").append(toIndentedString(success)).append("\n");
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
     sb.append("    results: ").append(toIndentedString(results)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

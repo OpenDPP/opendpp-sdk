@@ -69,7 +69,9 @@ public class UntpEventCredentialSubject {
     
     TRANSFORMATION_EVENT(String.valueOf("TransformationEvent")),
     
-    ASSOCIATION_EVENT(String.valueOf("AssociationEvent"));
+    ASSOCIATION_EVENT(String.valueOf("AssociationEvent")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -94,7 +96,7 @@ public class UntpEventCredentialSubject {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -110,7 +112,9 @@ public class UntpEventCredentialSubject {
     
     OBSERVE(String.valueOf("OBSERVE")),
     
-    DELETE(String.valueOf("DELETE"));
+    DELETE(String.valueOf("DELETE")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -135,7 +139,7 @@ public class UntpEventCredentialSubject {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

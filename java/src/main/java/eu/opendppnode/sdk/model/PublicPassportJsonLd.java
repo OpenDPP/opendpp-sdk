@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -28,9 +24,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import eu.opendppnode.sdk.model.PassportListItemEconomicOperator;
-import eu.opendppnode.sdk.model.PublicPassportJsonLdManufacturingFacility;
-import eu.opendppnode.sdk.model.PublicPassportJsonLdProof;
+import eu.opendppnode.sdk.model.EconomicOperatorNode;
+import eu.opendppnode.sdk.model.MerkleTreeAttestationProof;
+import eu.opendppnode.sdk.model.PublicFacilityNode;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -63,14 +59,49 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   PublicPassportJsonLd.JSON_PROPERTY_METADATA
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class PublicPassportJsonLd extends HashMap<String, Object> {
+public class PublicPassportJsonLd {
   public static final String JSON_PROPERTY_AT_CONTEXT = "@context";
   @jakarta.annotation.Nullable
   private Object atContext = null;
 
+  /**
+   * Gets or Sets atType
+   */
+  public enum AtTypeEnum {
+    DIGITAL_PRODUCT_PASSPORT(String.valueOf("DigitalProductPassport")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
+
+    private String value;
+
+    AtTypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static AtTypeEnum fromValue(String value) {
+      for (AtTypeEnum b : AtTypeEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      return UNKNOWN_DEFAULT_OPEN_API;
+    }
+  }
+
   public static final String JSON_PROPERTY_AT_TYPE = "@type";
   @jakarta.annotation.Nonnull
-  private String atType;
+  private AtTypeEnum atType;
 
   public static final String JSON_PROPERTY_AT_ID = "@id";
   @jakarta.annotation.Nonnull
@@ -89,11 +120,11 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   private URI digitalLinkUri;
 
   public static final String JSON_PROPERTY_DIGITAL_SEAL = "digitalSeal";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String digitalSeal;
 
   public static final String JSON_PROPERTY_SIGNING_PUBLIC_KEY = "signingPublicKey";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String signingPublicKey;
 
   /**
@@ -106,7 +137,9 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
     
     RECALLED(String.valueOf("RECALLED")),
     
-    DECOMMISSIONED(String.valueOf("DECOMMISSIONED"));
+    DECOMMISSIONED(String.valueOf("DECOMMISSIONED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -131,7 +164,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -140,16 +173,16 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   private StatusEnum status;
 
   public static final String JSON_PROPERTY_ARCHIVED_AT = "archivedAt";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private OffsetDateTime archivedAt;
 
   public static final String JSON_PROPERTY_RETENTION_UNTIL = "retentionUntil";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private OffsetDateTime retentionUntil;
 
   public static final String JSON_PROPERTY_PROOF = "proof";
-  @jakarta.annotation.Nonnull
-  private PublicPassportJsonLdProof proof;
+  @jakarta.annotation.Nullable
+  private MerkleTreeAttestationProof proof;
 
   public static final String JSON_PROPERTY_CREATED_AT = "createdAt";
   @jakarta.annotation.Nonnull
@@ -160,16 +193,16 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   private OffsetDateTime updatedAt;
 
   public static final String JSON_PROPERTY_ECONOMIC_OPERATOR = "economicOperator";
-  @jakarta.annotation.Nonnull
-  private PassportListItemEconomicOperator economicOperator;
+  @jakarta.annotation.Nullable
+  private EconomicOperatorNode economicOperator;
 
   public static final String JSON_PROPERTY_MANUFACTURING_FACILITY = "manufacturingFacility";
-  @jakarta.annotation.Nonnull
-  private PublicPassportJsonLdManufacturingFacility manufacturingFacility;
+  @jakarta.annotation.Nullable
+  private PublicFacilityNode manufacturingFacility;
 
   public static final String JSON_PROPERTY_METADATA = "metadata";
   @jakarta.annotation.Nonnull
-  private Object metadata;
+  private Map<String, Object> metadata = new HashMap<>();
 
   public PublicPassportJsonLd() { 
   }
@@ -180,7 +213,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   }
 
   /**
-   * Exactly two entries: the context URL &#x60;https://opendpp-node.eu/contexts/dpp/v1&#x60; and an inline term map covering the 9 fixed DPP terms (&#x60;DigitalProductPassport&#x60;, &#x60;economicOperator&#x60;, &#x60;manufacturingFacility&#x60;, &#x60;metadata&#x60;, &#x60;digitalSeal&#x60;, &#x60;signingPublicKey&#x60;, &#x60;status&#x60;, &#x60;archivedAt&#x60;, &#x60;retentionUntil&#x60;) plus one generated term per metadata key (&#x60;https://opendpp-node.eu/contexts/dpp/v1#&lt;key&gt;&#x60;).
+   * Get atContext
    * @return atContext
    */
   @jakarta.annotation.Nullable
@@ -198,7 +231,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   }
 
 
-  public PublicPassportJsonLd atType(@jakarta.annotation.Nonnull String atType) {
+  public PublicPassportJsonLd atType(@jakarta.annotation.Nonnull AtTypeEnum atType) {
     this.atType = atType;
     return this;
   }
@@ -210,14 +243,14 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_AT_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public String getAtType() {
+  public AtTypeEnum getAtType() {
     return atType;
   }
 
 
   @JsonProperty(JSON_PROPERTY_AT_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setAtType(@jakarta.annotation.Nonnull String atType) {
+  public void setAtType(@jakarta.annotation.Nonnull AtTypeEnum atType) {
     this.atType = atType;
   }
 
@@ -318,7 +351,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   }
 
 
-  public PublicPassportJsonLd digitalSeal(@jakarta.annotation.Nonnull String digitalSeal) {
+  public PublicPassportJsonLd digitalSeal(@jakarta.annotation.Nullable String digitalSeal) {
     this.digitalSeal = digitalSeal;
     return this;
   }
@@ -327,7 +360,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * eIDAS ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. &#x60;null&#x60; when the passport has not been sealed.
    * @return digitalSeal
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIGITAL_SEAL)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getDigitalSeal() {
@@ -337,12 +370,12 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_DIGITAL_SEAL)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setDigitalSeal(@jakarta.annotation.Nonnull String digitalSeal) {
+  public void setDigitalSeal(@jakarta.annotation.Nullable String digitalSeal) {
     this.digitalSeal = digitalSeal;
   }
 
 
-  public PublicPassportJsonLd signingPublicKey(@jakarta.annotation.Nonnull String signingPublicKey) {
+  public PublicPassportJsonLd signingPublicKey(@jakarta.annotation.Nullable String signingPublicKey) {
     this.signingPublicKey = signingPublicKey;
     return this;
   }
@@ -351,7 +384,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * PEM public key that verifies &#x60;digitalSeal&#x60;. &#x60;null&#x60; when unsealed.
    * @return signingPublicKey
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIGNING_PUBLIC_KEY)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getSigningPublicKey() {
@@ -361,7 +394,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_SIGNING_PUBLIC_KEY)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setSigningPublicKey(@jakarta.annotation.Nonnull String signingPublicKey) {
+  public void setSigningPublicKey(@jakarta.annotation.Nullable String signingPublicKey) {
     this.signingPublicKey = signingPublicKey;
   }
 
@@ -390,7 +423,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   }
 
 
-  public PublicPassportJsonLd archivedAt(@jakarta.annotation.Nonnull OffsetDateTime archivedAt) {
+  public PublicPassportJsonLd archivedAt(@jakarta.annotation.Nullable OffsetDateTime archivedAt) {
     this.archivedAt = archivedAt;
     return this;
   }
@@ -399,7 +432,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * Soft-delete marker (owner off-boarded / decommissioned). Archived passports remain publicly resolvable (ESPR persistence duty).
    * @return archivedAt
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ARCHIVED_AT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public OffsetDateTime getArchivedAt() {
@@ -409,12 +442,12 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_ARCHIVED_AT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setArchivedAt(@jakarta.annotation.Nonnull OffsetDateTime archivedAt) {
+  public void setArchivedAt(@jakarta.annotation.Nullable OffsetDateTime archivedAt) {
     this.archivedAt = archivedAt;
   }
 
 
-  public PublicPassportJsonLd retentionUntil(@jakarta.annotation.Nonnull OffsetDateTime retentionUntil) {
+  public PublicPassportJsonLd retentionUntil(@jakarta.annotation.Nullable OffsetDateTime retentionUntil) {
     this.retentionUntil = retentionUntil;
     return this;
   }
@@ -423,7 +456,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * Minimum-availability deadline; the passport is never purged before this instant.
    * @return retentionUntil
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_RETENTION_UNTIL)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public OffsetDateTime getRetentionUntil() {
@@ -433,12 +466,12 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
 
   @JsonProperty(JSON_PROPERTY_RETENTION_UNTIL)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setRetentionUntil(@jakarta.annotation.Nonnull OffsetDateTime retentionUntil) {
+  public void setRetentionUntil(@jakarta.annotation.Nullable OffsetDateTime retentionUntil) {
     this.retentionUntil = retentionUntil;
   }
 
 
-  public PublicPassportJsonLd proof(@jakarta.annotation.Nonnull PublicPassportJsonLdProof proof) {
+  public PublicPassportJsonLd proof(@jakarta.annotation.Nullable MerkleTreeAttestationProof proof) {
     this.proof = proof;
     return this;
   }
@@ -447,17 +480,17 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * Get proof
    * @return proof
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PROOF)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public PublicPassportJsonLdProof getProof() {
+  public MerkleTreeAttestationProof getProof() {
     return proof;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PROOF)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setProof(@jakarta.annotation.Nonnull PublicPassportJsonLdProof proof) {
+  public void setProof(@jakarta.annotation.Nullable MerkleTreeAttestationProof proof) {
     this.proof = proof;
   }
 
@@ -510,7 +543,7 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
   }
 
 
-  public PublicPassportJsonLd economicOperator(@jakarta.annotation.Nonnull PassportListItemEconomicOperator economicOperator) {
+  public PublicPassportJsonLd economicOperator(@jakarta.annotation.Nullable EconomicOperatorNode economicOperator) {
     this.economicOperator = economicOperator;
     return this;
   }
@@ -519,22 +552,22 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * Get economicOperator
    * @return economicOperator
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ECONOMIC_OPERATOR)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public PassportListItemEconomicOperator getEconomicOperator() {
+  public EconomicOperatorNode getEconomicOperator() {
     return economicOperator;
   }
 
 
   @JsonProperty(JSON_PROPERTY_ECONOMIC_OPERATOR)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setEconomicOperator(@jakarta.annotation.Nonnull PassportListItemEconomicOperator economicOperator) {
+  public void setEconomicOperator(@jakarta.annotation.Nullable EconomicOperatorNode economicOperator) {
     this.economicOperator = economicOperator;
   }
 
 
-  public PublicPassportJsonLd manufacturingFacility(@jakarta.annotation.Nonnull PublicPassportJsonLdManufacturingFacility manufacturingFacility) {
+  public PublicPassportJsonLd manufacturingFacility(@jakarta.annotation.Nullable PublicFacilityNode manufacturingFacility) {
     this.manufacturingFacility = manufacturingFacility;
     return this;
   }
@@ -543,23 +576,31 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    * Get manufacturingFacility
    * @return manufacturingFacility
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MANUFACTURING_FACILITY)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public PublicPassportJsonLdManufacturingFacility getManufacturingFacility() {
+  public PublicFacilityNode getManufacturingFacility() {
     return manufacturingFacility;
   }
 
 
   @JsonProperty(JSON_PROPERTY_MANUFACTURING_FACILITY)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setManufacturingFacility(@jakarta.annotation.Nonnull PublicPassportJsonLdManufacturingFacility manufacturingFacility) {
+  public void setManufacturingFacility(@jakarta.annotation.Nullable PublicFacilityNode manufacturingFacility) {
     this.manufacturingFacility = manufacturingFacility;
   }
 
 
-  public PublicPassportJsonLd metadata(@jakarta.annotation.Nonnull Object metadata) {
+  public PublicPassportJsonLd metadata(@jakarta.annotation.Nonnull Map<String, Object> metadata) {
     this.metadata = metadata;
+    return this;
+  }
+
+  public PublicPassportJsonLd putMetadataItem(String key, Object metadataItem) {
+    if (this.metadata == null) {
+      this.metadata = new HashMap<>();
+    }
+    this.metadata.put(key, metadataItem);
     return this;
   }
 
@@ -569,61 +610,18 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
    */
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public Object getMetadata() {
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.ALWAYS)
+  public Map<String, Object> getMetadata() {
     return metadata;
   }
 
 
   @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setMetadata(@jakarta.annotation.Nonnull Object metadata) {
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.ALWAYS)
+  public void setMetadata(@jakarta.annotation.Nonnull Map<String, Object> metadata) {
     this.metadata = metadata;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public PublicPassportJsonLd putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this PublicPassportJsonLd object is equal to o.
@@ -653,21 +651,18 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
         Objects.equals(this.updatedAt, publicPassportJsonLd.updatedAt) &&
         Objects.equals(this.economicOperator, publicPassportJsonLd.economicOperator) &&
         Objects.equals(this.manufacturingFacility, publicPassportJsonLd.manufacturingFacility) &&
-        Objects.equals(this.metadata, publicPassportJsonLd.metadata)&&
-        Objects.equals(this.additionalProperties, publicPassportJsonLd.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.metadata, publicPassportJsonLd.metadata);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(atContext, atType, atId, id, productId, digitalLinkUri, digitalSeal, signingPublicKey, status, archivedAt, retentionUntil, proof, createdAt, updatedAt, economicOperator, manufacturingFacility, metadata, super.hashCode(), additionalProperties);
+    return Objects.hash(atContext, atType, atId, id, productId, digitalLinkUri, digitalSeal, signingPublicKey, status, archivedAt, retentionUntil, proof, createdAt, updatedAt, economicOperator, manufacturingFacility, metadata);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PublicPassportJsonLd {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    atContext: ").append(toIndentedString(atContext)).append("\n");
     sb.append("    atType: ").append(toIndentedString(atType)).append("\n");
     sb.append("    atId: ").append(toIndentedString(atId)).append("\n");
@@ -685,7 +680,6 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
     sb.append("    economicOperator: ").append(toIndentedString(economicOperator)).append("\n");
     sb.append("    manufacturingFacility: ").append(toIndentedString(manufacturingFacility)).append("\n");
     sb.append("    metadata: ").append(toIndentedString(metadata)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -815,7 +809,11 @@ public class PublicPassportJsonLd extends HashMap<String, Object> {
 
     // add `metadata` to the URL query string
     if (getMetadata() != null) {
-      joiner.add(String.format("%smetadata%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMetadata()))));
+      for (String _key : getMetadata().keySet()) {
+        joiner.add(String.format("%smetadata%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
+            getMetadata().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getMetadata().get(_key)))));
+      }
     }
 
     return joiner.toString();

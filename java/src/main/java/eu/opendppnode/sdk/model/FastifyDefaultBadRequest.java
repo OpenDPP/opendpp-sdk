@@ -44,7 +44,9 @@ public class FastifyDefaultBadRequest {
    * Gets or Sets statusCode
    */
   public enum StatusCodeEnum {
-    NUMBER_400(Integer.valueOf(400));
+    NUMBER_400(Integer.valueOf(400)),
+    
+    NUMBER_unknown_default_open_api(Integer.valueOf(11184809));
 
     private Integer value;
 
@@ -69,7 +71,7 @@ public class FastifyDefaultBadRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return NUMBER_unknown_default_open_api;
     }
   }
 
@@ -85,7 +87,9 @@ public class FastifyDefaultBadRequest {
    * Gets or Sets error
    */
   public enum ErrorEnum {
-    BAD_REQUEST(String.valueOf("Bad Request"));
+    BAD_REQUEST(String.valueOf("Bad Request")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -110,7 +114,7 @@ public class FastifyDefaultBadRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

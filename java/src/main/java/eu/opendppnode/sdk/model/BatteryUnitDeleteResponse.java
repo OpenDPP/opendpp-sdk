@@ -42,7 +42,9 @@ public class BatteryUnitDeleteResponse {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -67,7 +69,7 @@ public class BatteryUnitDeleteResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -79,7 +81,9 @@ public class BatteryUnitDeleteResponse {
    * Gets or Sets message
    */
   public enum MessageEnum {
-    BATTERY_UNIT_DELETED_(String.valueOf("Battery unit deleted."));
+    BATTERY_UNIT_DELETED_(String.valueOf("Battery unit deleted.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -104,7 +108,7 @@ public class BatteryUnitDeleteResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

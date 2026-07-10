@@ -50,7 +50,9 @@ public class BatteryUnitEventNode {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    BATTERY_UNIT_EVENT(String.valueOf("BatteryUnitEvent"));
+    BATTERY_UNIT_EVENT(String.valueOf("BatteryUnitEvent")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -75,7 +77,7 @@ public class BatteryUnitEventNode {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -95,7 +97,9 @@ public class BatteryUnitEventNode {
     
     NEGATIVE_EVENT(String.valueOf("NEGATIVE_EVENT")),
     
-    OTHER(String.valueOf("OTHER"));
+    OTHER(String.valueOf("OTHER")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -120,7 +124,7 @@ public class BatteryUnitEventNode {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

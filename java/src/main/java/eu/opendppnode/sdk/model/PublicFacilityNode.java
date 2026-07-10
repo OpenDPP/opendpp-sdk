@@ -53,7 +53,9 @@ public class PublicFacilityNode {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    FACILITY(String.valueOf("Facility"));
+    FACILITY(String.valueOf("Facility")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -78,7 +80,7 @@ public class PublicFacilityNode {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

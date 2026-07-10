@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -29,8 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -44,9 +38,9 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   ValidateBatteryUnits200ResponseResultsInner.JSON_PROPERTY_ERROR
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String, Object> {
+public class ValidateBatteryUnits200ResponseResultsInner {
   public static final String JSON_PROPERTY_SERIAL_NUMBER = "serialNumber";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String serialNumber;
 
   public static final String JSON_PROPERTY_OK = "ok";
@@ -60,7 +54,7 @@ public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String,
   public ValidateBatteryUnits200ResponseResultsInner() { 
   }
 
-  public ValidateBatteryUnits200ResponseResultsInner serialNumber(@jakarta.annotation.Nonnull String serialNumber) {
+  public ValidateBatteryUnits200ResponseResultsInner serialNumber(@jakarta.annotation.Nullable String serialNumber) {
     this.serialNumber = serialNumber;
     return this;
   }
@@ -69,7 +63,7 @@ public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String,
    * Get serialNumber
    * @return serialNumber
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SERIAL_NUMBER)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getSerialNumber() {
@@ -79,7 +73,7 @@ public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String,
 
   @JsonProperty(JSON_PROPERTY_SERIAL_NUMBER)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setSerialNumber(@jakarta.annotation.Nonnull String serialNumber) {
+  public void setSerialNumber(@jakarta.annotation.Nullable String serialNumber) {
     this.serialNumber = serialNumber;
   }
 
@@ -131,49 +125,6 @@ public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String,
     this.error = error;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public ValidateBatteryUnits200ResponseResultsInner putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this validateBatteryUnits_200_response_results_inner object is equal to o.
@@ -189,25 +140,21 @@ public class ValidateBatteryUnits200ResponseResultsInner extends HashMap<String,
     ValidateBatteryUnits200ResponseResultsInner validateBatteryUnits200ResponseResultsInner = (ValidateBatteryUnits200ResponseResultsInner) o;
     return Objects.equals(this.serialNumber, validateBatteryUnits200ResponseResultsInner.serialNumber) &&
         Objects.equals(this.ok, validateBatteryUnits200ResponseResultsInner.ok) &&
-        Objects.equals(this.error, validateBatteryUnits200ResponseResultsInner.error)&&
-        Objects.equals(this.additionalProperties, validateBatteryUnits200ResponseResultsInner.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.error, validateBatteryUnits200ResponseResultsInner.error);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(serialNumber, ok, error, super.hashCode(), additionalProperties);
+    return Objects.hash(serialNumber, ok, error);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class ValidateBatteryUnits200ResponseResultsInner {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    serialNumber: ").append(toIndentedString(serialNumber)).append("\n");
     sb.append("    ok: ").append(toIndentedString(ok)).append("\n");
     sb.append("    error: ").append(toIndentedString(error)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

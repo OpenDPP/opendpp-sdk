@@ -55,7 +55,9 @@ public class BatteryUnitTombstoneJsonLd {
    * Gets or Sets atType
    */
   public enum AtTypeEnum {
-    BATTERY_UNIT(String.valueOf("BatteryUnit"));
+    BATTERY_UNIT(String.valueOf("BatteryUnit")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -80,7 +82,7 @@ public class BatteryUnitTombstoneJsonLd {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -104,7 +106,9 @@ public class BatteryUnitTombstoneJsonLd {
    * Gets or Sets status
    */
   public enum StatusEnum {
-    RECYCLED(String.valueOf("RECYCLED"));
+    RECYCLED(String.valueOf("RECYCLED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -129,7 +133,7 @@ public class BatteryUnitTombstoneJsonLd {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -145,7 +149,9 @@ public class BatteryUnitTombstoneJsonLd {
    * Gets or Sets notice
    */
   public enum NoticeEnum {
-    THIS_BATTERY_HAS_BEEN_RECYCLED_ITS_BATTERY_PASSPORT_HAS_CEASED_TO_EXIST_REGULATION_EU_2023_1542_ART_77_8_(String.valueOf("This battery has been recycled. Its battery passport has ceased to exist (Regulation (EU) 2023/1542, Art. 77(8))."));
+    THIS_BATTERY_HAS_BEEN_RECYCLED_ITS_BATTERY_PASSPORT_HAS_CEASED_TO_EXIST_REGULATION_EU_2023_1542_ART_77_8_(String.valueOf("This battery has been recycled. Its battery passport has ceased to exist (Regulation (EU) 2023/1542, Art. 77(8)).")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -170,7 +176,7 @@ public class BatteryUnitTombstoneJsonLd {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

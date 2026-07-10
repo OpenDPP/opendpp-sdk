@@ -48,7 +48,9 @@ public class DidWebDocumentVerificationMethodInner {
    * Gets or Sets type
    */
   public enum TypeEnum {
-    JSON_WEB_KEY2020(String.valueOf("JsonWebKey2020"));
+    JSON_WEB_KEY2020(String.valueOf("JsonWebKey2020")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -73,7 +75,7 @@ public class DidWebDocumentVerificationMethodInner {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

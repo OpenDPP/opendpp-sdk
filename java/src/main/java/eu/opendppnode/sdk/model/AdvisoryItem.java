@@ -56,7 +56,9 @@ public class AdvisoryItem {
     
     OPERATOR_AUTO_ATTRIBUTED(String.valueOf("OPERATOR_AUTO_ATTRIBUTED")),
     
-    GTIN_AUTO_COPIED(String.valueOf("GTIN_AUTO_COPIED"));
+    GTIN_AUTO_COPIED(String.valueOf("GTIN_AUTO_COPIED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -81,7 +83,7 @@ public class AdvisoryItem {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

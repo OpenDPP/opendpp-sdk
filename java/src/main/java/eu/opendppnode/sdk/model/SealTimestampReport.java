@@ -45,7 +45,9 @@ public class SealTimestampReport {
    * Gets or Sets present
    */
   public enum PresentEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -70,7 +72,7 @@ public class SealTimestampReport {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -90,7 +92,9 @@ public class SealTimestampReport {
    * Present only when &#x60;genTime&#x60; is null.
    */
   public enum NoteEnum {
-    TOKEN_PRESENT_BUT_TST_INFO_COULD_NOT_BE_PARSED(String.valueOf("token present but TSTInfo could not be parsed"));
+    TOKEN_PRESENT_BUT_TST_INFO_COULD_NOT_BE_PARSED(String.valueOf("token present but TSTInfo could not be parsed")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -115,7 +119,7 @@ public class SealTimestampReport {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

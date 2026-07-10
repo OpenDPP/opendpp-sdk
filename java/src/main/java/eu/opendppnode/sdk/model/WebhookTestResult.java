@@ -47,7 +47,9 @@ public class WebhookTestResult {
    * The request was processed (NOT whether the receiver accepted it — see &#x60;delivered&#x60;).
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -72,7 +74,7 @@ public class WebhookTestResult {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

@@ -54,7 +54,9 @@ public class PassportUpdateResponse {
   public enum MessageEnum {
     DRAFT_PUBLISHED(String.valueOf("Draft published")),
     
-    DIGITAL_PRODUCT_PASSPORT_SUCCESSFULLY_UPDATED_AND_HISTORY_VERSIONED(String.valueOf("Digital Product Passport successfully updated and history versioned"));
+    DIGITAL_PRODUCT_PASSPORT_SUCCESSFULLY_UPDATED_AND_HISTORY_VERSIONED(String.valueOf("Digital Product Passport successfully updated and history versioned")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -79,7 +81,7 @@ public class PassportUpdateResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -292,7 +294,7 @@ public class PassportUpdateResponse {
 
     // add `passport` to the URL query string
     if (getPassport() != null) {
-      joiner.add(String.format("%spassport%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassport()))));
+      joiner.add(getPassport().toUrlQueryString(prefix + "passport" + suffix));
     }
 
     // add `warnings` to the URL query string

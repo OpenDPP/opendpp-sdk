@@ -56,7 +56,9 @@ public class PassportIngestCreated {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -81,7 +83,7 @@ public class PassportIngestCreated {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -414,7 +416,7 @@ public class PassportIngestCreated {
 
     // add `passport` to the URL query string
     if (getPassport() != null) {
-      joiner.add(String.format("%spassport%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassport()))));
+      joiner.add(getPassport().toUrlQueryString(prefix + "passport" + suffix));
     }
 
     // add `warnings` to the URL query string

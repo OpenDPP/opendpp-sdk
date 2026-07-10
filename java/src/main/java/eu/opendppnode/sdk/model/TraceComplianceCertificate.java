@@ -46,7 +46,9 @@ public class TraceComplianceCertificate {
    * Gets or Sets type
    */
   public enum TypeEnum {
-    TRACEABILITY_COMPLIANCE_CERTIFICATE(String.valueOf("TraceabilityComplianceCertificate"));
+    TRACEABILITY_COMPLIANCE_CERTIFICATE(String.valueOf("TraceabilityComplianceCertificate")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -71,7 +73,7 @@ public class TraceComplianceCertificate {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

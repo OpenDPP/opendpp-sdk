@@ -68,7 +68,9 @@ public class OperatorRow {
     
     NATIONAL(String.valueOf("NATIONAL")),
     
-    OTHER(String.valueOf("OTHER"));
+    OTHER(String.valueOf("OTHER")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 

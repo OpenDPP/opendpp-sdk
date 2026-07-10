@@ -42,7 +42,9 @@ public class WebhookSubscriptionDeleteResponse {
    * Gets or Sets success
    */
   public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -67,7 +69,7 @@ public class WebhookSubscriptionDeleteResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -79,7 +81,9 @@ public class WebhookSubscriptionDeleteResponse {
    * Gets or Sets message
    */
   public enum MessageEnum {
-    WEBHOOK_SUBSCRIPTION_SUCCESSFULLY_DELETED(String.valueOf("Webhook subscription successfully deleted"));
+    WEBHOOK_SUBSCRIPTION_SUCCESSFULLY_DELETED(String.valueOf("Webhook subscription successfully deleted")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -104,7 +108,7 @@ public class WebhookSubscriptionDeleteResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

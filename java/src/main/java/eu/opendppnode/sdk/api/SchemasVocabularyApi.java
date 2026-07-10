@@ -23,7 +23,6 @@ import eu.opendppnode.sdk.model.DppVocabContextDocument;
 import eu.opendppnode.sdk.model.Error;
 import eu.opendppnode.sdk.model.InlineObject;
 import eu.opendppnode.sdk.model.MaterialVocabularyListResponse;
-import eu.opendppnode.sdk.model.SectorJsonSchemaDocument;
 import eu.opendppnode.sdk.model.SectorVocabularyContext;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -246,11 +245,11 @@ public class SchemasVocabularyApi {
    * Get the ESPR metadata schema for a product category
    * Returns the machine-readable ESPR &#x60;metadata&#x60; schema for a product category.  **Default representation** (any &#x60;Accept&#x60; NOT containing &#x60;application/ld+json&#x60;): the category&#39;s JSON Schema **draft-07** document, served as &#x60;application/schema+json&#x60;, with each known field annotated server-side with a plain-English &#x60;description&#x60; (the annotations are AJV-ignored — validation behavior is unchanged). **With &#x60;Accept: application/ld+json&#x60;:** a small JSON-LD &#x60;@context&#x60; for the category vocabulary instead. Note: the route does not set &#x60;Vary: Accept&#x60;.  The category path segment is lower-cased before lookup. Machine-readable schemas exist for **5** of the 9 ESPR categories: &#x60;textiles&#x60;, &#x60;batteries&#x60;, &#x60;electronics&#x60;, &#x60;chemicals&#x60;, &#x60;construction&#x60;. The remaining 4 categories accepted by passport metadata validation (&#x60;cosmetics&#x60;, &#x60;toys&#x60;, &#x60;iron-steel&#x60;, &#x60;aluminium&#x60;) are validated by built-in server rules and currently return &#x60;404&#x60; from this endpoint.  No authentication, no permission (public endpoint). No custom rate limiter — only the global platform limit applies (100 req/min/IP, standard &#x60;x-ratelimit-*&#x60; headers). Like every documented path except &#x60;/health&#x60;, a request on an unknown tenant workspace host receives a platform-level JSON 404 (&#x60;No tenant company found for subdomain: …&#x60;, no &#x60;success&#x60; field) before this handler runs.
    * @param category ESPR product category (case-insensitive). Only &#x60;textiles&#x60;, &#x60;batteries&#x60;, &#x60;electronics&#x60;, &#x60;chemicals&#x60; and &#x60;construction&#x60; have published JSON Schemas; &#x60;cosmetics&#x60;, &#x60;toys&#x60;, &#x60;iron-steel&#x60; and &#x60;aluminium&#x60; return 404 here (their validation rules are built into the server). (required)
-   * @return SectorJsonSchemaDocument
+   * @return SectorVocabularyContext
    * @throws ApiException if fails to make API call
    */
-  public SectorJsonSchemaDocument getSectorSchema(String category) throws ApiException {
-    ApiResponse<SectorJsonSchemaDocument> localVarResponse = getSectorSchemaWithHttpInfo(category);
+  public SectorVocabularyContext getSectorSchema(String category) throws ApiException {
+    ApiResponse<SectorVocabularyContext> localVarResponse = getSectorSchemaWithHttpInfo(category);
     return localVarResponse.getData();
   }
 
@@ -258,10 +257,10 @@ public class SchemasVocabularyApi {
    * Get the ESPR metadata schema for a product category
    * Returns the machine-readable ESPR &#x60;metadata&#x60; schema for a product category.  **Default representation** (any &#x60;Accept&#x60; NOT containing &#x60;application/ld+json&#x60;): the category&#39;s JSON Schema **draft-07** document, served as &#x60;application/schema+json&#x60;, with each known field annotated server-side with a plain-English &#x60;description&#x60; (the annotations are AJV-ignored — validation behavior is unchanged). **With &#x60;Accept: application/ld+json&#x60;:** a small JSON-LD &#x60;@context&#x60; for the category vocabulary instead. Note: the route does not set &#x60;Vary: Accept&#x60;.  The category path segment is lower-cased before lookup. Machine-readable schemas exist for **5** of the 9 ESPR categories: &#x60;textiles&#x60;, &#x60;batteries&#x60;, &#x60;electronics&#x60;, &#x60;chemicals&#x60;, &#x60;construction&#x60;. The remaining 4 categories accepted by passport metadata validation (&#x60;cosmetics&#x60;, &#x60;toys&#x60;, &#x60;iron-steel&#x60;, &#x60;aluminium&#x60;) are validated by built-in server rules and currently return &#x60;404&#x60; from this endpoint.  No authentication, no permission (public endpoint). No custom rate limiter — only the global platform limit applies (100 req/min/IP, standard &#x60;x-ratelimit-*&#x60; headers). Like every documented path except &#x60;/health&#x60;, a request on an unknown tenant workspace host receives a platform-level JSON 404 (&#x60;No tenant company found for subdomain: …&#x60;, no &#x60;success&#x60; field) before this handler runs.
    * @param category ESPR product category (case-insensitive). Only &#x60;textiles&#x60;, &#x60;batteries&#x60;, &#x60;electronics&#x60;, &#x60;chemicals&#x60; and &#x60;construction&#x60; have published JSON Schemas; &#x60;cosmetics&#x60;, &#x60;toys&#x60;, &#x60;iron-steel&#x60; and &#x60;aluminium&#x60; return 404 here (their validation rules are built into the server). (required)
-   * @return ApiResponse&lt;SectorJsonSchemaDocument&gt;
+   * @return ApiResponse&lt;SectorVocabularyContext&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<SectorJsonSchemaDocument> getSectorSchemaWithHttpInfo(String category) throws ApiException {
+  public ApiResponse<SectorVocabularyContext> getSectorSchemaWithHttpInfo(String category) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = getSectorSchemaRequestBuilder(category);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -275,7 +274,7 @@ public class SchemasVocabularyApi {
           throw getApiException("getSectorSchema", localVarResponse);
         }
         if (localVarResponse.body() == null) {
-          return new ApiResponse<SectorJsonSchemaDocument>(
+          return new ApiResponse<SectorVocabularyContext>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
               null
@@ -285,10 +284,10 @@ public class SchemasVocabularyApi {
         String responseBody = new String(localVarResponse.body().readAllBytes());
         localVarResponse.body().close();
 
-        return new ApiResponse<SectorJsonSchemaDocument>(
+        return new ApiResponse<SectorVocabularyContext>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<SectorJsonSchemaDocument>() {})
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<SectorVocabularyContext>() {})
         );
       } finally {
       }
@@ -314,7 +313,7 @@ public class SchemasVocabularyApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "application/schema+json, application/ld+json, application/json");
+    localVarRequestBuilder.header("Accept", "application/ld+json, application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {

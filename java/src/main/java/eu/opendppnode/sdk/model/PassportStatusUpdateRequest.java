@@ -45,7 +45,9 @@ public class PassportStatusUpdateRequest {
     
     RECALLED(String.valueOf("RECALLED")),
     
-    DECOMMISSIONED(String.valueOf("DECOMMISSIONED"));
+    DECOMMISSIONED(String.valueOf("DECOMMISSIONED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -70,7 +72,7 @@ public class PassportStatusUpdateRequest {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

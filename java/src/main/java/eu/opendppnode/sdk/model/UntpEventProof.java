@@ -48,7 +48,9 @@ public class UntpEventProof {
    * MUST be &#x60;DataIntegrityProof&#x60;.
    */
   public enum TypeEnum {
-    DATA_INTEGRITY_PROOF(String.valueOf("DataIntegrityProof"));
+    DATA_INTEGRITY_PROOF(String.valueOf("DataIntegrityProof")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -73,7 +75,7 @@ public class UntpEventProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -85,7 +87,9 @@ public class UntpEventProof {
    * MUST be &#x60;ecdsa-jcs-2019&#x60; (RFC 8785 JCS).
    */
   public enum CryptosuiteEnum {
-    ECDSA_JCS_2019(String.valueOf("ecdsa-jcs-2019"));
+    ECDSA_JCS_2019(String.valueOf("ecdsa-jcs-2019")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -110,7 +114,7 @@ public class UntpEventProof {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

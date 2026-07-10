@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -50,12 +46,14 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   DecodeGs1Batch200ResponseResultsInnerOneOf.JSON_PROPERTY_AI
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, Object> {
+public class DecodeGs1Batch200ResponseResultsInnerOneOf {
   /**
    * Gets or Sets ok
    */
   public enum OkEnum {
-    TRUE(Boolean.valueOf("true"));
+    TRUE(Boolean.valueOf("true")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
 
     private Boolean value;
 
@@ -80,7 +78,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -93,7 +91,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
   private String input;
 
   public static final String JSON_PROPERTY_ELEMENT_STRING = "elementString";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String elementString;
 
   public static final String JSON_PROPERTY_HRI = "hri";
@@ -101,11 +99,11 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
   private List<String> hri = new ArrayList<>();
 
   public static final String JSON_PROPERTY_CANONICAL_UPI = "canonicalUpi";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String canonicalUpi;
 
   public static final String JSON_PROPERTY_DIGITAL_LINK_URI = "digitalLinkUri";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private String digitalLinkUri;
 
   public static final String JSON_PROPERTY_AI = "ai";
@@ -163,7 +161,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
   }
 
 
-  public DecodeGs1Batch200ResponseResultsInnerOneOf elementString(@jakarta.annotation.Nonnull String elementString) {
+  public DecodeGs1Batch200ResponseResultsInnerOneOf elementString(@jakarta.annotation.Nullable String elementString) {
     this.elementString = elementString;
     return this;
   }
@@ -172,7 +170,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
    * Get elementString
    * @return elementString
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ELEMENT_STRING)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getElementString() {
@@ -182,7 +180,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
 
   @JsonProperty(JSON_PROPERTY_ELEMENT_STRING)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setElementString(@jakarta.annotation.Nonnull String elementString) {
+  public void setElementString(@jakarta.annotation.Nullable String elementString) {
     this.elementString = elementString;
   }
 
@@ -219,7 +217,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
   }
 
 
-  public DecodeGs1Batch200ResponseResultsInnerOneOf canonicalUpi(@jakarta.annotation.Nonnull String canonicalUpi) {
+  public DecodeGs1Batch200ResponseResultsInnerOneOf canonicalUpi(@jakarta.annotation.Nullable String canonicalUpi) {
     this.canonicalUpi = canonicalUpi;
     return this;
   }
@@ -228,7 +226,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
    * Get canonicalUpi
    * @return canonicalUpi
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CANONICAL_UPI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getCanonicalUpi() {
@@ -238,12 +236,12 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
 
   @JsonProperty(JSON_PROPERTY_CANONICAL_UPI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setCanonicalUpi(@jakarta.annotation.Nonnull String canonicalUpi) {
+  public void setCanonicalUpi(@jakarta.annotation.Nullable String canonicalUpi) {
     this.canonicalUpi = canonicalUpi;
   }
 
 
-  public DecodeGs1Batch200ResponseResultsInnerOneOf digitalLinkUri(@jakarta.annotation.Nonnull String digitalLinkUri) {
+  public DecodeGs1Batch200ResponseResultsInnerOneOf digitalLinkUri(@jakarta.annotation.Nullable String digitalLinkUri) {
     this.digitalLinkUri = digitalLinkUri;
     return this;
   }
@@ -252,7 +250,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
    * Get digitalLinkUri
    * @return digitalLinkUri
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIGITAL_LINK_URI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public String getDigitalLinkUri() {
@@ -262,7 +260,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
 
   @JsonProperty(JSON_PROPERTY_DIGITAL_LINK_URI)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setDigitalLinkUri(@jakarta.annotation.Nonnull String digitalLinkUri) {
+  public void setDigitalLinkUri(@jakarta.annotation.Nullable String digitalLinkUri) {
     this.digitalLinkUri = digitalLinkUri;
   }
 
@@ -298,49 +296,6 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
     this.ai = ai;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public DecodeGs1Batch200ResponseResultsInnerOneOf putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this decodeGs1Batch_200_response_results_inner_oneOf object is equal to o.
@@ -360,21 +315,18 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
         Objects.equals(this.hri, decodeGs1Batch200ResponseResultsInnerOneOf.hri) &&
         Objects.equals(this.canonicalUpi, decodeGs1Batch200ResponseResultsInnerOneOf.canonicalUpi) &&
         Objects.equals(this.digitalLinkUri, decodeGs1Batch200ResponseResultsInnerOneOf.digitalLinkUri) &&
-        Objects.equals(this.ai, decodeGs1Batch200ResponseResultsInnerOneOf.ai)&&
-        Objects.equals(this.additionalProperties, decodeGs1Batch200ResponseResultsInnerOneOf.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.ai, decodeGs1Batch200ResponseResultsInnerOneOf.ai);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(ok, input, elementString, hri, canonicalUpi, digitalLinkUri, ai, super.hashCode(), additionalProperties);
+    return Objects.hash(ok, input, elementString, hri, canonicalUpi, digitalLinkUri, ai);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class DecodeGs1Batch200ResponseResultsInnerOneOf {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    ok: ").append(toIndentedString(ok)).append("\n");
     sb.append("    input: ").append(toIndentedString(input)).append("\n");
     sb.append("    elementString: ").append(toIndentedString(elementString)).append("\n");
@@ -382,7 +334,6 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf extends HashMap<String, 
     sb.append("    canonicalUpi: ").append(toIndentedString(canonicalUpi)).append("\n");
     sb.append("    digitalLinkUri: ").append(toIndentedString(digitalLinkUri)).append("\n");
     sb.append("    ai: ").append(toIndentedString(ai)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -61,7 +61,9 @@ public class WebhookDeliveryRow {
     
     DELIVERED(String.valueOf("DELIVERED")),
     
-    FAILED(String.valueOf("FAILED"));
+    FAILED(String.valueOf("FAILED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -86,7 +88,7 @@ public class WebhookDeliveryRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

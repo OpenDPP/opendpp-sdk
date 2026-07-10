@@ -284,13 +284,13 @@ public class DecodeGs1Batch200ResponseResultsInner extends AbstractOpenApiSchema
 
     if (getActualInstance() instanceof DecodeGs1Batch200ResponseResultsInnerOneOf) {
         if (getActualInstance() != null) {
-          joiner.add(String.format("%sone_of_0%s=%s", prefix, suffix, ApiClient.urlEncode(String.valueOf(getActualInstance()))));
+          joiner.add(((DecodeGs1Batch200ResponseResultsInnerOneOf)getActualInstance()).toUrlQueryString(prefix + "one_of_0" + suffix));
         }
         return joiner.toString();
     }
     if (getActualInstance() instanceof DecodeGs1Batch200ResponseResultsInnerOneOf1) {
         if (getActualInstance() != null) {
-          joiner.add(String.format("%sone_of_1%s=%s", prefix, suffix, ApiClient.urlEncode(String.valueOf(getActualInstance()))));
+          joiner.add(((DecodeGs1Batch200ResponseResultsInnerOneOf1)getActualInstance()).toUrlQueryString(prefix + "one_of_1" + suffix));
         }
         return joiner.toString();
     }

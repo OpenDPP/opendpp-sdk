@@ -71,7 +71,9 @@ public class SealCertificateReport {
    * Present only when the chain could not be parsed.
    */
   public enum ErrorEnum {
-    UNPARSEABLE_X5C_CERTIFICATE_CHAIN(String.valueOf("Unparseable x5c certificate chain"));
+    UNPARSEABLE_X5C_CERTIFICATE_CHAIN(String.valueOf("Unparseable x5c certificate chain")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -96,7 +98,7 @@ public class SealCertificateReport {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

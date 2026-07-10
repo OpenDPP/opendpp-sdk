@@ -71,7 +71,9 @@ public class GrantRow {
     
     DENIED(String.valueOf("DENIED")),
     
-    REVOKED(String.valueOf("REVOKED"));
+    REVOKED(String.valueOf("REVOKED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -96,7 +98,7 @@ public class GrantRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -110,7 +112,9 @@ public class GrantRow {
   public enum KindEnum {
     LEGITIMATE_INTEREST(String.valueOf("LEGITIMATE_INTEREST")),
     
-    AUTHORITY(String.valueOf("AUTHORITY"));
+    AUTHORITY(String.valueOf("AUTHORITY")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -135,7 +139,7 @@ public class GrantRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -167,7 +171,9 @@ public class GrantRow {
     
     PASSPORT(String.valueOf("PASSPORT")),
     
-    TENANT(String.valueOf("TENANT"));
+    TENANT(String.valueOf("TENANT")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -192,7 +198,7 @@ public class GrantRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -216,7 +222,9 @@ public class GrantRow {
     
     PLATFORM(String.valueOf("PLATFORM")),
     
-    REQUEST(String.valueOf("REQUEST"));
+    REQUEST(String.valueOf("REQUEST")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -241,7 +249,7 @@ public class GrantRow {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 

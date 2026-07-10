@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -41,17 +42,17 @@ import eu.opendppnode.sdk.invoker.ApiClient;
 public class EpcisDocumentEpcisBody {
   public static final String JSON_PROPERTY_EVENT_LIST = "eventList";
   @jakarta.annotation.Nonnull
-  private List<Object> eventList = new ArrayList<>();
+  private List<Map<String, Object>> eventList = new ArrayList<>();
 
   public EpcisDocumentEpcisBody() { 
   }
 
-  public EpcisDocumentEpcisBody eventList(@jakarta.annotation.Nonnull List<Object> eventList) {
+  public EpcisDocumentEpcisBody eventList(@jakarta.annotation.Nonnull List<Map<String, Object>> eventList) {
     this.eventList = eventList;
     return this;
   }
 
-  public EpcisDocumentEpcisBody addEventListItem(Object eventListItem) {
+  public EpcisDocumentEpcisBody addEventListItem(Map<String, Object> eventListItem) {
     if (this.eventList == null) {
       this.eventList = new ArrayList<>();
     }
@@ -66,14 +67,14 @@ public class EpcisDocumentEpcisBody {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_EVENT_LIST)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public List<Object> getEventList() {
+  public List<Map<String, Object>> getEventList() {
     return eventList;
   }
 
 
   @JsonProperty(JSON_PROPERTY_EVENT_LIST)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setEventList(@jakarta.annotation.Nonnull List<Object> eventList) {
+  public void setEventList(@jakarta.annotation.Nonnull List<Map<String, Object>> eventList) {
     this.eventList = eventList;
   }
 

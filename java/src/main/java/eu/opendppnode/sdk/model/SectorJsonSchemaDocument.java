@@ -13,10 +13,6 @@
 
 package eu.opendppnode.sdk.model;
 
-import java.util.Map;
-import java.util.HashMap;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
@@ -48,18 +44,88 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   SectorJsonSchemaDocument.JSON_PROPERTY_PROPERTIES
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class SectorJsonSchemaDocument extends HashMap<String, Object> {
+public class SectorJsonSchemaDocument {
+  /**
+   * Gets or Sets $schema
+   */
+  public enum SchemaEnum {
+    HTTP_JSON_SCHEMA_ORG_DRAFT_07_SCHEMA_(String.valueOf("http://json-schema.org/draft-07/schema#")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
+
+    private String value;
+
+    SchemaEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static SchemaEnum fromValue(String value) {
+      for (SchemaEnum b : SchemaEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      return UNKNOWN_DEFAULT_OPEN_API;
+    }
+  }
+
   public static final String JSON_PROPERTY_$_SCHEMA = "$schema";
   @jakarta.annotation.Nonnull
-  private String $schema;
+  private SchemaEnum $schema;
 
   public static final String JSON_PROPERTY_TITLE = "title";
   @jakarta.annotation.Nonnull
   private String title;
 
+  /**
+   * Gets or Sets type
+   */
+  public enum TypeEnum {
+    OBJECT(String.valueOf("object")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
+
+    private String value;
+
+    TypeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static TypeEnum fromValue(String value) {
+      for (TypeEnum b : TypeEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      return UNKNOWN_DEFAULT_OPEN_API;
+    }
+  }
+
   public static final String JSON_PROPERTY_TYPE = "type";
   @jakarta.annotation.Nonnull
-  private String type;
+  private TypeEnum type;
 
   public static final String JSON_PROPERTY_REQUIRED = "required";
   @jakarta.annotation.Nonnull
@@ -67,12 +133,12 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
 
   public static final String JSON_PROPERTY_PROPERTIES = "properties";
   @jakarta.annotation.Nonnull
-  private Object properties;
+  private Map<String, Object> properties = new HashMap<>();
 
   public SectorJsonSchemaDocument() { 
   }
 
-  public SectorJsonSchemaDocument $schema(@jakarta.annotation.Nonnull String $schema) {
+  public SectorJsonSchemaDocument $schema(@jakarta.annotation.Nonnull SchemaEnum $schema) {
     this.$schema = $schema;
     return this;
   }
@@ -84,14 +150,14 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_$_SCHEMA)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public String get$Schema() {
+  public SchemaEnum get$Schema() {
     return $schema;
   }
 
 
   @JsonProperty(JSON_PROPERTY_$_SCHEMA)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void set$Schema(@jakarta.annotation.Nonnull String $schema) {
+  public void set$Schema(@jakarta.annotation.Nonnull SchemaEnum $schema) {
     this.$schema = $schema;
   }
 
@@ -120,7 +186,7 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
   }
 
 
-  public SectorJsonSchemaDocument type(@jakarta.annotation.Nonnull String type) {
+  public SectorJsonSchemaDocument type(@jakarta.annotation.Nonnull TypeEnum type) {
     this.type = type;
     return this;
   }
@@ -132,14 +198,14 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public String getType() {
+  public TypeEnum getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(@jakarta.annotation.Nonnull String type) {
+  public void setType(@jakarta.annotation.Nonnull TypeEnum type) {
     this.type = type;
   }
 
@@ -176,8 +242,16 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
   }
 
 
-  public SectorJsonSchemaDocument properties(@jakarta.annotation.Nonnull Object properties) {
+  public SectorJsonSchemaDocument properties(@jakarta.annotation.Nonnull Map<String, Object> properties) {
     this.properties = properties;
+    return this;
+  }
+
+  public SectorJsonSchemaDocument putPropertiesItem(String key, Object propertiesItem) {
+    if (this.properties == null) {
+      this.properties = new HashMap<>();
+    }
+    this.properties.put(key, propertiesItem);
     return this;
   }
 
@@ -187,61 +261,18 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
    */
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_PROPERTIES)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public Object getProperties() {
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.ALWAYS)
+  public Map<String, Object> getProperties() {
     return properties;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PROPERTIES)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setProperties(@jakarta.annotation.Nonnull Object properties) {
+  @JsonInclude(content = JsonInclude.Include.ALWAYS, value = JsonInclude.Include.ALWAYS)
+  public void setProperties(@jakarta.annotation.Nonnull Map<String, Object> properties) {
     this.properties = properties;
   }
 
-  /**
-   * A container for additional, undeclared properties.
-   * This is a holder for any undeclared properties as specified with
-   * the 'additionalProperties' keyword in the OAS document.
-   */
-  private Map<String, Object> additionalProperties;
-
-  /**
-   * Set the additional (undeclared) property with the specified name and value.
-   * If the property does not already exist, create it otherwise replace it.
-   * @param key the name of the property
-   * @param value the value of the property
-   * @return self reference
-   */
-  @JsonAnySetter
-  public SectorJsonSchemaDocument putAdditionalProperty(String key, Object value) {
-    if (this.additionalProperties == null) {
-        this.additionalProperties = new HashMap<String, Object>();
-    }
-    this.additionalProperties.put(key, value);
-    return this;
-  }
-
-  /**
-   * Return the additional (undeclared) properties.
-   * @return the additional (undeclared) properties
-   */
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return additionalProperties;
-  }
-
-  /**
-   * Return the additional (undeclared) property with the specified name.
-   * @param key the name of the property
-   * @return the additional (undeclared) property with the specified name
-   */
-  public Object getAdditionalProperty(String key) {
-    if (this.additionalProperties == null) {
-        return null;
-    }
-    return this.additionalProperties.get(key);
-  }
 
   /**
    * Return true if this SectorJsonSchemaDocument object is equal to o.
@@ -259,27 +290,23 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
         Objects.equals(this.title, sectorJsonSchemaDocument.title) &&
         Objects.equals(this.type, sectorJsonSchemaDocument.type) &&
         Objects.equals(this.required, sectorJsonSchemaDocument.required) &&
-        Objects.equals(this.properties, sectorJsonSchemaDocument.properties)&&
-        Objects.equals(this.additionalProperties, sectorJsonSchemaDocument.additionalProperties) &&
-        super.equals(o);
+        Objects.equals(this.properties, sectorJsonSchemaDocument.properties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash($schema, title, type, required, properties, super.hashCode(), additionalProperties);
+    return Objects.hash($schema, title, type, required, properties);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SectorJsonSchemaDocument {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    $schema: ").append(toIndentedString($schema)).append("\n");
     sb.append("    title: ").append(toIndentedString(title)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    required: ").append(toIndentedString(required)).append("\n");
     sb.append("    properties: ").append(toIndentedString(properties)).append("\n");
-    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -353,7 +380,11 @@ public class SectorJsonSchemaDocument extends HashMap<String, Object> {
 
     // add `properties` to the URL query string
     if (getProperties() != null) {
-      joiner.add(String.format("%sproperties%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getProperties()))));
+      for (String _key : getProperties().keySet()) {
+        joiner.add(String.format("%sproperties%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
+            getProperties().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getProperties().get(_key)))));
+      }
     }
 
     return joiner.toString();

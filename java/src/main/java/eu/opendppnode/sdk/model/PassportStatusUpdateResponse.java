@@ -57,7 +57,9 @@ public class PassportStatusUpdateResponse {
     
     RECALLED(String.valueOf("RECALLED")),
     
-    DECOMMISSIONED(String.valueOf("DECOMMISSIONED"));
+    DECOMMISSIONED(String.valueOf("DECOMMISSIONED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -82,7 +84,7 @@ public class PassportStatusUpdateResponse {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
@@ -288,7 +290,7 @@ public class PassportStatusUpdateResponse {
 
     // add `passport` to the URL query string
     if (getPassport() != null) {
-      joiner.add(String.format("%spassport%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassport()))));
+      joiner.add(getPassport().toUrlQueryString(prefix + "passport" + suffix));
     }
 
     return joiner.toString();

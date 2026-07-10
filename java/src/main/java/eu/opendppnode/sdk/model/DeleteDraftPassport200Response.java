@@ -46,7 +46,9 @@ public class DeleteDraftPassport200Response {
    * Gets or Sets message
    */
   public enum MessageEnum {
-    DRAFT_PASSPORT_DELETED_(String.valueOf("Draft passport deleted."));
+    DRAFT_PASSPORT_DELETED_(String.valueOf("Draft passport deleted.")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
 
     private String value;
 
@@ -71,7 +73,7 @@ public class DeleteDraftPassport200Response {
           return b;
         }
       }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      return UNKNOWN_DEFAULT_OPEN_API;
     }
   }
 
