@@ -239,7 +239,10 @@ tasks.register("printVersion") { doLast { println(version) } }
 // (mavenCentralUsername/Password) + an in-memory GPG key (signingInMemoryKey/Password) are injected in
 // CI as ORG_GRADLE_PROJECT_* env vars — never committed. Coordinates: eu.opendpp-node:opendpp-sdk.
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+    // automaticRelease: validated deployments release without the Central Portal UI click — the same
+    // one-gate flow as the TypeScript SDK (tag → approve the `release` environment → live). The
+    // manual-release mode was used once, for the first 1.11.0 publish, to eyeball Portal validation.
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
     coordinates(group.toString(), "opendpp-sdk", version.toString())
     pom {
