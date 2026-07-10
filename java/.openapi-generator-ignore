@@ -1,0 +1,20 @@
+# Build tooling, docs, and CI are HAND-AUTHORED. openapi-generator's `java` generator scaffolds a full
+# Gradle/Maven project (build.gradle, settings.gradle, gradle.properties, the gradle wrapper, README,
+# docs, CI). Each is anchored to the project ROOT with a leading slash so it can never overwrite our
+# real files — a stub gradle-wrapper.jar clobbering ours is what broke `./gradlew`. The leading slash
+# also means the generated CODE under src/main/java/eu/opendppnode/sdk/api is left untouched.
+/.github/
+/.gitignore
+/.travis.yml
+/build.gradle
+/build.sbt
+/git_push.sh
+/gradle/
+/gradle.properties
+/gradlew
+/gradlew.bat
+/pom.xml
+/README.md
+/settings.gradle
+/api/
+/docs/
