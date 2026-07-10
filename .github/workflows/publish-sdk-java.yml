@@ -4,9 +4,9 @@ name: Publish opendpp-sdk (Java)
 # `sdk-java-<semver>` tag is pushed. The tag must match the Gradle project version, which is DERIVED
 # from java/openapi.json's info.version (version-locked to the OpenDPP API contract). Maven Central has
 # no OIDC trusted publishing, so this is credentialed: a Central Portal user token + a GPG signing key,
-# supplied as `release`-environment secrets. With automaticRelease=false (see build.gradle.kts), the
-# deployment is uploaded and VALIDATED but held for a manual release in the Central Portal UI — a
-# second gate on top of the `release` environment's required reviewers.
+# supplied as `release`-environment secrets. With automaticRelease=true (see build.gradle.kts), a
+# deployment that passes Central Portal validation releases automatically — the same one-gate flow as
+# the TypeScript SDK: the `release` environment's required reviewers are the approval.
 #
 # Required `release`-environment secrets:
 #   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD — a Central Portal user token (Account → Generate
@@ -67,7 +67,7 @@ jobs:
 
       - run: ./gradlew build
 
-      - name: Publish to Maven Central (Central Portal; GPG-signed, held for manual release)
+      - name: Publish to Maven Central (Central Portal; GPG-signed, auto-released after validation)
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
