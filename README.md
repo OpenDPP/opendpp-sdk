@@ -10,6 +10,7 @@ Official client SDKs for the [OpenDPP](https://opendpp-node.eu) Digital Product 
 | SDK | Package | Source |
 | --- | --- | --- |
 | **TypeScript** | [`@opendpp/sdk`](https://www.npmjs.com/package/@opendpp/sdk) (npm) | [`typescript/`](./typescript) |
+| **Java** | [`eu.opendpp-node:opendpp-sdk`](https://central.sonatype.com/artifact/eu.opendpp-node/opendpp-sdk) (Maven Central) | [`java/`](./java) |
 | **Python** | `opendpp` (PyPI) — *planned* | — |
 
 > Part of the OpenDPP **open client** surface (Apache-2.0). The SDKs are **ergonomics only** — they
@@ -32,6 +33,23 @@ const health = await getHealth({ client });
 
 Full SDK + docs: [`typescript/`](./typescript).
 
+## Java
+
+```kotlin
+implementation("eu.opendpp-node:opendpp-sdk:1.11.0")
+```
+
+```java
+import eu.opendppnode.sdk.OpenDpp;
+import eu.opendppnode.sdk.api.ServiceApi;
+import eu.opendppnode.sdk.invoker.ApiClient;
+
+ApiClient client = OpenDpp.client(System.getenv("OPENDPP_API_KEY"));
+var health = new ServiceApi(client).getHealth();
+```
+
+Java 17+, built on the JDK `HttpClient` with Jackson. Full SDK + docs: [`java/`](./java).
+
 ## Python
 
 Coming next — the same generation pipeline, published to PyPI as `opendpp`.
@@ -41,7 +59,7 @@ Coming next — the same generation pipeline, published to PyPI as `opendpp`.
 Each SDK is mechanically generated from [`openapi.json`](https://opendpp-node.eu/openapi.json) (the
 curated public API contract) and **version-locked to `OPENAPI_VERSION`** — `@opendpp/sdk@1.9.0`
 targets contract `1.9.0`. CI regenerates and fails on any drift, so the committed client always matches
-the spec. Releases are keyless (OIDC trusted publishing). Nothing here re-implements a server-side
+the spec. Releases are keyless where the registry supports it (npm OIDC trusted publishing for TypeScript); the Java artifacts are GPG-signed and published to Maven Central. Nothing here re-implements a server-side
 capability.
 
 ## Related OpenDPP repositories

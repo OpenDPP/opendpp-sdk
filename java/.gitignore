@@ -1,0 +1,9 @@
+.gradle/
+build/
+# Generator bookkeeping (FILES/VERSION manifest) — regenerated on demand, not a drift artifact.
+.openapi-generator/
+# Local signing / publishing credentials must never be committed.
+local.properties
+*.gpg
+secring.*
+.DS_Store

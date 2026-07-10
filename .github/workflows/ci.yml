@@ -1,8 +1,9 @@
 name: CI
 
-# Builds + verifies the generated SDKs. The TypeScript client under typescript/src/generated is
-# COMMITTED and generated from typescript/openapi.json (the version-locked OpenDPP API contract); the
-# drift guard regenerates and fails on any diff, so the committed client always matches the spec.
+# Builds + verifies the generated SDKs. The TypeScript client under typescript/src/generated and the
+# Java client under java/src/main/java are both COMMITTED and generated from the version-locked OpenDPP
+# API contract (openapi.json); each language's drift guard regenerates and fails on any diff, so the
+# committed clients always match the spec.
 
 on:
   push:
@@ -45,3 +46,41 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
+
+  java:
+    name: Java SDK — generate-drift, version-lock, build, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Drift guard — regenerated client must match the committed src/main/java
+        # Wipe first: openApiGenerate never deletes files, so without the wipe a schema/operation
+        # REMOVED from the contract would leave its stale class committed and undetected.
+        run: |
+          rm -rf src/main/java
+          ./gradlew openApiGenerate
+          if [ -n "$(git status --porcelain -- src/main/java)" ]; then
+            echo "::error::java/src/main/java drifted from openapi.json — run \`rm -rf src/main/java && ./gradlew openApiGenerate\` and commit (catches new, changed, and removed files)."
+            git --no-pager status --porcelain -- src/main/java
+            exit 1
+          fi
+
+      - name: Version lock — artifact version == contract version
+        run: |
+          V="$(./gradlew -q printVersion)"
+          S="$(node -p "require('./openapi.json').info.version")"
+          if [ "$V" != "$S" ]; then
+            echo "::error::artifact version $V != openapi.json info.version $S"; exit 1
+          fi
+          echo "version lock OK: $V"
+
+      - run: ./gradlew build
