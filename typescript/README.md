@@ -52,6 +52,30 @@ client.setConfig({ baseUrl: "https://opendpp-node.eu", auth: () => process.env.O
 const page = await listPassports();
 ```
 
+### Content-negotiated public resolvers
+
+The 200 of the public resolvers (`GET /passport/{id}`, `/01/{gtin14}`, `/8003/{grai}`, `/unit/{id}`)
+is negotiated via the `Accept` header, but the generated operations are typed against the **default
+JSON-LD** representation only. Two guards keep the typed surface honest:
+
+- Clients from this package (both `createOpenDppClient()` and the default `client`) **pin
+  `Accept: application/ld+json`** on those paths when you don't set an `Accept` yourself, so a typed
+  `resolvePublicPassport(...)` receives the JSON-LD document by construction.
+- To request an **alternate representation** (AAS environment, `vc+jwt` / `vc+ld+json` /
+  `dc+sd-jwt` credential, HTML page), use the `*As` helpers — `resolvePublicPassportAs`,
+  `resolveGs1GtinAs`, `resolveGs1GraiAs`, `resolvePublicBatteryUnitAs` — which set the `Accept`
+  header **and** the matching body parsing, and type `data` per media type. (Hand-rolling the
+  `Accept` header on a generated resolver operation would silently mismatch its declared response
+  type — the bundled fetch client would even hand you a `Blob` for the JWT representations.)
+
+```ts
+import { resolvePublicPassport, resolvePublicPassportAs } from "@opendpp/sdk";
+
+const { data: jsonLd } = await resolvePublicPassport({ client, path: { id } }); // PublicPassportJsonLd
+const { data: jws } = await resolvePublicPassportAs({ client, path: { id }, accept: "application/vc+jwt" }); // string
+const { data: aas } = await resolvePublicPassportAs({ client, path: { id }, accept: "application/aas+json" }); // AasEnvironment
+```
+
 ## Versioning
 
 `@opendpp/sdk` is **version-locked to `OPENAPI_VERSION`** — e.g. `@opendpp/sdk@1.9.0` targets API
