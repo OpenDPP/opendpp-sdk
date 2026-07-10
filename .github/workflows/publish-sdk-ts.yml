@@ -1,8 +1,9 @@
 name: Publish @opendpp/sdk (TypeScript)
 
 # Publishes @opendpp/sdk to npm (keyless — OIDC trusted publishing, no NODE_AUTH_TOKEN) when a
-# `sdk-ts-<semver>` tag is pushed. The tag must match typescript/package.json's version, which is
-# version-locked to the OpenDPP API contract (openapi.json info.version). Provenance is automatic
+# `sdk-ts-<semver>` tag is pushed. The tag must match typescript/package.json's version, whose
+# major.minor is version-locked to the OpenDPP API contract (openapi.json info.version) — the patch
+# digit is the SDK-only fix lane (check-version-lock.mjs). Provenance is automatic
 # (public repo + public package). Trusted Publisher: org OpenDPP, repo opendpp-sdk, workflow
 # publish-sdk-ts.yml, environment release; the repo's `release` environment also carries a `sdk-ts-*`
 # deployment tag rule. (1.6.0 was bootstrapped with a one-time NPM_TOKEN before the Trusted Publisher

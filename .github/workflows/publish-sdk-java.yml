@@ -2,7 +2,8 @@ name: Publish opendpp-sdk (Java)
 
 # Publishes eu.opendpp-node:opendpp-sdk to Maven Central (via the Central Portal) when a
 # `sdk-java-<semver>` tag is pushed. The tag must match the Gradle project version, which is DERIVED
-# from java/openapi.json's info.version (version-locked to the OpenDPP API contract). Maven Central has
+# from java/openapi.json's info.version (major.minor version-locked to the OpenDPP API contract; the
+# patch digit is the SDK-only fix lane via `sdkPatch` in build.gradle.kts). Maven Central has
 # no OIDC trusted publishing, so this is credentialed: a Central Portal user token + a GPG signing key,
 # supplied as `release`-environment secrets. With automaticRelease=true (see build.gradle.kts), a
 # deployment that passes Central Portal validation releases automatically — the same one-gate flow as

@@ -7,10 +7,14 @@ plugins {
 }
 
 // ─── Version lock ────────────────────────────────────────────────────────────
-// The SDK version IS the API contract version. It is DERIVED from the vendored openapi.json's
-// info.version (OPENAPI_VERSION), so the published artifact can never drift from the contract it
+// The SDK's MAJOR.MINOR is the API contract version, DERIVED from the vendored openapi.json's
+// info.version (OPENAPI_VERSION) so the published artifact can never drift from the contract it
 // targets — the same guarantee the TypeScript SDK's check-version-lock script enforces, but here it
-// holds by construction. Bump the contract by re-vendoring openapi.json; the version follows.
+// holds by construction. The PATCH digit is the SDK's own lane: to ship a client-only fix against
+// the same contract, set sdkPatch to a value above the contract's patch (e.g. contract 1.11.0 +
+// sdkPatch = 1 → artifact 1.11.1); leave it null to release exactly the contract version. A new
+// contract release (re-vendoring openapi.json) resets sdkPatch to null.
+val sdkPatch: Int? = null
 val specFile = layout.projectDirectory.file("openapi.json").asFile
 val contractVersion: String = run {
     require(specFile.exists()) { "openapi.json not found at ${specFile.absolutePath} — copy the contract in first." }
@@ -19,7 +23,12 @@ val contractVersion: String = run {
 }
 
 group = "eu.opendpp-node"
-version = contractVersion
+version = sdkPatch?.let { patch ->
+    val parts = contractVersion.split(".")
+    require(parts.size == 3 && parts.all { it.toIntOrNull() != null }) { "contract version $contractVersion is not plain MAJOR.MINOR.PATCH" }
+    require(patch > parts[2].toInt()) { "sdkPatch ($patch) must exceed the contract's patch digit (${parts[2]}) — SDK-only fixes never trail the vendored spec" }
+    "${parts[0]}.${parts[1]}.$patch"
+} ?: contractVersion
 
 repositories { mavenCentral() }
 
