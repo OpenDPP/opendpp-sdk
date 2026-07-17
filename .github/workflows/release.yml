@@ -1,0 +1,118 @@
+name: Release on tag
+
+# Publishes a GitHub Release for every `sdk-ts-<semver>` / `sdk-java-<semver>` tag, with notes taken
+# from the matching CHANGELOG.md section. Closes the gap where a tag triggers a registry publish but no
+# Release is ever created — leaving this repo's history readable only as bare tags (OpenDPP #690/C09).
+#
+# It does NOT create tags. Tagging is the deliberate human act that triggers publishing (see
+# publish-sdk-ts.yml / publish-sdk-java.yml); this only gives an existing tag its Release. That differs
+# from the sibling opendpp-interop, whose single artifact lets it auto-tag on a version bump — here two
+# artifacts version independently, so the tag stays the author's call.
+#
+# IDEMPOTENT BY CONSTRUCTION: every run considers ALL sdk-* tags and creates only the Releases that are
+# missing. So a tag push releases that tag, and a manual dispatch backfills any gap (including the eight
+# tags that predate this workflow) — one code path, no bootstrap mode to remember to remove.
+
+on:
+  push:
+    tags:
+      - "sdk-ts-*"
+      - "sdk-java-*"
+  workflow_dispatch:
+
+permissions:
+  contents: write # create Releases
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Give every sdk-* tag its Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out (CHANGELOG.md is the notes source)
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: main # notes always come from main's CHANGELOG, never a tag's older copy
+          fetch-depth: 0
+
+      - name: Create any missing Releases
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("fs");
+            const { owner, repo } = context.repo;
+
+            // Which artifact a tag names. Order matters only for readability; the prefixes are disjoint.
+            const ARTIFACTS = [
+              { prefix: "sdk-ts-", label: "@opendpp/sdk (TypeScript)", registry: "npm — https://www.npmjs.com/package/@opendpp/sdk" },
+              { prefix: "sdk-java-", label: "opendpp-sdk (Java/Kotlin)", registry: "Maven Central — `eu.opendpp-node:opendpp-sdk`" },
+            ];
+
+            // The CHANGELOG section for a version: from `## [x.y.z]` to the next `## [`. Both artifacts at
+            // the same version share one section on purpose — same contract, same generated surface.
+            const changelog = fs.readFileSync("CHANGELOG.md", "utf8").split("\n");
+            const sectionFor = (version) => {
+              const start = changelog.findIndex((l) => l.startsWith(`## [${version}]`));
+              if (start === -1) return null;
+              let end = changelog.length;
+              for (let i = start + 1; i < changelog.length; i++) {
+                if (changelog[i].startsWith("## [")) { end = i; break; }
+              }
+              return changelog.slice(start + 1, end).join("\n").trim();
+            };
+
+            const tags = await github.paginate(github.rest.repos.listTags, { owner, repo, per_page: 100 });
+            const releases = await github.paginate(github.rest.repos.listReleases, { owner, repo, per_page: 100 });
+            const released = new Set(releases.map((r) => r.tag_name));
+
+            const created = [], skipped = [], missingNotes = [];
+            for (const tag of tags) {
+              const art = ARTIFACTS.find((a) => tag.name.startsWith(a.prefix));
+              if (!art) continue; // not an SDK release tag
+              if (released.has(tag.name)) { skipped.push(tag.name); continue; }
+
+              const version = tag.name.slice(art.prefix.length);
+              const section = sectionFor(version);
+              if (!section) {
+                // Never invent notes. A tag with no CHANGELOG entry is a real omission — report it and
+                // move on rather than publishing an empty or fabricated Release.
+                missingNotes.push(tag.name);
+                continue;
+              }
+
+              const body = [
+                `**${art.label} ${version}** — ${art.registry}`,
+                "",
+                section,
+                "",
+                "---",
+                `Full changelog: https://github.com/${owner}/${repo}/blob/main/CHANGELOG.md`,
+              ].join("\n");
+
+              await github.rest.repos.createRelease({
+                owner, repo,
+                tag_name: tag.name,
+                name: `${art.label} ${version}`,
+                body,
+                draft: false,
+                prerelease: false,
+              });
+              created.push(tag.name);
+            }
+
+            const summary = [
+              "## Releases",
+              "",
+              `- created: ${created.length}${created.length ? ` — ${created.join(", ")}` : ""}`,
+              `- already released: ${skipped.length}`,
+              ...(missingNotes.length ? ["", `- ⚠️ no CHANGELOG entry, skipped: ${missingNotes.join(", ")}`] : []),
+            ].join("\n");
+            await core.summary.addRaw(summary).write();
+            console.log(summary);
+
+            // A tag that publishes to a registry but has no notes is a gap someone must close by hand.
+            if (missingNotes.length) core.warning(`No CHANGELOG entry for: ${missingNotes.join(", ")}`);

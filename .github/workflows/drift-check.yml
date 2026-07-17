@@ -1,0 +1,155 @@
+name: Drift check
+
+# Tells you when to regenerate the SDKs: compares the VENDORED openapi.json copies against the LIVE
+# contract at https://opendpp-node.eu/openapi.json — weekly, and the moment opendpp-node says the spec
+# moved.
+#
+# WHY THIS EXISTS (OpenDPP #690 / finding A4). `typescript/scripts/check-version-lock.mjs` compares
+# package.json against the VENDORED openapi.json — but BOTH are committed here, so they move together
+# or not at all. If the live contract advances and nobody regenerates, that check stays **green while
+# stale**: the published SDK targets a contract state that no longer exists, and looks identical to a
+# current one. Only a comparison against LIVE can catch that, which is what this does.
+#
+# There are TWO vendored copies (typescript/openapi.json + java/openapi.json). Both are compared to
+# live, and their agreement with EACH OTHER is checked too — the TS and Java clients claiming different
+# contracts is its own defect, and regenerating only one of them is the obvious way to cause it.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC — same slot as the sibling opendpp-interop drift check
+  # Event-driven: opendpp-node's release job dispatches `spec-updated` right after a contract change
+  # (its SDK_DISPATCH_TOKEN carries contents:write here), so drift is caught when the spec actually
+  # moves rather than up to a week later. It ALSO keeps the 60-day clock alive: GitHub auto-DISABLES a
+  # schedule-only workflow after 60 days of repository inactivity, and this repo is deliberately quiet
+  # between contract bumps — so a long-stable stretch would otherwise silently stop the weekly check.
+  repository_dispatch:
+    types: [spec-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: drift-check
+  cancel-in-progress: false
+
+jobs:
+  openapi-drift:
+    name: vendored openapi.json vs live contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Fetch the live contract + compare canonically
+        id: cmp
+        run: |
+          # -f so an HTTP error is a FAILED step, never a silently empty file compared as "drift".
+          curl -fsSL https://opendpp-node.eu/openapi.json -o live-openapi.json
+          node -e '
+            const fs = require("fs");
+            // Key order is not contract: canonicalise before comparing so a re-serialisation is not "drift".
+            const sort = (o) => Array.isArray(o) ? o.map(sort)
+              : (o && typeof o === "object")
+                ? Object.fromEntries(Object.keys(o).sort().map((k) => [k, sort(o[k])]))
+                : o;
+            const read = (f) => JSON.parse(fs.readFileSync(f, "utf8"));
+            const canon = (f) => JSON.stringify(sort(read(f)));
+            const ver = (f) => read(f).info?.version ?? "unknown";
+
+            const COPIES = ["typescript/openapi.json", "java/openapi.json"];
+            const live = canon("live-openapi.json");
+            const liveVer = ver("live-openapi.json");
+
+            const stale = COPIES.filter((f) => canon(f) !== live);
+            // Both stale AND identical to each other = one clean regeneration. Both stale and DIFFERENT
+            // = the clients disagree; say so, because the fix is not the same.
+            const split = new Set(COPIES.map(canon)).size > 1;
+
+            const rows = COPIES.map((f) => `${f} (${ver(f)}): ${canon(f) === live ? "in sync" : "STALE"}`);
+            const out = process.env.GITHUB_OUTPUT;
+            fs.appendFileSync(out, `drift=${stale.length > 0 || split}\n`);
+            fs.appendFileSync(out, `live=${liveVer}\n`);
+            fs.appendFileSync(out, `split=${split}\n`);
+            fs.appendFileSync(out, `detail<<EOF\n${rows.join("\n")}\nEOF\n`);
+
+            const summary = [
+              "## Drift check",
+              "",
+              `- live contract: **${liveVer}**`,
+              ...rows.map((r) => `- ${r}`),
+              ...(split ? ["", "- ⚠️ the two vendored copies DISAGREE with each other"] : []),
+            ].join("\n");
+            if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\n");
+            console.log(summary);
+          '
+
+      - name: Open or update a drift issue
+        if: steps.cmp.outputs.drift == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const title = "The vendored openapi.json has drifted from the live contract";
+            const split = ${{ steps.cmp.outputs.split }};
+            const body = [
+              `The live OpenDPP contract is now **${{ steps.cmp.outputs.live }}**`,
+              "(https://opendpp-node.eu/openapi.json) and the vendored copies no longer match it:",
+              "",
+              "```",
+              `${{ steps.cmp.outputs.detail }}`,
+              "```",
+              "",
+              ...(split ? [
+                "⚠️ **The two vendored copies also disagree with each other** — the TypeScript and Java",
+                "clients are claiming different contracts. Regenerate BOTH from the same live spec.",
+                "",
+              ] : []),
+              "**Why this matters:** `check-version-lock.mjs` compares package.json against the *vendored*",
+              "spec, so it stays green while stale — a published SDK can target a contract state that no",
+              "longer exists and look identical to a current one. This check is the only thing that sees it.",
+              "",
+              "**To resolve:** re-copy `openapi.json` from the live contract into `typescript/` and `java/`,",
+              "regenerate both clients, bump each artifact's version to the new contract's `major.minor`",
+              "(the PATCH digit is the SDK's own fix lane), add a `CHANGELOG.md` entry, then tag",
+              "`sdk-ts-<semver>` / `sdk-java-<semver>` to publish.",
+              "",
+              "_Opened automatically by the drift check. It will comment here on each run while drift lasts._",
+            ].join("\n");
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", labels: "drift",
+            });
+            const hit = existing.data.find((i) => i.title === title);
+            if (hit) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: hit.number, body });
+            } else {
+              await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ["drift"] });
+            }
+
+      # A drift check that cannot RUN must not read as "no drift". Unlike a divergence (which files the
+      # issue above), a failed step — live contract unreachable, malformed JSON, a bad edit here — would
+      # otherwise be visible only in this repo's Actions tab, which is the exact blind spot #690 is about.
+      - name: Open an issue if the drift check itself failed
+        if: failure()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const title = "The drift check itself is failing";
+            const body = [
+              "The scheduled drift check FAILED, so nothing currently verifies the vendored `openapi.json`",
+              "against the live contract — a stale SDK would go unnoticed while this stays red.",
+              "",
+              `Failed run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "Likely causes: https://opendpp-node.eu/openapi.json unreachable or not valid JSON, or a bad",
+              "edit to `.github/workflows/drift-check.yml`. Do not close until a drift-check run is green.",
+            ].join("\n");
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", labels: "drift",
+            });
+            const hit = existing.data.find((i) => i.title === title);
+            if (hit) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: hit.number, body });
+            } else {
+              await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ["drift"] });
+            }
