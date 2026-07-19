@@ -7,7 +7,7 @@ requests are closed automatically, and which doors *are* open.
 
 This repo is a **generated mirror**. Every SDK here — TypeScript (`@opendpp/sdk` on npm), Java/Kotlin
 (`eu.opendpp-node:opendpp-sdk` on Maven Central), Python next — is **mechanically generated from the
-public OpenDPP OpenAPI contract** and version-locked to it. The OpenDPP **product backend is a
+public OpenDPP OpenAPI contract** and version-locked (major.minor) to it. The OpenDPP **product backend is a
 separate, private repository** — it is the source of truth for the API contract the SDKs are generated
 from.
 
