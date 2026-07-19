@@ -4,6 +4,10 @@
 
 # OpenDPP SDKs
 
+> **Generated mirror.** The source of truth is the private `opendpp-node` backend; the SDKs here are
+> generated from its public OpenAPI contract. **Pull requests are closed automatically** — but
+> **issues are welcome** (see [`CONTRIBUTING.md`](./CONTRIBUTING.md)).
+
 Official client SDKs for the [OpenDPP](https://opendpp-node.eu) Digital Product Passport API —
 **generated from the public OpenAPI contract** and **version-locked** to it.
 

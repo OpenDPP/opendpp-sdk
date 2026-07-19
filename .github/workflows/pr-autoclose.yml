@@ -1,0 +1,65 @@
+name: Auto-close fork PRs
+
+# This repository is a GENERATED MIRROR (the SDKs are generated from the OpenDPP OpenAPI contract in
+# the private opendpp-node backend). Pull requests here cannot be merged into the source of truth, so
+# a fork PR is politely closed with a pointer to CONTRIBUTING.md — issues stay open as the report door.
+#
+# SECURITY: pull_request_target runs with repo write access on the BASE repo. This workflow NEVER
+# checks out or runs any code from the PR head (the labeler-class RCE footgun) — it only posts a
+# comment and closes the PR via the API. It touches no untrusted PR input in any run: step.
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: pr-autoclose-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  autoclose:
+    name: Politely close fork PRs
+    # Fork PRs only. Same-repo PRs (e.g. Dependabot action bumps, maintainer branches) are legitimate
+    # and left untouched.
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Comment a pointer and close
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const body = [
+              "Thanks for your interest in OpenDPP! 🙏",
+              "",
+              "**This repository is a generated mirror.** The SDKs here are mechanically generated from",
+              "the OpenDPP OpenAPI contract, whose source of truth is the private `opendpp-node` backend —",
+              "so changes made in a pull request here can't flow back and would be overwritten on the next",
+              "regeneration. That's why fork PRs are closed automatically.",
+              "",
+              "The doors that **are** open:",
+              "",
+              "- **Found a bug or want a change?** Please [open an issue](../../issues) here — issues are",
+              "  welcome and are the right report/proposal door.",
+              "- **Hand-authored interop/kit contributions?** PRs are welcome at",
+              "  [`OpenDPP/opendpp-interop`](https://github.com/OpenDPP/opendpp-interop).",
+              "- **Docs & API reference:** <https://opendpp-node.eu>.",
+              "",
+              "See [`CONTRIBUTING.md`](../../blob/main/CONTRIBUTING.md) for the full explanation. Closing",
+              "this PR now — no action needed on your side.",
+            ].join("\n");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: "closed",
+            });
