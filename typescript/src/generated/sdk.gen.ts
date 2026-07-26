@@ -605,11 +605,13 @@ export const validatePassport = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Public dry-run ESPR metadata validation (strictly rate-limited)
+ * Permission-free dry-run ESPR metadata validation (strictly rate-limited)
  *
- * Identical validation semantics to `POST /api/v1/passports/validate-only`, but **fully public — no authentication of any kind**, intended for try-before-you-buy schema checks. Nothing is persisted.
+ * Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.
  *
- * **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global 100/min for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. These caps exist because the endpoint runs the full validation engine unauthenticated (DoS mitigation).
+ * **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — "public" here means *no permission and no tenant scope*, not *unauthenticated*.
+ *
+ * **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.
  *
  * **Behavioral caveats:**
  * - No tenant context: the EPCIS traceability lineage audit is **not** run, and `operatorId` is accepted but ignored.
@@ -618,6 +620,7 @@ export const validatePassport = <ThrowOnError extends boolean = false>(options: 
  * - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{"error": "Bad Request", "message": …}`; a whitespace-only `productId` or a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) gets the fuller `Bad Request` body shown below.
  */
 export const validatePassportPublic = <ThrowOnError extends boolean = false>(options: Options<ValidatePassportPublicData, ThrowOnError>): RequestResult<ValidatePassportPublicResponses, ValidatePassportPublicErrors, ThrowOnError> => (options.client ?? client).post<ValidatePassportPublicResponses, ValidatePassportPublicErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/passports/validate-only-public',
     ...options,
     headers: {
@@ -968,14 +971,14 @@ export const getJsonLdContext = <ThrowOnError extends boolean = false>(options?:
 /**
  * Service health check
  *
- * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt` — the same fields as `GET /api/v1/version`). No authentication, no permission. Subject only to the global platform rate limit (100 req/min/IP, 600/min for known crawler user agents; standard `x-ratelimit-*` headers on responses). This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
+ * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt` — the same fields as `GET /api/v1/version`). No authentication, no permission. **Exempt from the platform rate limit** (#810) so a monitor or uptime check can poll it freely — it carries no `x-ratelimit-*` headers. This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
  */
 export const getHealth = <ThrowOnError extends boolean = false>(options?: Options<GetHealthData, ThrowOnError>): RequestResult<GetHealthResponses, GetHealthErrors, ThrowOnError> => (options?.client ?? client).get<GetHealthResponses, GetHealthErrors, ThrowOnError>({ url: '/health', ...options });
 
 /**
  * Running API contract version & build identity
  *
- * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP).
+ * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP anonymous, higher for `Authorization`-bearing requests and known crawler user agents; standard `x-ratelimit-*` headers on responses).
  */
 export const getApiVersion = <ThrowOnError extends boolean = false>(options?: Options<GetApiVersionData, ThrowOnError>): RequestResult<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError> => (options?.client ?? client).get<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError>({ url: '/api/v1/version', ...options });
 
@@ -986,7 +989,9 @@ export const getApiVersion = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **It ONLY completes the check digit** — it never allocates a GS1 company prefix or asserts ownership (a real GTIN requires a prefix licensed to you by GS1). `gs1CompanyPrefix` is REQUIRED; a request with none is refused (**400**). `gs1CompanyPrefix + itemRef` must be exactly **13 digits** (the check digit forms the 14th) and both must be digit strings, else **400**.
  *
- * Public + stateless (pure arithmetic; no tenant data). No authentication. Rate limit: global 100 requests/min per IP.
+ * Public + stateless (pure arithmetic; no tenant data). No authentication required.
+ *
+ * **Rate limit (changed in 1.12.0):** an **anonymous** caller gets **2 requests/min per IP** — a per-route cap that replaces the global ceiling. Send an `Authorization` header (any valid API key) and the normal ladder applies instead: the global authenticated ceiling, with your per-key tier bucket underneath it. Standard `x-ratelimit-*` headers; **429** with `retry-after` when exceeded.
  */
 export const mintGtinCheckDigit = <ThrowOnError extends boolean = false>(options: Options<MintGtinCheckDigitData, ThrowOnError>): RequestResult<MintGtinCheckDigitResponses, MintGtinCheckDigitErrors, ThrowOnError> => (options.client ?? client).post<MintGtinCheckDigitResponses, MintGtinCheckDigitErrors, ThrowOnError>({
     url: '/api/v1/gs1/gtin',
@@ -1006,7 +1011,7 @@ export const mintGtinCheckDigit = <ThrowOnError extends boolean = false>(options
  *
  * **Errors:** missing/multiple/over-long input, or a value GS1's grammar rejects, returns **400** (`Provide exactly one of: scanData, elementString, digitalLink` or `Not a valid GS1 <kind>: <engine message>`); **503** if the engine is unavailable.
  *
- * **Rate limit:** global limiter only — 100 req/min/IP (standard `x-ratelimit-*` headers).
+ * **Rate limit (changed in 1.12.0):** an **anonymous** caller gets **2 requests/min per IP** — a per-route cap that replaces the global ceiling, so this endpoint stays a convenience for integrators rather than a free scripted service. Send an `Authorization` header (any valid API key) and the normal ladder applies instead: the global authenticated ceiling, with your per-key tier bucket underneath it. Standard `x-ratelimit-*` headers on both paths; **429** with `retry-after` when exceeded.
  */
 export const decodeGs1 = <ThrowOnError extends boolean = false>(options: Options<DecodeGs1Data, ThrowOnError>): RequestResult<DecodeGs1Responses, DecodeGs1Errors, ThrowOnError> => (options.client ?? client).post<DecodeGs1Responses, DecodeGs1Errors, ThrowOnError>({
     url: '/api/v1/gs1/decode',
@@ -1024,7 +1029,7 @@ export const decodeGs1 = <ThrowOnError extends boolean = false>(options: Options
  *
  * **Errors:** a missing/empty/non-array `items`, or more than 200 items, returns **400**; a body over the 256 KiB route cap returns **413**; **503** if the engine is unavailable.
  *
- * **Rate limit:** global limiter only — 100 req/min/IP (standard `x-ratelimit-*` headers).
+ * **Rate limit (changed in 1.12.0):** an **anonymous** caller gets **2 requests/min per IP** — a per-route cap that replaces the global ceiling, so this endpoint stays a convenience for integrators rather than a free scripted service. Send an `Authorization` header (any valid API key) and the normal ladder applies instead: the global authenticated ceiling, with your per-key tier bucket underneath it. Standard `x-ratelimit-*` headers on both paths; **429** with `retry-after` when exceeded.
  */
 export const decodeGs1Batch = <ThrowOnError extends boolean = false>(options: Options<DecodeGs1BatchData, ThrowOnError>): RequestResult<DecodeGs1BatchResponses, DecodeGs1BatchErrors, ThrowOnError> => (options.client ?? client).post<DecodeGs1BatchResponses, DecodeGs1BatchErrors, ThrowOnError>({
     url: '/api/v1/gs1/decode/batch',

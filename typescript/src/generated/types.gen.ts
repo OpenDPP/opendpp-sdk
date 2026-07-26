@@ -4200,7 +4200,11 @@ export type ValidatePassportPublicErrors = {
      */
     400: PassportValidateOnlyError;
     /**
-     * Body exceeds the 65,536-byte (64 KiB) route body limit.
+     * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
+     */
+    401: Error;
+    /**
+     * Body exceeds the 65,536-byte (64 KiB) route body limit. Only reachable once authenticated — an anonymous oversized body is rejected as 401 before the body is read.
      */
     413: {
         statusCode: 413;
