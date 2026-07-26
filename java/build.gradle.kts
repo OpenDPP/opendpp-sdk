@@ -36,10 +36,28 @@ java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
 }
 
+// The generated sources are UTF-8 and carry the contract's own punctuation — em dashes, ellipses and
+// curly quotes lifted straight from the OpenAPI descriptions. javac and javadoc default to the JVM's
+// PLATFORM encoding, which on a CI runner is US-ASCII: every such character then becomes `?`, javac
+// emits an `unmappable character (0xE2)` line per occurrence, and — because those are warnings, not
+// failures — the build stays green while the sources and javadoc jars published to Maven Central ship
+// the corruption. Pin UTF-8 explicitly so the toolchain reads what the generator actually wrote.
+// (opendpp-node#1156.)
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+
 // Maven Central requires a javadoc jar. The generated sources carry spec-derived markdown/HTML in
 // their doc comments, which strict doclint rejects — disable lint (the docs still render).
+// `encoding` is how javadoc READS the sources; `charSet`/`docEncoding` are how it WRITES the HTML —
+// all three are needed, or the jar is corrupted at one end or the other.
 tasks.withType<Javadoc>().configureEach {
-    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
+    (options as StandardJavadocDocletOptions).apply {
+        encoding = "UTF-8"
+        charSet = "UTF-8"
+        docEncoding = "UTF-8"
+        addStringOption("Xdoclint:none", "-quiet")
+    }
 }
 
 // Byte-reproducible archives + JPMS-friendly identity; ship LICENSE/NOTICE inside the jar.
