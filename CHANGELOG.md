@@ -20,6 +20,25 @@ changed is whatever the contract changed. Those contract-level notes are publish
 carries the same `openapi.json`; this file records what changed **in the SDKs**. Format:
 [Keep a Changelog](https://keepachangelog.com).
 
+**Authored upstream, mirrored here.** This file is written in the OpenDPP node repository and pushed to
+`opendpp-sdk` by the same job that regenerates the clients, so an edit made in the mirror is overwritten
+by the next sync — send it upstream instead. A section is authored when a version is generated —
+*before* its tags exist — so newer sections name the lanes without a release date; the dated headings
+below predate that flow.
+
+## [1.12.0] — TypeScript · Java/Kotlin
+
+Targets API contract **1.12.0** (the anonymous compute surface is closed). Both clients regenerated; no
+generated operation was removed or renamed.
+
+### Changed
+- `POST /api/v1/passports/validate-only-public` now carries a **security requirement** and a `401`
+  response. Any API key or Console session is accepted and no permission is required, but an
+  unauthenticated call is rejected — configure a credential on the client before calling it.
+- The GS1 helpers (`POST /api/v1/gs1/decode`, `/decode/batch` and `/gtin`) remain anonymously callable
+  but meter an anonymous caller to **2 requests/min per IP**, so an uncredentialed client can now see
+  `429` on them. Sending an API key restores the normal rate-limit ladder.
+
 ## [1.11.1] — 2026-07-10 · TypeScript
 
 The first release to use the SDK patch lane: contract 1.11.0 is unchanged — these are client-only fixes.
