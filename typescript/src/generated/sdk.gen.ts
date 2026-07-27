@@ -27,7 +27,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * **Permission:** none beyond a valid tenant-scoped session — any API key can call it. Platform-admin sessions are rejected with `403` (they are not tenant-scoped).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const whoami = <ThrowOnError extends boolean = false>(options?: Options<WhoamiData, ThrowOnError>): RequestResult<WhoamiResponses, WhoamiErrors, ThrowOnError> => (options?.client ?? client).get<WhoamiResponses, WhoamiErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -42,7 +42,7 @@ export const whoami = <ThrowOnError extends boolean = false>(options?: Options<W
  *
  * **Permission:** `battery:write` (gated as the write permission, like other validate-only checks; subscription gating → 402). **Validation:** `serialNumber` charset/length (`^[A-Za-z0-9._-]{1,20}$`, a URL-safe subset of GS1 AI-21 CSET 82) PLUS authoritative GS1-engine conformance for EVERY unit — a GTIN-keyed passport's unit Digital Link must parse cleanly through the engine, and a non-GTIN passport's AI-21 serial VALUE is validated through the same engine (CSET-82 charset + length); `status` must be a valid unit status; `manufacturedAt` must be Date-parseable. Predecessor linkage is NOT checked here (a persistence-time concern). The verdict order matches the input order.
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const validateBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<ValidateBatteryUnitsData, ThrowOnError>): RequestResult<ValidateBatteryUnitsResponses, ValidateBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).post<ValidateBatteryUnitsResponses, ValidateBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -61,7 +61,7 @@ export const validateBatteryUnits = <ThrowOnError extends boolean = false>(optio
  *
  * **Permission:** `battery:read`. Operator-scoped credentials may only read passports of their own Economic Operator (403). Units are raw persisted rows (no Fastify response schema, nothing stripped).
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<ListBatteryUnitsData, ThrowOnError>): RequestResult<ListBatteryUnitsResponses, ListBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).get<ListBatteryUnitsResponses, ListBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -82,7 +82,7 @@ export const listBatteryUnits = <ThrowOnError extends boolean = false>(options: 
  *
  * **Partial success:** the response is **201 when at least one unit was created**; skipped items are listed in `errors`. If *every* item failed you get **400 `Serialisation Failed`** with the same string array. A `batteryunit.created` audit event and a tenant notification are emitted on success.
  *
- * **Rate limits:** global limiter only — 100 req/min per IP (`x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const serializeBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<SerializeBatteryUnitsData, ThrowOnError>): RequestResult<SerializeBatteryUnitsResponses, SerializeBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).post<SerializeBatteryUnitsResponses, SerializeBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -101,7 +101,7 @@ export const serializeBatteryUnits = <ThrowOnError extends boolean = false>(opti
  *
  * **Permission:** `battery:write`. Cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only delete units whose passport belongs to their Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<DeleteBatteryUnitData, ThrowOnError>): RequestResult<DeleteBatteryUnitResponses, DeleteBatteryUnitErrors, ThrowOnError> => (options.client ?? client).delete<DeleteBatteryUnitResponses, DeleteBatteryUnitErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -118,7 +118,7 @@ export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options:
  *
  * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403).
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<GetBatteryUnitData, ThrowOnError>): RequestResult<GetBatteryUnitResponses, GetBatteryUnitErrors, ThrowOnError> => (options.client ?? client).get<GetBatteryUnitResponses, GetBatteryUnitErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -133,7 +133,7 @@ export const getBatteryUnit = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403). Events are raw persisted rows (no Fastify response schema, nothing stripped).
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listBatteryUnitEvents = <ThrowOnError extends boolean = false>(options: Options<ListBatteryUnitEventsData, ThrowOnError>): RequestResult<ListBatteryUnitEventsResponses, ListBatteryUnitEventsErrors, ThrowOnError> => (options.client ?? client).get<ListBatteryUnitEventsResponses, ListBatteryUnitEventsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -152,7 +152,7 @@ export const listBatteryUnitEvents = <ThrowOnError extends boolean = false>(opti
  *
  * **Status transition:** when `status` is present and differs from the unit's current status, the unit is updated **in the same transaction** as the event — this works with *any* `eventType`, though `STATUS_CHANGE` is the conventional carrier. Transitioning to **`RECYCLED`** (Art. 77(8)) additionally stamps `ceasedAt` (if not already set; never cleared), after which the public unit view becomes a 410 tombstone and the unit can no longer gain successor units. `status` itself is not locked afterwards — a later event may still set a different value — but `ceasedAt` persists, so the public 410 and the predecessor refusal are permanent.
  *
- * **Rate limits:** global limiter only — 100 req/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const recordBatteryUnitEvent = <ThrowOnError extends boolean = false>(options: Options<RecordBatteryUnitEventData, ThrowOnError>): RequestResult<RecordBatteryUnitEventResponses, RecordBatteryUnitEventErrors, ThrowOnError> => (options.client ?? client).post<RecordBatteryUnitEventResponses, RecordBatteryUnitEventErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -175,7 +175,7 @@ export const recordBatteryUnitEvent = <ThrowOnError extends boolean = false>(opt
  *
  * The full row is returned to the owner, including the privileged address fields (`streetAddress`, `city`, `postalCode`) that public passport documents never expose (owner-only in JSON-LD; never emitted in AAS).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listFacilities = <ThrowOnError extends boolean = false>(options?: Options<ListFacilitiesData, ThrowOnError>): RequestResult<ListFacilitiesResponses, ListFacilitiesErrors, ThrowOnError> => (options?.client ?? client).get<ListFacilitiesResponses, ListFacilitiesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -202,7 +202,7 @@ export const listFacilities = <ThrowOnError extends boolean = false>(options?: O
  *
  * Emits a `facility.created` audit event and an in-app notification.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const createFacility = <ThrowOnError extends boolean = false>(options: Options<CreateFacilityData, ThrowOnError>): RequestResult<CreateFacilityResponses, CreateFacilityErrors, ThrowOnError> => (options.client ?? client).post<CreateFacilityResponses, CreateFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -225,7 +225,7 @@ export const createFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * Emits a `facility.deleted` audit event and an in-app notification. **404 body:** standard envelope with message `Facility <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteFacility = <ThrowOnError extends boolean = false>(options: Options<DeleteFacilityData, ThrowOnError>): RequestResult<DeleteFacilityResponses, DeleteFacilityErrors, ThrowOnError> => (options.client ?? client).delete<DeleteFacilityResponses, DeleteFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -246,7 +246,7 @@ export const deleteFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * **404 body:** standard envelope with message `Facility <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getFacility = <ThrowOnError extends boolean = false>(options: Options<GetFacilityData, ThrowOnError>): RequestResult<GetFacilityResponses, GetFacilityErrors, ThrowOnError> => (options.client ?? client).get<GetFacilityResponses, GetFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -272,7 +272,7 @@ export const getFacility = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Emits a `facility.updated` audit event recording the changed fields.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateFacility = <ThrowOnError extends boolean = false>(options: Options<UpdateFacilityData, ThrowOnError>): RequestResult<UpdateFacilityResponses, UpdateFacilityErrors, ThrowOnError> => (options.client ?? client).put<UpdateFacilityResponses, UpdateFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -289,7 +289,7 @@ export const updateFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * Lists the workspace's access grants — capability-token grants for the Battery Regulation's restricted data tiers (Reg. (EU) 2023/1542 Art. 77(9), Annex XIII(2)–(4)) — including undecided third-party access **requests** (`status: PENDING`, `issuerType: REQUEST`) submitted via the hosted request-access page.
  *
- * **Permission:** `grant:read`. **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Permission:** `grant:read`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * Paginated with `?page` (default 1) and `?limit` (default 100, max 200), grouped by `status` ascending (alphabetical: `ACTIVE`, `DENIED`, `PENDING`, `REVOKED`) and newest-first within each group. `AUTHORITY` grants (platform-issued market-surveillance access) are listed for transparency but are not tenant-revocable (`revocable: false`). Raw capability tokens are never included — only issuance/approval responses contain them, once.
  *
@@ -306,7 +306,7 @@ export const listGrants = <ThrowOnError extends boolean = false>(options?: Optio
  *
  * Directly issues an `ACTIVE` legitimate-interest access grant (no pending request involved) and mints its capability token. The raw token (`dpp_li_` + 32 hex characters) is returned **once** in this response; only its SHA-256 hash is stored. The grantee presents it to the public resolution endpoints as `Authorization: Bearer dpp_li_…` or `?grant=dpp_li_…` to unlock the restricted (tier-2 / per-unit) data of the granted scope.
  *
- * **Permission:** `grant:write` (write operations are subject to subscription gating, so 402 is possible). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. On workspaces that enforce multi-factor authentication, user sessions that did not authenticate with a second factor receive 403 on writes (API-key clients are exempt). **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Permission:** `grant:write` (write operations are subject to subscription gating, so 402 is possible). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. On workspaces that enforce multi-factor authentication, user sessions that did not authenticate with a second factor receive 403 on writes (API-key clients are exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * Scope semantics:
  * - `UNIT` — `batteryUnitId` is required; the unit must belong to this workspace. The unit's parent `passportId` is recorded on the grant.
@@ -334,7 +334,7 @@ export const createGrant = <ThrowOnError extends boolean = false>(options: Optio
  *
  * The raw token is returned **once** in this response. If the request has a `granteeEmail`, the grantee is additionally e-mailed an inspection link containing the token (`…/unit/{batteryUnitId}?grant=dpp_li_…` or `…/passport/{passportId}?grant=dpp_li_…`) — the only other place the raw token ever exists. The decision is audited as `grant.approved`.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const approveGrantRequest = <ThrowOnError extends boolean = false>(options: Options<ApproveGrantRequestData, ThrowOnError>): RequestResult<ApproveGrantRequestResponses, ApproveGrantRequestErrors, ThrowOnError> => (options.client ?? client).post<ApproveGrantRequestResponses, ApproveGrantRequestErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -351,7 +351,7 @@ export const approveGrantRequest = <ThrowOnError extends boolean = false>(option
  *
  * Denies a `PENDING` third-party access request: sets `status: DENIED` and records `decidedAt`/`decidedBy`. No token is ever minted for a denied request, and no e-mail is sent to the requester. The decision is audited as `grant.denied`. The request body, if any, is ignored.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const denyGrantRequest = <ThrowOnError extends boolean = false>(options: Options<DenyGrantRequestData, ThrowOnError>): RequestResult<DenyGrantRequestResponses, DenyGrantRequestErrors, ThrowOnError> => (options.client ?? client).post<DenyGrantRequestResponses, DenyGrantRequestErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -369,7 +369,7 @@ export const denyGrantRequest = <ThrowOnError extends boolean = false>(options: 
  * - Re-revoking an already-`REVOKED` grant returns 200 again and preserves the original `revokedAt`.
  * - `AUTHORITY` grants (`kind: AUTHORITY`, platform-issued market-surveillance access) are **not tenant-revocable** — 403. Battery Reg. Art. 77 market-surveillance access must not depend on manufacturer consent; platform admins manage those.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const revokeGrant = <ThrowOnError extends boolean = false>(options: Options<RevokeGrantData, ThrowOnError>): RequestResult<RevokeGrantResponses, RevokeGrantErrors, ThrowOnError> => (options.client ?? client).delete<RevokeGrantResponses, RevokeGrantErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -386,7 +386,7 @@ export const revokeGrant = <ThrowOnError extends boolean = false>(options: Optio
  *
  * **Permission:** `operator:read`. Requests authenticated with an **operator-scoped API key** see only their own operator.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listOperators = <ThrowOnError extends boolean = false>(options?: Options<ListOperatorsData, ThrowOnError>): RequestResult<ListOperatorsResponses, ListOperatorsErrors, ThrowOnError> => (options?.client ?? client).get<ListOperatorsResponses, ListOperatorsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -407,7 +407,7 @@ export const listOperators = <ThrowOnError extends boolean = false>(options?: Op
  *
  * Side effects: an `operator.created` audit event and an in-app notification are recorded.
  *
- * **Rate limit:** global limiter, 100 requests/min/IP (429 carries `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const registerOperator = <ThrowOnError extends boolean = false>(options: Options<RegisterOperatorData, ThrowOnError>): RequestResult<RegisterOperatorResponses, RegisterOperatorErrors, ThrowOnError> => (options.client ?? client).post<RegisterOperatorResponses, RegisterOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -434,7 +434,7 @@ export const registerOperator = <ThrowOnError extends boolean = false>(options: 
  *
  * Side effects: an `operator.archived` or `operator.deleted` audit event plus an in-app notification — on the primary archive and hard-delete paths only; the foreign-key fallback archive writes **no** audit event or notification. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** global limiter, 100 requests/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteOperator = <ThrowOnError extends boolean = false>(options: Options<DeleteOperatorData, ThrowOnError>): RequestResult<DeleteOperatorResponses, DeleteOperatorErrors, ThrowOnError> => (options.client ?? client).delete<DeleteOperatorResponses, DeleteOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -449,7 +449,7 @@ export const deleteOperator = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `operator:read`. An **operator-scoped API key** may only fetch its own operator (`403` otherwise).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getOperator = <ThrowOnError extends boolean = false>(options: Options<GetOperatorData, ThrowOnError>): RequestResult<GetOperatorResponses, GetOperatorErrors, ThrowOnError> => (options.client ?? client).get<GetOperatorResponses, GetOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -468,7 +468,7 @@ export const getOperator = <ThrowOnError extends boolean = false>(options: Optio
  *
  * When a change is applied, an `operator.updated` audit event is recorded. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** global limiter, 100 requests/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateOperator = <ThrowOnError extends boolean = false>(options: Options<UpdateOperatorData, ThrowOnError>): RequestResult<UpdateOperatorResponses, UpdateOperatorErrors, ThrowOnError> => (options.client ?? client).patch<UpdateOperatorResponses, UpdateOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -491,7 +491,7 @@ export const updateOperator = <ThrowOnError extends boolean = false>(options: Op
  *
  * Side effects: an `operator.restored` audit event and an in-app notification. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** global limiter, 100 requests/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const restoreOperator = <ThrowOnError extends boolean = false>(options: Options<RestoreOperatorData, ThrowOnError>): RequestResult<RestoreOperatorResponses, RestoreOperatorErrors, ThrowOnError> => (options.client ?? client).post<RestoreOperatorResponses, RestoreOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -513,7 +513,7 @@ export const restoreOperator = <ThrowOnError extends boolean = false>(options: O
  *
  * **Permission:** `key:write`. Cookie-session clients must send `X-CSRF-Token`; Bearer clients are exempt.
  *
- * **Rate limit:** global limiter, 100 requests/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const rotateTenantKeys = <ThrowOnError extends boolean = false>(options?: Options<RotateTenantKeysData, ThrowOnError>): RequestResult<RotateTenantKeysResponses, RotateTenantKeysErrors, ThrowOnError> => (options?.client ?? client).post<RotateTenantKeysResponses, RotateTenantKeysErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -537,7 +537,7 @@ export const rotateTenantKeys = <ThrowOnError extends boolean = false>(options?:
  * - `economicOperator.role` is **absent** from list items and `manufacturingFacility` is always `null` here — fetch a single passport (`GET /api/v1/passports/{id}`) for the facility node and operator role.
  * - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the flattened metadata keys) pass through intact — but two **declared** item keys are mangled by their subschemas: the `@context` term-map object (second array element) is always emptied to `{}`, and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — `signatureValue`, `merkleRoot`, `redactedLeaves`, `x5c` and `rfc3161` are all stripped from list output. Fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable proof block.
  *
- * **Rate limits:** global limiter, 100 requests/min per IP (600/min for known crawler user agents); 429 carries `x-ratelimit-*` headers.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listPassports = <ThrowOnError extends boolean = false>(options?: Options<ListPassportsData, ThrowOnError>): RequestResult<ListPassportsResponses, ListPassportsErrors, ThrowOnError> => (options?.client ?? client).get<ListPassportsResponses, ListPassportsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -552,7 +552,7 @@ export const listPassports = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).
  *
- * **Rate limit:** global 100 requests/min per IP (`x-ratelimit-*` headers). **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.
  *
  * **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code), and the product's EPCIS traceability lineage is audited. For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** (#400) when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.
  *
@@ -585,7 +585,7 @@ export const createPassport = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.
  *
- * **Rate limit:** global 100 requests/min per IP. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.
  *
  * **Behavioral caveats:**
  * - The EPCIS **traceability lineage audit is NOT run** here (it only runs at real ingestion), so a payload can pass this dry-run and still fail `POST /api/v1/passports` on traceability errors.
@@ -636,7 +636,7 @@ export const validatePassportPublic = <ThrowOnError extends boolean = false>(opt
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions; subscription gating → **402**).
  *
- * **Rate limit:** global 100 requests/min per IP. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that; in practice the `maxItems: 200` envelope cap is the effective bound for typical rows. Envelope violations — empty array, more than 200 items, missing `passports` — are rejected before any row is processed, with the full default validation error body (`{statusCode, code, error, message}`).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that; in practice the `maxItems: 200` envelope cap is the effective bound for typical rows. Envelope violations — empty array, more than 200 items, missing `passports` — are rejected before any row is processed, with the full default validation error body (`{statusCode, code, error, message}`).
  *
  * **Per-row behavior (differences from `POST /api/v1/passports`):**
  * - Rows are validated with the ESPR category engine only — the **EPCIS traceability audit is NOT run** for bulk rows.
@@ -666,7 +666,7 @@ export const bulkIngestPassports = <ThrowOnError extends boolean = false>(option
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions; subscription gating → **402**).
  *
- * **Rate limit:** global 100 requests/min per IP. **Body limit: 262,144 bytes (256 KiB)** → **413**.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413**.
  *
  * **Parsing.** The environment must contain a `submodels` array including a submodel with `idShort: "ComplianceMetadata"`, whose `submodelElements` are parsed back into the metadata object; missing it fails 400 (`Ingestion Failed`). `productId` is resolved from `metadata.gtin` || `metadata.grai` || `metadata.productId` || the first shell's `assetInformation.specificAssetIds` entry named `productId` — unresolvable → 400 `Bad Request`. The parsed metadata then passes the full ESPR category validation **plus the EPCIS traceability audit** (400 `Validation Failed` with `errors[]`).
  *
@@ -698,7 +698,7 @@ export const ingestPassportFromAas = <ThrowOnError extends boolean = false>(opti
  *
  * **Shape:** each `results[]` row is `{ id, productId, vcReady, blockers[] }` — `blockers[]` reuses the SAME actionable reason the single-passport signal exposes (empty when ready). The top-level `ready` / `notReady` rollup is **catalog-wide** (counts every non-archived passport), while `results` is **paginated** — `page` (default 1) + `limit` (default 100, max 200), with `total` / `totalPages`. NOTE: because the rollup is catalog-wide but `results` is one page, `ready` is generally NOT the count of `vcReady:true` rows on the current page — page through all `totalPages` to enumerate every SKU.
  *
- * **Rate limits:** global limiter, 100 requests/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const passportVcReadinessReport = <ThrowOnError extends boolean = false>(options?: Options<PassportVcReadinessReportData, ThrowOnError>): RequestResult<PassportVcReadinessReportResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PassportVcReadinessReportResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -717,7 +717,7 @@ export const passportVcReadinessReport = <ThrowOnError extends boolean = false>(
  *
  * **Lookup:** by passport **UUID only** (no `productId` aliasing) and only within the passport's **owning tenant** — an operator-binding alone is not sufficient, unlike PUT.
  *
- * **Rate limits:** global limiter, 100 req/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteDraftPassport = <ThrowOnError extends boolean = false>(options: Options<DeleteDraftPassportData, ThrowOnError>): RequestResult<DeleteDraftPassportResponses, DeleteDraftPassportErrors, ThrowOnError> => (options.client ?? client).delete<DeleteDraftPassportResponses, DeleteDraftPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -738,7 +738,7 @@ export const deleteDraftPassport = <ThrowOnError extends boolean = false>(option
  *
  * Every successful resolution records an anonymized-IP access audit entry.
  *
- * **Rate limits:** global limiter 100 req/min/IP with `x-ratelimit-*` headers, **plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
+ * **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling raised for `Authorization`-bearing requests; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
  */
 export const getPassport = <ThrowOnError extends boolean = false>(options: Options<GetPassportData, ThrowOnError>): RequestResult<GetPassportResponses, GetPassportErrors, ThrowOnError> => (options.client ?? client).get<GetPassportResponses, GetPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -769,7 +769,7 @@ export const getPassport = <ThrowOnError extends boolean = false>(options: Optio
  *
  * **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `"[REDACTED - Privileged Access Required]"` even though you are the owner.
  *
- * **Rate limits:** global limiter, 100 req/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updatePassport = <ThrowOnError extends boolean = false>(options: Options<UpdatePassportData, ThrowOnError>): RequestResult<UpdatePassportResponses, UpdatePassportErrors, ThrowOnError> => (options.client ?? client).put<UpdatePassportResponses, UpdatePassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -799,7 +799,7 @@ export const updatePassport = <ThrowOnError extends boolean = false>(options: Op
  * - Requires the tenant's eIDAS key pair to exist — otherwise 400.
  * - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).
  *
- * **Rate limits:** global limiter, 100 req/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const sealPassport = <ThrowOnError extends boolean = false>(options: Options<SealPassportData, ThrowOnError>): RequestResult<SealPassportResponses, SealPassportErrors, ThrowOnError> => (options.client ?? client).post<SealPassportResponses, SealPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -826,7 +826,7 @@ export const sealPassport = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Caveats:** DRAFT passports are refused with 409 (publish first via a validated `PUT /api/v1/passports/{id}`). Sealed passports CAN change status — `status` is stored alongside the document, not inside the sealed metadata Merkle tree. The returned `passport` document is serialized at the **public** redaction tier.
  *
- * **Rate limits:** global limiter, 100 req/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updatePassportStatus = <ThrowOnError extends boolean = false>(options: Options<UpdatePassportStatusData, ThrowOnError>): RequestResult<UpdatePassportStatusResponses, UpdatePassportStatusErrors, ThrowOnError> => (options.client ?? client).put<UpdatePassportStatusResponses, UpdatePassportStatusErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1053,7 +1053,7 @@ export const decodeGs1Batch = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Errors:** an invalid query option returns **400** with one of these exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`. An unknown passport returns **404** with message `Passport <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** global limiter only — 100 requests/min/IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getPassportQrCode = <ThrowOnError extends boolean = false>(options: Options<GetPassportQrCodeData, ThrowOnError>): RequestResult<GetPassportQrCodeResponses, GetPassportQrCodeErrors, ThrowOnError> => (options.client ?? client).get<GetPassportQrCodeResponses, GetPassportQrCodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1072,7 +1072,7 @@ export const getPassportQrCode = <ThrowOnError extends boolean = false>(options:
  *
  * **Limits:** at most **200** ids per call (`MAX_BULK_LABELS`, mirrors the bulk-import cap); more returns **400** pointing at the async export. `hri: true` requires `format: "svg"` (same constraint as the single QR). `size` is clamped to 128–2048.
  *
- * **Rate limit:** global limiter, 100 requests/min/IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const bulkExportPassportLabels = <ThrowOnError extends boolean = false>(options: Options<BulkExportPassportLabelsData, ThrowOnError>): RequestResult<BulkExportPassportLabelsResponses, BulkExportPassportLabelsErrors, ThrowOnError> => (options.client ?? client).post<BulkExportPassportLabelsResponses, BulkExportPassportLabelsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1097,7 +1097,7 @@ export const bulkExportPassportLabels = <ThrowOnError extends boolean = false>(o
  *
  * **Errors:** an invalid query option returns **400** with one of these exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`. An unknown unit returns **404** with message `Battery unit <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** global limiter only — 100 requests/min/IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getBatteryUnitQrCode = <ThrowOnError extends boolean = false>(options: Options<GetBatteryUnitQrCodeData, ThrowOnError>): RequestResult<GetBatteryUnitQrCodeResponses, GetBatteryUnitQrCodeErrors, ThrowOnError> => (options.client ?? client).get<GetBatteryUnitQrCodeResponses, GetBatteryUnitQrCodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1118,7 +1118,7 @@ export const getBatteryUnitQrCode = <ThrowOnError extends boolean = false>(optio
  *
  * **Curation:** this vocabulary is curated by the platform operator — the API is read-only for tenant credentials. Free-text material values in passport metadata remain allowed but are never auto-added to this vocabulary.
  *
- * **Rate limit:** global limiter only — 100 requests/min/IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listMaterials = <ThrowOnError extends boolean = false>(options?: Options<ListMaterialsData, ThrowOnError>): RequestResult<ListMaterialsResponses, ListMaterialsErrors, ThrowOnError> => (options?.client ?? client).get<ListMaterialsResponses, ListMaterialsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1133,7 +1133,7 @@ export const listMaterials = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Permission:** `passport:update` (write operation — subscription gating applies, see 402). When the node operator enforces MFA, writes from user-backed sessions (cookie or Bearer JWT) whose MFA policy requires a second factor (user policy `REQUIRED`, or `DEFAULT` with the workspace's MFA-by-default setting, which is on by default) receive 403 without one; API-key clients are exempt. Cookie-session clients must send the `X-CSRF-Token` header (double-submit with the `opendpp_csrf` cookie); Bearer JWT / API-key clients are exempt.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Validation pipeline (in order):**
  * 1. *Structural* — the body must be an object containing `credentialSubject`, otherwise 400 `Bad Request`.
@@ -1162,7 +1162,7 @@ export const registerTraceabilityEvent = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `passport:update` (write operation — subscription gating applies, see 402). When the node operator enforces MFA, writes from user-backed sessions (cookie or Bearer JWT) whose MFA policy requires a second factor (user policy `REQUIRED`, or `DEFAULT` with the workspace's MFA-by-default setting, which is on by default) receive 403 without one; API-key clients are exempt. Cookie-session clients must send the `X-CSRF-Token` header (double-submit with the `opendpp_csrf` cookie); Bearer JWT / API-key clients are exempt.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Validation:** the WHOLE document is validated against the official GS1 EPCIS **2.0.1** JSON Schema (vendored and pinned on the node) before any event is stored — a non-conformant document is rejected 400 with the first few schema violations under `errors[]`. Notable rules the OFFICIAL schema enforces: `@context` and `creationDate` are required; `bizStep`/`disposition` must use the CBV **short names** (e.g. `commissioning`, `in_transit`) or a custom (non-CBV) URI — the legacy `urn:epcglobal:cbv:*` URN form is REJECTED by the standard's schema; `action` is forbidden on `TransformationEvent`; `readPoint`/`bizLocation` carry `{id: <uri>}`. Only `type: "EPCISDocument"` is accepted (no `EPCISQueryDocument`, no bare events), and `epcisBody.eventList` must be non-empty.
  *
@@ -1189,7 +1189,7 @@ export const captureEpcisDocument = <ThrowOnError extends boolean = false>(optio
  *
  * **Permission:** `passport:read`. Every node in the walk — the root AND each upstream parent — is scoped to the caller's tenant; an event belonging to another tenant is invisible and the request fails with 404 (no cross-tenant pedigree reads). Sessions with the `SUPER_ADMIN` role are exempt from tenant scoping.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Caveats:** if the lineage graph contains a circular reference the walk aborts with 400. Any other failure (unknown id, other-tenant id, missing parent) is reported as the same deliberately generic 404 body. `eventTime` is serialized as ISO 8601 UTC; `epcs` is parsed from the stored EPC list (a non-array value degrades to `[]`); `location` mirrors the stored `bizLocation`.
  *
@@ -1213,7 +1213,7 @@ export const getEventLineage = <ThrowOnError extends boolean = false>(options: O
  *
  * **Permission:** `passport:read` (a read permission despite the POST verb — no subscription gating). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. Tenant scoping and the `SUPER_ADMIN` bypass are identical to the lineage endpoint. **No request body is read** — send an empty body (an empty or absent JSON body is accepted).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP (standard `x-ratelimit-*` headers).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * When zero violations are found, the response embeds a `TraceabilityComplianceCertificate` object (status `SCREENED_NO_MATCHES`, screens `OpenDPP-EUDR-heuristic` / `OpenDPP-UFLPA-screen`); otherwise `certificate` is `null` and `errors` lists each violation as a human-readable string. ANY failure — unknown event id, other-tenant id, or even a circular lineage graph — is reported as the same generic 404 body.
  */
@@ -1332,7 +1332,7 @@ export const deleteWebhookSubscription = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `webhook:write`. Cookie sessions must send `X-CSRF-Token`; write permissions are subscription-gated (**402** when lapsed).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateWebhookSubscription = <ThrowOnError extends boolean = false>(options: Options<UpdateWebhookSubscriptionData, ThrowOnError>): RequestResult<UpdateWebhookSubscriptionResponses, UpdateWebhookSubscriptionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWebhookSubscriptionResponses, UpdateWebhookSubscriptionErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1353,7 +1353,7 @@ export const updateWebhookSubscription = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `webhook:write`. Cookie sessions must send `X-CSRF-Token`; write permissions are subscription-gated (**402** when lapsed).
  *
- * **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const rotateWebhookSecret = <ThrowOnError extends boolean = false>(options: Options<RotateWebhookSecretData, ThrowOnError>): RequestResult<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError> => (options.client ?? client).post<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1370,7 +1370,7 @@ export const rotateWebhookSecret = <ThrowOnError extends boolean = false>(option
  *
  * **Permission:** `webhook:read`.
  *
- * **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listWebhookDeliveries = <ThrowOnError extends boolean = false>(options?: Options<ListWebhookDeliveriesData, ThrowOnError>): RequestResult<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError> => (options?.client ?? client).get<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1383,7 +1383,7 @@ export const listWebhookDeliveries = <ThrowOnError extends boolean = false>(opti
  *
  * Delivers a single **signed sample** event to the subscription's URL right now and reports the outcome — use it to confirm your endpoint is reachable and that your signature verification works, without waiting for a real passport event. The payload is a representative public JSON-LD passport document marked `_test: true`; it is signed exactly like a production delivery (HMAC-SHA256 over `${timestamp}.${body}`). The event type is a concrete value from the subscription's filter (the `*` wildcard is skipped; defaults to `passport.sealed`).
  *
- * **Permission:** `webhook:write`. **Rate limit:** global limiter, 100 requests/min per IP.
+ * **Permission:** `webhook:write`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const testWebhookSubscription = <ThrowOnError extends boolean = false>(options: Options<TestWebhookSubscriptionData, ThrowOnError>): RequestResult<TestWebhookSubscriptionResponses, TestWebhookSubscriptionErrors, ThrowOnError> => (options.client ?? client).post<TestWebhookSubscriptionResponses, TestWebhookSubscriptionErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

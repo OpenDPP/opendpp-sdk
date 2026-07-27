@@ -115,6 +115,9 @@ export type PassportQuotaError = {
     upgradeUrl?: string;
 };
 
+/**
+ * The calling credential's identity: its workspace, the resolved auth principal and permissions, and active-passport usage against the plan quota.
+ */
 export type WhoamiResponse = {
     success: true;
     tenant: {
@@ -336,6 +339,9 @@ export type BatteryUnitSerialisationFailedError = {
     errors: Array<string>;
 };
 
+/**
+ * A page of the serialised battery units recorded under one passport, with the paging envelope.
+ */
 export type BatteryUnitListResponse = {
     success: true;
     /**
@@ -428,6 +434,9 @@ export type BatteryUnitJsonLd = {
     updatedAt: string;
 };
 
+/**
+ * Confirmation that a battery unit was deleted.
+ */
 export type BatteryUnitDeleteResponse = {
     success: true;
     message: 'Battery unit deleted.';
@@ -470,12 +479,18 @@ export type RecordBatteryUnitEventRequest = {
     status?: BatteryUnitStatus;
 };
 
+/**
+ * Confirmation that a dynamic-data record was appended to a battery unit, echoing the stored event.
+ */
 export type RecordBatteryUnitEventResponse = {
     success: true;
     message: 'Dynamic data recorded';
     event: BatteryUnitEventRow;
 };
 
+/**
+ * A battery unit's append-only dynamic-data history, newest first.
+ */
 export type BatteryUnitEventListResponse = {
     success: true;
     /**
@@ -540,6 +555,9 @@ export type FacilityRow = {
     updatedAt: string;
 };
 
+/**
+ * A facility to register: its GS1 GLN-13, name and country, plus optional activity and street address.
+ */
 export type FacilityCreateRequest = {
     /**
      * GS1 GLN-13. Trimmed, then validated: exactly 13 digits with a valid GS1 modulo-10 check digit. Unique platform-wide (409 on duplicate). Immutable after registration.
@@ -605,12 +623,18 @@ export type FacilityUpdateRequest = {
     country?: string;
 };
 
+/**
+ * Confirmation that a facility was registered, carrying the stored record.
+ */
 export type FacilityCreatedEnvelope = {
     success: true;
     message: 'Facility registered successfully';
     facility: FacilityRow;
 };
 
+/**
+ * A page of the workspace's facilities, with the paging envelope.
+ */
 export type FacilityListEnvelope = {
     success: true;
     /**
@@ -639,11 +663,17 @@ export type FacilityListEnvelope = {
     totalPages: number;
 };
 
+/**
+ * A single facility record.
+ */
 export type FacilityEnvelope = {
     success: true;
     facility: FacilityRow;
 };
 
+/**
+ * Confirmation that a facility was deleted.
+ */
 export type FacilityDeletedEnvelope = {
     success: true;
 };
@@ -860,6 +890,9 @@ export type OperatorRow = {
     createdAt: string;
 };
 
+/**
+ * An economic operator to register: its legal name and registration identifier, with an optional identifier scheme and supply-chain role.
+ */
 export type RegisterOperatorRequest = {
     /**
      * Legal/display name. Ignored if your workspace already has an operator with this `regId` (the existing record is returned instead).
@@ -879,6 +912,9 @@ export type RegisterOperatorRequest = {
     role?: string;
 };
 
+/**
+ * Confirmation that an economic operator was registered, carrying the stored record and any non-blocking advisories.
+ */
 export type RegisterOperatorResponse = {
     success: true;
     /**
@@ -906,11 +942,17 @@ export type UpdateOperatorRequest = {
     role?: string;
 };
 
+/**
+ * The economic operator as stored after the update.
+ */
 export type UpdateOperatorResponse = {
     success: true;
     operator: OperatorRow;
 };
 
+/**
+ * Outcome of removing an economic operator: whether it was archived rather than deleted, and how many of its passports were archived with it.
+ */
 export type DeleteOperatorResponse = {
     success: true;
     /**
@@ -923,6 +965,9 @@ export type DeleteOperatorResponse = {
     archivedPassports?: number;
 };
 
+/**
+ * Outcome of restoring an archived economic operator, including how many of its passports were restored.
+ */
 export type RestoreOperatorResponse = {
     success: true;
     /**
@@ -931,6 +976,9 @@ export type RestoreOperatorResponse = {
     restoredPassports: number;
 };
 
+/**
+ * Confirmation that the workspace's signing key was rotated, returning the new public key.
+ */
 export type RotateTenantKeysResponse = {
     success: true;
     /**
@@ -951,6 +999,9 @@ export type OperatorMinimalError = {
     message: string;
 };
 
+/**
+ * The economic operators bound to the calling workspace.
+ */
 export type OperatorListResponse = {
     success: true;
     /**
@@ -960,6 +1011,9 @@ export type OperatorListResponse = {
     operators: Array<OperatorRow>;
 };
 
+/**
+ * A single economic operator record.
+ */
 export type OperatorGetResponse = {
     success: true;
     operator: OperatorRow;
@@ -1025,6 +1079,9 @@ export type PassportEnrichmentInput = {
     [key: string]: unknown;
 };
 
+/**
+ * A passport to create: its product identifier and ESPR category metadata, with optional operator and facility binding, a draft flag, and enrichment held outside the sealed metadata.
+ */
 export type PassportCreateRequest = {
     /**
      * Product identifier: a GTIN-14 (exactly 14 digits with a valid GS1 mod-10 check digit — auto-copied to `metadata.gtin`), a GRAI (14-digit numeric asset id with valid check digit + optional up to 16 alphanumeric serial chars, total 14–30 — auto-copied to `metadata.grai`), or a free-form SKU. Determines the GS1 Application Identifier (`01` vs `8003`) in the generated Digital Link URI. Whitespace-only values are rejected 400. Unique per economic operator (409 on duplicate).
@@ -1077,6 +1134,9 @@ export type PassportIngestCreated = {
     vcReadyReason?: string | null;
 };
 
+/**
+ * A metadata payload to validate against its ESPR category rules without persisting anything.
+ */
 export type PassportValidateOnlyRequest = {
     /**
      * Product identifier (GTIN-14 / GRAI / SKU). Required and checked non-empty (whitespace-only → 400), but not otherwise used by the dry-run.
@@ -1147,6 +1207,9 @@ export type PassportBulkRow = {
     [key: string]: unknown;
 };
 
+/**
+ * A batch of passports to ingest, with optional dry-run preview and upsert-on-conflict behaviour.
+ */
 export type PassportBulkRequest = {
     /**
      * 1–200 rows. The bounds are enforced before any row is processed; violations return the default `{statusCode, code, error, message}` error body.
@@ -2132,11 +2195,17 @@ export type TraceLineageNode = {
     parents: Array<TraceLineageNode>;
 };
 
+/**
+ * The upstream pedigree of a traceability event, as a recursive graph of the events it derives from.
+ */
 export type TraceLineageResponse = {
     success: true;
     lineage: TraceLineageNode;
 };
 
+/**
+ * The verdict of auditing a traceability lineage: whether it is compliant, any errors found, and the resulting certificate.
+ */
 export type TraceComplianceAuditResponse = {
     success: true;
     /**
@@ -2155,6 +2224,9 @@ export type TraceComplianceAuditResponse = {
     certificate: TraceComplianceCertificate | null;
 };
 
+/**
+ * A compliance certificate for an audited traceability lineage, naming the root event and the regulatory standards checked.
+ */
 export type TraceComplianceCertificate = {
     type: 'TraceabilityComplianceCertificate';
     rootEventId: string;
@@ -2324,6 +2396,9 @@ export type EpcisDocument = {
     [key: string]: unknown;
 };
 
+/**
+ * Per-event outcome of capturing an EPCIS 2.0 document, with partial-success semantics: some events may be stored while others fail.
+ */
 export type EpcisCaptureResponse = {
     status: 'success';
     /**
@@ -2418,6 +2493,9 @@ export type WebhookEnvelope = {
     data: PublicPassportJsonLd;
 };
 
+/**
+ * An endpoint to receive webhook deliveries, and the event types it subscribes to.
+ */
 export type WebhookSubscriptionCreateRequest = {
     /**
      * Absolute http(s) endpoint URL of your receiver (e.g. a PLM/ERP integration endpoint). DNS-resolved and SSRF-guarded at registration: malformed URLs, loopback, private (RFC 1918/CGNAT), link-local/cloud-metadata, multicast, and equivalent IPv6 ranges are rejected with 400. Redirects are never followed at delivery time.
@@ -2467,17 +2545,26 @@ export type WebhookSubscriptionWithSecret = WebhookSubscriptionRow & {
     secret: string;
 };
 
+/**
+ * Confirmation that a webhook subscription was created, carrying the stored subscription.
+ */
 export type WebhookSubscriptionCreateResponse = {
     success: true;
     message: 'Webhook subscription registered successfully';
     subscription: WebhookSubscriptionWithSecret;
 };
 
+/**
+ * The calling workspace's webhook subscriptions.
+ */
 export type WebhookSubscriptionListResponse = {
     success: true;
     subscriptions: Array<WebhookSubscriptionRow>;
 };
 
+/**
+ * Confirmation that a webhook subscription was deleted.
+ */
 export type WebhookSubscriptionDeleteResponse = {
     success: true;
     message: 'Webhook subscription successfully deleted';
@@ -2501,6 +2588,9 @@ export type WebhookSubscriptionUpdateRequest = {
     isActive?: boolean;
 };
 
+/**
+ * The webhook subscription as stored after the update.
+ */
 export type WebhookSubscriptionUpdateResponse = {
     success: true;
     /**
@@ -2510,6 +2600,9 @@ export type WebhookSubscriptionUpdateResponse = {
     subscription: WebhookSubscriptionRow;
 };
 
+/**
+ * Confirmation that a subscription's HMAC signing secret was rotated; the new secret is returned once and cannot be retrieved again.
+ */
 export type WebhookSecretRotateResponse = {
     success: true;
     message: string;
@@ -2551,12 +2644,18 @@ export type WebhookDeliveryRow = {
     createdAt: string;
 };
 
+/**
+ * Recent webhook delivery attempts for a subscription, newest first, for debugging endpoint failures.
+ */
 export type WebhookDeliveriesResponse = {
     success: true;
     count: number;
     deliveries: Array<WebhookDeliveryRow>;
 };
 
+/**
+ * The outcome of delivering a signed sample event to a subscription's endpoint right now.
+ */
 export type WebhookTestResult = {
     /**
      * The request was processed (NOT whether the receiver accepted it — see `delivered`).

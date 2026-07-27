@@ -26,6 +26,21 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.12.1] — TypeScript · Java/Kotlin
+
+Targets API contract **1.12.1** (documentation only). Both clients regenerated; **no generated
+operation, type or field changed** — the diff is entirely in the doc comments the generator emits.
+
+### Changed
+- Forty-eight authenticated operations had described their rate limit as the flat anonymous per-IP
+  ceiling. Their doc comments now state the per-key plan ladder (**Growth** 120/min, **Scale** 600/min,
+  **Enterprise** unlimited), the 3x ceiling across a workspace's keys, and that `429` carries
+  `Retry-After`. If you sized a client's throttling against the old figure, you were throttling well
+  below your plan.
+- Thirty-three request and response models gained a type-level description — across accounts, battery
+  units, facilities, operators, passports, traceability and webhooks — so IDE hover and generated
+  reference docs now say what each model is for instead of showing a bare name.
+
 ## [1.12.0] — TypeScript · Java/Kotlin
 
 Targets API contract **1.12.0** (the anonymous compute surface is closed). Both clients regenerated; no
