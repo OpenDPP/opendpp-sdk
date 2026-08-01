@@ -5514,7 +5514,7 @@ export type GetPassportQrCodeData = {
          */
         format?: 'png' | 'svg';
         /**
-         * Rendered width in pixels (PNG) / SVG width attribute. Clamped to 128–2048 — out-of-range values are silently clamped, fractions truncated. A non-numeric value returns 400 (`size must be a number`).
+         * Rendered width in pixels (PNG) / SVG width attribute. Clamped to 128–2048 — out-of-range values are silently clamped, fractions truncated. A non-numeric value returns 400 (`size must be a number`). A PNG is never rendered below one pixel per module, so an unusually dense symbol comes back slightly wider than requested — see the 200 response.
          */
         size?: number;
         /**
@@ -5565,7 +5565,7 @@ export type GetPassportQrCodeError = GetPassportQrCodeErrors[keyof GetPassportQr
 
 export type GetPassportQrCodeResponses = {
     /**
-     * QR code image encoding the passport's `digitalLinkUri`. The returned media type follows the `format` query parameter (no `Accept`-header negotiation): `image/png` is a raw PNG bitmap, `size` px wide; `image/svg+xml` is a vector SVG document. Delivered as an attachment download.
+     * QR code image encoding the passport's `digitalLinkUri`. The returned media type follows the `format` query parameter (no `Accept`-header negotiation): `image/png` is a raw PNG bitmap, exactly `size` px wide — except when the symbol's own module grid (its modules plus both 4-module quiet zones) is wider than `size`, where it renders at that grid width instead (at most 185 px), because a raster cannot hold a symbol at less than one pixel per module; `image/svg+xml` is a vector SVG document, which has no such floor and always carries the requested width. Delivered as an attachment download.
      */
     200: unknown;
 };
@@ -5581,7 +5581,7 @@ export type BulkExportPassportLabelsData = {
          */
         format?: 'png' | 'svg';
         /**
-         * Rendered width in px; clamped to 128–2048.
+         * Rendered width in px; clamped to 128–2048. A PNG is never rendered below one pixel per module, so an unusually dense symbol comes back slightly wider than requested (at most 185 px).
          */
         size?: number;
         /**
@@ -5647,7 +5647,7 @@ export type GetBatteryUnitQrCodeData = {
          */
         format?: 'png' | 'svg';
         /**
-         * Rendered width in pixels (PNG) / SVG width attribute. Clamped to 128–2048 — out-of-range values are silently clamped, fractions truncated. A non-numeric value returns 400 (`size must be a number`).
+         * Rendered width in pixels (PNG) / SVG width attribute. Clamped to 128–2048 — out-of-range values are silently clamped, fractions truncated. A non-numeric value returns 400 (`size must be a number`). A PNG is never rendered below one pixel per module, so an unusually dense symbol comes back slightly wider than requested — see the 200 response.
          */
         size?: number;
         /**
@@ -5698,7 +5698,7 @@ export type GetBatteryUnitQrCodeError = GetBatteryUnitQrCodeErrors[keyof GetBatt
 
 export type GetBatteryUnitQrCodeResponses = {
     /**
-     * QR code image encoding the unit's `digitalLinkUri` (AI-21 = real physical serial). The returned media type follows the `format` query parameter (no `Accept`-header negotiation): `image/png` is a raw PNG bitmap, `size` px wide; `image/svg+xml` is a vector SVG document. Delivered as an attachment download.
+     * QR code image encoding the unit's `digitalLinkUri` (AI-21 = real physical serial). The returned media type follows the `format` query parameter (no `Accept`-header negotiation): `image/png` is a raw PNG bitmap, exactly `size` px wide — except when the symbol's own module grid (its modules plus both 4-module quiet zones) is wider than `size`, where it renders at that grid width instead (at most 185 px), because a raster cannot hold a symbol at less than one pixel per module; `image/svg+xml` is a vector SVG document, which has no such floor and always carries the requested width. Delivered as an attachment download.
      */
     200: unknown;
 };

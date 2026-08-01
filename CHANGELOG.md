@@ -26,6 +26,19 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.12.2] — TypeScript · Java/Kotlin
+
+Targets API contract **1.12.2**. Both clients regenerated; **no generated operation, type or field
+changed** — the diff is the doc comments the generator emits, plus the `GET /context/v1` example,
+whose schema.org terms moved to https.
+
+### Changed
+- The QR exports (`getPassportQrCode`, `getBatteryUnitQrCode`, `bulkExportPassportLabels`) had
+  documented the returned PNG as exactly `size` px wide. The comments now name the one case a raster
+  cannot honour — a symbol whose own module grid exceeds the requested `size` renders at that grid
+  width instead, at most 185 px — and that SVG output has no pixel floor and always carries the
+  requested width.
+
 ## [1.12.1] — TypeScript · Java/Kotlin
 
 Targets API contract **1.12.1** (documentation only). Both clients regenerated; **no generated
