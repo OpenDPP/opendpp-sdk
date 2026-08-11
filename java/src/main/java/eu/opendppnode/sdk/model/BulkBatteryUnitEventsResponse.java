@@ -24,8 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import eu.opendppnode.sdk.model.AdvisoryItem;
-import eu.opendppnode.sdk.model.OperatorRow;
+import eu.opendppnode.sdk.model.BatteryUnitEventRow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,16 +33,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import eu.opendppnode.sdk.invoker.ApiClient;
 /**
- * Confirmation that an economic operator was registered, carrying the stored record and any non-blocking advisories.
+ * The partial-success report of a bulk telemetry ingest.
  */
 @JsonPropertyOrder({
-  RegisterOperatorResponse.JSON_PROPERTY_SUCCESS,
-  RegisterOperatorResponse.JSON_PROPERTY_MESSAGE,
-  RegisterOperatorResponse.JSON_PROPERTY_OPERATOR,
-  RegisterOperatorResponse.JSON_PROPERTY_WARNINGS
+  BulkBatteryUnitEventsResponse.JSON_PROPERTY_SUCCESS,
+  BulkBatteryUnitEventsResponse.JSON_PROPERTY_MESSAGE,
+  BulkBatteryUnitEventsResponse.JSON_PROPERTY_COUNT,
+  BulkBatteryUnitEventsResponse.JSON_PROPERTY_EVENTS,
+  BulkBatteryUnitEventsResponse.JSON_PROPERTY_ERRORS
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class RegisterOperatorResponse {
+public class BulkBatteryUnitEventsResponse {
   /**
    * Gets or Sets success
    */
@@ -87,18 +87,22 @@ public class RegisterOperatorResponse {
   @jakarta.annotation.Nonnull
   private String message;
 
-  public static final String JSON_PROPERTY_OPERATOR = "operator";
+  public static final String JSON_PROPERTY_COUNT = "count";
   @jakarta.annotation.Nonnull
-  private OperatorRow operator;
+  private Integer count;
 
-  public static final String JSON_PROPERTY_WARNINGS = "warnings";
+  public static final String JSON_PROPERTY_EVENTS = "events";
   @jakarta.annotation.Nonnull
-  private List<AdvisoryItem> warnings = new ArrayList<>();
+  private List<BatteryUnitEventRow> events = new ArrayList<>();
 
-  public RegisterOperatorResponse() { 
+  public static final String JSON_PROPERTY_ERRORS = "errors";
+  @jakarta.annotation.Nonnull
+  private List<String> errors = new ArrayList<>();
+
+  public BulkBatteryUnitEventsResponse() { 
   }
 
-  public RegisterOperatorResponse success(@jakarta.annotation.Nonnull SuccessEnum success) {
+  public BulkBatteryUnitEventsResponse success(@jakarta.annotation.Nonnull SuccessEnum success) {
     this.success = success;
     return this;
   }
@@ -122,13 +126,13 @@ public class RegisterOperatorResponse {
   }
 
 
-  public RegisterOperatorResponse message(@jakarta.annotation.Nonnull String message) {
+  public BulkBatteryUnitEventsResponse message(@jakarta.annotation.Nonnull String message) {
     this.message = message;
     return this;
   }
 
   /**
-   * Always &#x60;\&quot;Economic Operator supplier registered successfully\&quot;&#x60; (also when an existing operator was bound rather than created).
+   * Get message
    * @return message
    */
   @jakarta.annotation.Nonnull
@@ -146,64 +150,98 @@ public class RegisterOperatorResponse {
   }
 
 
-  public RegisterOperatorResponse operator(@jakarta.annotation.Nonnull OperatorRow operator) {
-    this.operator = operator;
+  public BulkBatteryUnitEventsResponse count(@jakarta.annotation.Nonnull Integer count) {
+    this.count = count;
     return this;
   }
 
   /**
-   * Get operator
-   * @return operator
+   * How many records were accepted — equals &#x60;events.length&#x60;.
+   * minimum: 1
+   * maximum: 500
+   * @return count
    */
   @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_OPERATOR)
+  @JsonProperty(JSON_PROPERTY_COUNT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public OperatorRow getOperator() {
-    return operator;
+  public Integer getCount() {
+    return count;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OPERATOR)
+  @JsonProperty(JSON_PROPERTY_COUNT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setOperator(@jakarta.annotation.Nonnull OperatorRow operator) {
-    this.operator = operator;
+  public void setCount(@jakarta.annotation.Nonnull Integer count) {
+    this.count = count;
   }
 
 
-  public RegisterOperatorResponse warnings(@jakarta.annotation.Nonnull List<AdvisoryItem> warnings) {
-    this.warnings = warnings;
+  public BulkBatteryUnitEventsResponse events(@jakarta.annotation.Nonnull List<BatteryUnitEventRow> events) {
+    this.events = events;
     return this;
   }
 
-  public RegisterOperatorResponse addWarningsItem(AdvisoryItem warningsItem) {
-    if (this.warnings == null) {
-      this.warnings = new ArrayList<>();
+  public BulkBatteryUnitEventsResponse addEventsItem(BatteryUnitEventRow eventsItem) {
+    if (this.events == null) {
+      this.events = new ArrayList<>();
     }
-    this.warnings.add(warningsItem);
+    this.events.add(eventsItem);
     return this;
   }
 
   /**
-   * Non-blocking advisories. Carries a single EORI-not-found note when the OPT-IN EORI existence check is enabled and a declared EORI is not found in the EU EOS register. Empty &#x60;[]&#x60; otherwise. Never blocks registration.
-   * @return warnings
+   * The persisted rows, in the order the accepted records appeared in the request.
+   * @return events
    */
   @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_WARNINGS)
+  @JsonProperty(JSON_PROPERTY_EVENTS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public List<AdvisoryItem> getWarnings() {
-    return warnings;
+  public List<BatteryUnitEventRow> getEvents() {
+    return events;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_WARNINGS)
+  @JsonProperty(JSON_PROPERTY_EVENTS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setWarnings(@jakarta.annotation.Nonnull List<AdvisoryItem> warnings) {
-    this.warnings = warnings;
+  public void setEvents(@jakarta.annotation.Nonnull List<BatteryUnitEventRow> events) {
+    this.events = events;
+  }
+
+
+  public BulkBatteryUnitEventsResponse errors(@jakarta.annotation.Nonnull List<String> errors) {
+    this.errors = errors;
+    return this;
+  }
+
+  public BulkBatteryUnitEventsResponse addErrorsItem(String errorsItem) {
+    if (this.errors == null) {
+      this.errors = new ArrayList<>();
+    }
+    this.errors.add(errorsItem);
+    return this;
+  }
+
+  /**
+   * Skipped records as &#x60;[index]&#x60;-prefixed reasons; empty when the whole batch was accepted.
+   * @return errors
+   */
+  @jakarta.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_ERRORS)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public List<String> getErrors() {
+    return errors;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_ERRORS)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public void setErrors(@jakarta.annotation.Nonnull List<String> errors) {
+    this.errors = errors;
   }
 
 
   /**
-   * Return true if this RegisterOperatorResponse object is equal to o.
+   * Return true if this BulkBatteryUnitEventsResponse object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -213,26 +251,28 @@ public class RegisterOperatorResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    RegisterOperatorResponse registerOperatorResponse = (RegisterOperatorResponse) o;
-    return Objects.equals(this.success, registerOperatorResponse.success) &&
-        Objects.equals(this.message, registerOperatorResponse.message) &&
-        Objects.equals(this.operator, registerOperatorResponse.operator) &&
-        Objects.equals(this.warnings, registerOperatorResponse.warnings);
+    BulkBatteryUnitEventsResponse bulkBatteryUnitEventsResponse = (BulkBatteryUnitEventsResponse) o;
+    return Objects.equals(this.success, bulkBatteryUnitEventsResponse.success) &&
+        Objects.equals(this.message, bulkBatteryUnitEventsResponse.message) &&
+        Objects.equals(this.count, bulkBatteryUnitEventsResponse.count) &&
+        Objects.equals(this.events, bulkBatteryUnitEventsResponse.events) &&
+        Objects.equals(this.errors, bulkBatteryUnitEventsResponse.errors);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(success, message, operator, warnings);
+    return Objects.hash(success, message, count, events, errors);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class RegisterOperatorResponse {\n");
+    sb.append("class BulkBatteryUnitEventsResponse {\n");
     sb.append("    success: ").append(toIndentedString(success)).append("\n");
     sb.append("    message: ").append(toIndentedString(message)).append("\n");
-    sb.append("    operator: ").append(toIndentedString(operator)).append("\n");
-    sb.append("    warnings: ").append(toIndentedString(warnings)).append("\n");
+    sb.append("    count: ").append(toIndentedString(count)).append("\n");
+    sb.append("    events: ").append(toIndentedString(events)).append("\n");
+    sb.append("    errors: ").append(toIndentedString(errors)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -290,18 +330,27 @@ public class RegisterOperatorResponse {
       joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
-    // add `operator` to the URL query string
-    if (getOperator() != null) {
-      joiner.add(getOperator().toUrlQueryString(prefix + "operator" + suffix));
+    // add `count` to the URL query string
+    if (getCount() != null) {
+      joiner.add(String.format("%scount%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCount()))));
     }
 
-    // add `warnings` to the URL query string
-    if (getWarnings() != null) {
-      for (int i = 0; i < getWarnings().size(); i++) {
-        if (getWarnings().get(i) != null) {
-          joiner.add(getWarnings().get(i).toUrlQueryString(String.format("%swarnings%s%s", prefix, suffix,
+    // add `events` to the URL query string
+    if (getEvents() != null) {
+      for (int i = 0; i < getEvents().size(); i++) {
+        if (getEvents().get(i) != null) {
+          joiner.add(getEvents().get(i).toUrlQueryString(String.format("%sevents%s%s", prefix, suffix,
           "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
         }
+      }
+    }
+
+    // add `errors` to the URL query string
+    if (getErrors() != null) {
+      for (int i = 0; i < getErrors().size(); i++) {
+        joiner.add(String.format("%serrors%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            ApiClient.urlEncode(ApiClient.valueToString(getErrors().get(i)))));
       }
     }
 

@@ -26,6 +26,24 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.13.0] — TypeScript · Java/Kotlin
+
+Targets API contract **1.13.0** (the 1.12.x line closed unpublished — 1.12.3's documentation-only
+rewrite ships here). Both clients regenerate with real surface changes:
+
+- **New operation** `bulkRecordBatteryUnitEvents` (`POST /api/v1/units/{id}/events/bulk`) and its
+  `BulkBatteryUnitEventsRequest`/`BulkBatteryUnitEventsResponse` types.
+- `listBatteryUnitEvents` gains `limit` and `cursor` parameters, and its response type gains the
+  required nullable `nextCursor` field — cursor-paged reads replace the fixed newest-500 window.
+- Both per-unit event writes accept an optional `Idempotency-Key` header parameter.
+- **Removed:** the `auditEventLineage` operation and the
+  `TraceComplianceAuditResponse`/`TraceComplianceCertificate` types (the screening surface is
+  retired), and the `BatteryUnitDeleteResponse` type — `deleteBatteryUnit` now documents its
+  only real outcome, the `409` refusal, so its generated success type is gone.
+
+A client compiled against 1.12.x that referenced the removed operation or types will not compile
+against 1.13.0 — pre-adoption break, shipped under the recorded contract waiver.
+
 ## [1.12.2] — TypeScript · Java/Kotlin
 
 Targets API contract **1.12.2**. Both clients regenerated; **no generated operation, type or field

@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ApproveGrantRequestData, ApproveGrantRequestErrors, ApproveGrantRequestResponses, AuditEventLineageData, AuditEventLineageErrors, AuditEventLineageResponses, BulkExportPassportLabelsData, BulkExportPassportLabelsErrors, BulkExportPassportLabelsResponses, BulkIngestPassportsData, BulkIngestPassportsErrors, BulkIngestPassportsResponses, CaptureEpcisDocumentData, CaptureEpcisDocumentErrors, CaptureEpcisDocumentResponses, CreateFacilityData, CreateFacilityErrors, CreateFacilityResponses, CreateGrantData, CreateGrantErrors, CreateGrantResponses, CreatePassportData, CreatePassportErrors, CreatePassportResponses, CreateWebhookSubscriptionData, CreateWebhookSubscriptionErrors, CreateWebhookSubscriptionResponses, DecodeGs1BatchData, DecodeGs1BatchErrors, DecodeGs1BatchResponses, DecodeGs1Data, DecodeGs1Errors, DecodeGs1Responses, DeleteBatteryUnitData, DeleteBatteryUnitErrors, DeleteBatteryUnitResponses, DeleteDraftPassportData, DeleteDraftPassportErrors, DeleteDraftPassportResponses, DeleteFacilityData, DeleteFacilityErrors, DeleteFacilityResponses, DeleteOperatorData, DeleteOperatorErrors, DeleteOperatorResponses, DeleteWebhookSubscriptionData, DeleteWebhookSubscriptionErrors, DeleteWebhookSubscriptionResponses, DenyGrantRequestData, DenyGrantRequestErrors, DenyGrantRequestResponses, GetApiVersionData, GetApiVersionErrors, GetApiVersionResponses, GetBatteryUnitData, GetBatteryUnitErrors, GetBatteryUnitQrCodeData, GetBatteryUnitQrCodeErrors, GetBatteryUnitQrCodeResponses, GetBatteryUnitResponses, GetDppJsonLdContextData, GetDppJsonLdContextErrors, GetDppJsonLdContextResponses, GetEventLineageData, GetEventLineageErrors, GetEventLineageResponses, GetFacilityData, GetFacilityErrors, GetFacilityResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetJsonLdContextData, GetJsonLdContextErrors, GetJsonLdContextResponses, GetOperatorData, GetOperatorErrors, GetOperatorResponses, GetPassportData, GetPassportErrors, GetPassportQrCodeData, GetPassportQrCodeErrors, GetPassportQrCodeResponses, GetPassportResponses, GetSealCaCertificateData, GetSealCaCertificateErrors, GetSealCaCertificateResponses, GetSectorSchemaData, GetSectorSchemaErrors, GetSectorSchemaResponses, GetTenantDidDocumentData, GetTenantDidDocumentErrors, GetTenantDidDocumentResponses, GetTenantRevocationStatusListData, GetTenantRevocationStatusListErrors, GetTenantRevocationStatusListResponses, IngestPassportFromAasData, IngestPassportFromAasErrors, IngestPassportFromAasResponses, ListBatteryUnitEventsData, ListBatteryUnitEventsErrors, ListBatteryUnitEventsResponses, ListBatteryUnitsData, ListBatteryUnitsErrors, ListBatteryUnitsResponses, ListFacilitiesData, ListFacilitiesErrors, ListFacilitiesResponses, ListGrantsData, ListGrantsErrors, ListGrantsResponses, ListMaterialsData, ListMaterialsErrors, ListMaterialsResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListPassportsData, ListPassportsErrors, ListPassportsResponses, ListWebhookDeliveriesData, ListWebhookDeliveriesErrors, ListWebhookDeliveriesResponses, ListWebhookSubscriptionsData, ListWebhookSubscriptionsErrors, ListWebhookSubscriptionsResponses, MintGtinCheckDigitData, MintGtinCheckDigitErrors, MintGtinCheckDigitResponses, PassportVcReadinessReportData, PassportVcReadinessReportResponses, RecordBatteryUnitEventData, RecordBatteryUnitEventErrors, RecordBatteryUnitEventResponses, RegisterOperatorData, RegisterOperatorErrors, RegisterOperatorResponses, RegisterTraceabilityEventData, RegisterTraceabilityEventErrors, RegisterTraceabilityEventResponses, ResolveGs1GraiData, ResolveGs1GraiErrors, ResolveGs1GraiResponses, ResolveGs1GtinData, ResolveGs1GtinErrors, ResolveGs1GtinResponses, ResolveGs1GtinSerialData, ResolveGs1GtinSerialErrors, ResolvePublicBatteryUnitData, ResolvePublicBatteryUnitErrors, ResolvePublicBatteryUnitResponses, ResolvePublicPassportData, ResolvePublicPassportErrors, ResolvePublicPassportResponses, RestoreOperatorData, RestoreOperatorErrors, RestoreOperatorResponses, RevokeGrantData, RevokeGrantErrors, RevokeGrantResponses, RotateTenantKeysData, RotateTenantKeysErrors, RotateTenantKeysResponses, RotateWebhookSecretData, RotateWebhookSecretErrors, RotateWebhookSecretResponses, SealPassportData, SealPassportErrors, SealPassportResponses, SerializeBatteryUnitsData, SerializeBatteryUnitsErrors, SerializeBatteryUnitsResponses, TestWebhookSubscriptionData, TestWebhookSubscriptionErrors, TestWebhookSubscriptionResponses, UpdateFacilityData, UpdateFacilityErrors, UpdateFacilityResponses, UpdateOperatorData, UpdateOperatorErrors, UpdateOperatorResponses, UpdatePassportData, UpdatePassportErrors, UpdatePassportResponses, UpdatePassportStatusData, UpdatePassportStatusErrors, UpdatePassportStatusResponses, UpdateWebhookSubscriptionData, UpdateWebhookSubscriptionErrors, UpdateWebhookSubscriptionResponses, ValidateBatteryUnitsData, ValidateBatteryUnitsErrors, ValidateBatteryUnitsResponses, ValidatePassportData, ValidatePassportErrors, ValidatePassportPublicData, ValidatePassportPublicErrors, ValidatePassportPublicResponses, ValidatePassportResponses, VerifyPassportSealData, VerifyPassportSealErrors, VerifyPassportSealResponses, WhoamiData, WhoamiErrors, WhoamiResponses } from './types.gen';
+import type { ApproveGrantRequestData, ApproveGrantRequestErrors, ApproveGrantRequestResponses, BulkExportPassportLabelsData, BulkExportPassportLabelsErrors, BulkExportPassportLabelsResponses, BulkIngestPassportsData, BulkIngestPassportsErrors, BulkIngestPassportsResponses, BulkRecordBatteryUnitEventsData, BulkRecordBatteryUnitEventsErrors, BulkRecordBatteryUnitEventsResponses, CaptureEpcisDocumentData, CaptureEpcisDocumentErrors, CaptureEpcisDocumentResponses, CreateFacilityData, CreateFacilityErrors, CreateFacilityResponses, CreateGrantData, CreateGrantErrors, CreateGrantResponses, CreatePassportData, CreatePassportErrors, CreatePassportResponses, CreateWebhookSubscriptionData, CreateWebhookSubscriptionErrors, CreateWebhookSubscriptionResponses, DecodeGs1BatchData, DecodeGs1BatchErrors, DecodeGs1BatchResponses, DecodeGs1Data, DecodeGs1Errors, DecodeGs1Responses, DeleteBatteryUnitData, DeleteBatteryUnitErrors, DeleteDraftPassportData, DeleteDraftPassportErrors, DeleteDraftPassportResponses, DeleteFacilityData, DeleteFacilityErrors, DeleteFacilityResponses, DeleteOperatorData, DeleteOperatorErrors, DeleteOperatorResponses, DeleteWebhookSubscriptionData, DeleteWebhookSubscriptionErrors, DeleteWebhookSubscriptionResponses, DenyGrantRequestData, DenyGrantRequestErrors, DenyGrantRequestResponses, GetApiVersionData, GetApiVersionErrors, GetApiVersionResponses, GetBatteryUnitData, GetBatteryUnitErrors, GetBatteryUnitQrCodeData, GetBatteryUnitQrCodeErrors, GetBatteryUnitQrCodeResponses, GetBatteryUnitResponses, GetDppJsonLdContextData, GetDppJsonLdContextErrors, GetDppJsonLdContextResponses, GetEventLineageData, GetEventLineageErrors, GetEventLineageResponses, GetFacilityData, GetFacilityErrors, GetFacilityResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetJsonLdContextData, GetJsonLdContextErrors, GetJsonLdContextResponses, GetOperatorData, GetOperatorErrors, GetOperatorResponses, GetPassportData, GetPassportErrors, GetPassportQrCodeData, GetPassportQrCodeErrors, GetPassportQrCodeResponses, GetPassportResponses, GetSealCaCertificateData, GetSealCaCertificateErrors, GetSealCaCertificateResponses, GetSectorSchemaData, GetSectorSchemaErrors, GetSectorSchemaResponses, GetTenantDidDocumentData, GetTenantDidDocumentErrors, GetTenantDidDocumentResponses, GetTenantRevocationStatusListData, GetTenantRevocationStatusListErrors, GetTenantRevocationStatusListResponses, IngestPassportFromAasData, IngestPassportFromAasErrors, IngestPassportFromAasResponses, ListBatteryUnitEventsData, ListBatteryUnitEventsErrors, ListBatteryUnitEventsResponses, ListBatteryUnitsData, ListBatteryUnitsErrors, ListBatteryUnitsResponses, ListFacilitiesData, ListFacilitiesErrors, ListFacilitiesResponses, ListGrantsData, ListGrantsErrors, ListGrantsResponses, ListMaterialsData, ListMaterialsErrors, ListMaterialsResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListPassportsData, ListPassportsErrors, ListPassportsResponses, ListWebhookDeliveriesData, ListWebhookDeliveriesErrors, ListWebhookDeliveriesResponses, ListWebhookSubscriptionsData, ListWebhookSubscriptionsErrors, ListWebhookSubscriptionsResponses, MintGtinCheckDigitData, MintGtinCheckDigitErrors, MintGtinCheckDigitResponses, PassportVcReadinessReportData, PassportVcReadinessReportResponses, RecordBatteryUnitEventData, RecordBatteryUnitEventErrors, RecordBatteryUnitEventResponses, RegisterOperatorData, RegisterOperatorErrors, RegisterOperatorResponses, RegisterTraceabilityEventData, RegisterTraceabilityEventErrors, RegisterTraceabilityEventResponses, ResolveGs1GraiData, ResolveGs1GraiErrors, ResolveGs1GraiResponses, ResolveGs1GtinData, ResolveGs1GtinErrors, ResolveGs1GtinResponses, ResolveGs1GtinSerialData, ResolveGs1GtinSerialErrors, ResolvePublicBatteryUnitData, ResolvePublicBatteryUnitErrors, ResolvePublicBatteryUnitResponses, ResolvePublicPassportData, ResolvePublicPassportErrors, ResolvePublicPassportResponses, RestoreOperatorData, RestoreOperatorErrors, RestoreOperatorResponses, RevokeGrantData, RevokeGrantErrors, RevokeGrantResponses, RotateTenantKeysData, RotateTenantKeysErrors, RotateTenantKeysResponses, RotateWebhookSecretData, RotateWebhookSecretErrors, RotateWebhookSecretResponses, SealPassportData, SealPassportErrors, SealPassportResponses, SerializeBatteryUnitsData, SerializeBatteryUnitsErrors, SerializeBatteryUnitsResponses, TestWebhookSubscriptionData, TestWebhookSubscriptionErrors, TestWebhookSubscriptionResponses, UpdateFacilityData, UpdateFacilityErrors, UpdateFacilityResponses, UpdateOperatorData, UpdateOperatorErrors, UpdateOperatorResponses, UpdatePassportData, UpdatePassportErrors, UpdatePassportResponses, UpdatePassportStatusData, UpdatePassportStatusErrors, UpdatePassportStatusResponses, UpdateWebhookSubscriptionData, UpdateWebhookSubscriptionErrors, UpdateWebhookSubscriptionResponses, ValidateBatteryUnitsData, ValidateBatteryUnitsErrors, ValidateBatteryUnitsResponses, ValidatePassportData, ValidatePassportErrors, ValidatePassportPublicData, ValidatePassportPublicErrors, ValidatePassportPublicResponses, ValidatePassportResponses, VerifyPassportSealData, VerifyPassportSealErrors, VerifyPassportSealResponses, WhoamiData, WhoamiErrors, WhoamiResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -23,11 +23,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * Returns a compact, integration-focused view of the calling credential: the workspace, the principal's role and resolved permissions, whether the session is an API key, the operator the key is scoped to (`null` = workspace-wide), and active-passport usage against the tier quota. Use it to verify a key works, discover the effective permission set, and surface remaining quota.
  *
- * This is the public counterpart to the console's `GET /api/v1/me`; profile, localization and billing details are intentionally not exposed here.
+ * Profile, localization and billing details are deliberately not exposed here — this is the integration view of the credential.
  *
  * **Permission:** none beyond a valid tenant-scoped session — any API key can call it. Platform-admin sessions are rejected with `403` (they are not tenant-scoped).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const whoami = <ThrowOnError extends boolean = false>(options?: Options<WhoamiData, ThrowOnError>): RequestResult<WhoamiResponses, WhoamiErrors, ThrowOnError> => (options?.client ?? client).get<WhoamiResponses, WhoamiErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -36,13 +36,13 @@ export const whoami = <ThrowOnError extends boolean = false>(options?: Options<W
 });
 
 /**
- * Pre-flight: validate battery-unit identifiers without persisting (#263)
+ * Pre-flight: validate battery-unit identifiers without persisting
  *
  * NON-MUTATING pre-flight for bulk unit import. Runs the SAME engine-backed AI-21 / GS1 Digital Link conformance + field checks as `POST /api/v1/passports/{passportId}/units` and returns a per-item verdict — **persisting nothing**. Send a single unit or `{"units": [...]}` (≤200). Lets a bulk importer ask "would these serials be GS1-conformant?" before committing a batch.
  *
  * **Permission:** `battery:write` (gated as the write permission, like other validate-only checks; subscription gating → 402). **Validation:** `serialNumber` charset/length (`^[A-Za-z0-9._-]{1,20}$`, a URL-safe subset of GS1 AI-21 CSET 82) PLUS authoritative GS1-engine conformance for EVERY unit — a GTIN-keyed passport's unit Digital Link must parse cleanly through the engine, and a non-GTIN passport's AI-21 serial VALUE is validated through the same engine (CSET-82 charset + length); `status` must be a valid unit status; `manufacturedAt` must be Date-parseable. Predecessor linkage is NOT checked here (a persistence-time concern). The verdict order matches the input order.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const validateBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<ValidateBatteryUnitsData, ThrowOnError>): RequestResult<ValidateBatteryUnitsResponses, ValidateBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).post<ValidateBatteryUnitsResponses, ValidateBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -59,9 +59,9 @@ export const validateBatteryUnits = <ThrowOnError extends boolean = false>(optio
  *
  * Lists **all** serialised units of the passport, newest first (`createdAt` DESC). **Paginated** with `?page` (default 1) and `?limit` (default 100, max 200) — a SKU may carry many physical units; `count` is this page's size, `total`/`totalPages` describe the full set.
  *
- * **Permission:** `battery:read`. Operator-scoped credentials may only read passports of their own Economic Operator (403). Units are raw persisted rows (no Fastify response schema, nothing stripped).
+ * **Permission:** `battery:read`. Operator-scoped credentials may only read passports of their own Economic Operator (403). Units are returned as stored.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<ListBatteryUnitsData, ThrowOnError>): RequestResult<ListBatteryUnitsResponses, ListBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).get<ListBatteryUnitsResponses, ListBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -72,17 +72,17 @@ export const listBatteryUnits = <ThrowOnError extends boolean = false>(options: 
 /**
  * Serialise individual battery units under a passport (bulk, up to 200)
  *
- * Creates one or many **individual physical battery units** (Battery Reg. (EU) 2023/1542 Art. 77(2)) under a SKU/type-level passport. Send either a single unit object or `{"units": [...]}` with **at most 200 items** (if `units` is present and an array it is used; otherwise the whole body is treated as one unit).
+ * Creates one or many **individual physical battery units** (EU Battery Regulation) under a SKU/type-level passport. Send either a single unit object or `{"units": [...]}` with **at most 200 items** (if `units` is present and an array it is used; otherwise the whole body is treated as one unit).
  *
  * **Permission:** `battery:write`. Bearer API key (`op_dpp_token_…`) or session JWT; cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only serialise under passports of their own Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
  *
  * **Per-item validation (collected as plain-string errors, not a rejection of the whole batch):** `serialNumber` is trimmed then must match `^[A-Za-z0-9._-]{1,20}$` (a URL-safe subset of GS1 AI-21 CSET 82, ≤ 20 chars) AND is validated to full AI-21 conformance by GS1's authoritative engine — a GTIN-keyed unit through its full Digital Link, a non-GTIN unit through its AI-21 serial value; `status` must be a valid unit status; `manufacturedAt` must be Date-parseable; duplicate `(passport, serialNumber)` pairs are skipped with *"A unit with this serial already exists for this passport"*. Each created unit gets a per-unit GS1 Digital Link URI `/{01|8003}/{productId}/21/{serialNumber}` carrying the **real physical serial** in AI-21.
  *
- * **Predecessor linkage (Art. 77(7) repurpose/remanufacture):** `predecessorUnitId` must reference an existing unit **in your tenant** (any passport). A recycled predecessor (`ceasedAt` set) is refused — its passport has ceased to exist (Art. 77(8)). (The check keys on `ceasedAt`, which only the events-route `RECYCLED` transition stamps — a unit merely *created* with status `RECYCLED` has no `ceasedAt` and is still accepted as a predecessor.) In one transaction the new unit is created, an append-only `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}` payload) is written to the predecessor, and the predecessor's status is set to `predecessorStatus` (default `REPURPOSED`; only `REPURPOSED|REMANUFACTURED|REUSED` allowed).
+ * **Predecessor linkage (repurpose/remanufacture):** `predecessorUnitId` must reference an existing unit **in your tenant** (any passport). A recycled predecessor (`ceasedAt` set) is refused — its passport has ceased to exist. (A unit *created* with status `RECYCLED` is ceased from birth — `ceasedAt` is stamped at creation — and is refused as a predecessor exactly like one recycled via the events route.) In one transaction the new unit is created, an append-only `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}` payload) is written to the predecessor, and the predecessor's status is set to `predecessorStatus` (default `REPURPOSED`; only `REPURPOSED|REMANUFACTURED|REUSED` allowed).
  *
  * **Partial success:** the response is **201 when at least one unit was created**; skipped items are listed in `errors`. If *every* item failed you get **400 `Serialisation Failed`** with the same string array. A `batteryunit.created` audit event and a tenant notification are emitted on success.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const serializeBatteryUnits = <ThrowOnError extends boolean = false>(options: Options<SerializeBatteryUnitsData, ThrowOnError>): RequestResult<SerializeBatteryUnitsResponses, SerializeBatteryUnitsErrors, ThrowOnError> => (options.client ?? client).post<SerializeBatteryUnitsResponses, SerializeBatteryUnitsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -95,15 +95,15 @@ export const serializeBatteryUnits = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Permanently delete a battery unit and its telemetry
+ * Not deletable: a serialised unit is a marketed physical item (always 409)
  *
- * **HARD delete** — permanently removes the unit row and **cascades all of its `BatteryUnitEvent` telemetry**. This is *not* a lifecycle/status transition: to record end-of-life semantics (decommissioned, waste, recycled — incl. the Art. 77(8) public 410 tombstone) append a telemetry event with a `status` instead (`POST /api/v1/units/{id}/events`). Deletion is intended for erroneous serialisations. A `batteryunit.deleted` audit event is written.
+ * **Always refused with 409.** A serialised unit is an item-level battery passport for a physical battery placed on the market, so the record — including its append-only telemetry — is retained (EU Battery Regulation persistence, mirroring the passport-level archive model). End a unit's life through the lifecycle instead: append a `STATUS_CHANGE` event via `POST /api/v1/units/{id}/events` — `RECYCLED` ceases it (public 410 tombstone), `DECOMMISSIONED` retires it. Hard removal is reserved for the node's retention-gated purge, never an ad-hoc API delete.
  *
- * **Permission:** `battery:write`. Cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only delete units whose passport belongs to their Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
+ * **Permission:** `battery:write`. Cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only address units whose passport belongs to their Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
-export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<DeleteBatteryUnitData, ThrowOnError>): RequestResult<DeleteBatteryUnitResponses, DeleteBatteryUnitErrors, ThrowOnError> => (options.client ?? client).delete<DeleteBatteryUnitResponses, DeleteBatteryUnitErrors, ThrowOnError>({
+export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<DeleteBatteryUnitData, ThrowOnError>): RequestResult<unknown, DeleteBatteryUnitErrors, ThrowOnError> => (options.client ?? client).delete<unknown, DeleteBatteryUnitErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/units/{id}',
     ...options
@@ -114,11 +114,11 @@ export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options:
  *
  * Returns the unit as a **JSON-LD document** (`Content-Type: application/ld+json`) in the **privileged tenant view**: `currentState` (the latest telemetry snapshot) and `dynamicData` (the **500 most recent** events, newest first by `recordedAt`) are included; the public `restrictedData` marker is absent. The embedded `ofModel` is the SKU/type passport document rendered in the **owner (unredacted) variant** — legitimate-interest-tier metadata and owner-only keys are NOT masked, unlike the anonymous public document.
  *
- * **Caveat:** this authenticated endpoint does **not** load lineage relations, so `repurposedFrom` is always `null` and `successorUnits` is always `[]` here even when Art. 77(7) lineage exists; the public resolver view (`GET /unit/{id}`) does resolve them.
+ * **Caveat:** this authenticated endpoint does **not** load lineage relations, so `repurposedFrom` is always `null` and `successorUnits` is always `[]` here even when lineage exists; the public resolver view (`GET /unit/{id}`) does resolve them.
  *
  * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<GetBatteryUnitData, ThrowOnError>): RequestResult<GetBatteryUnitResponses, GetBatteryUnitErrors, ThrowOnError> => (options.client ?? client).get<GetBatteryUnitResponses, GetBatteryUnitErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -127,13 +127,13 @@ export const getBatteryUnit = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * List a battery unit's telemetry history (newest first, max 500)
+ * List a battery unit's telemetry history (newest first, cursor-paginated)
  *
- * Returns the unit's append-only dynamic-data history ordered by `recordedAt` DESC, **capped at the 500 most recent events**. There is no pagination — older events beyond the cap are not retrievable via this endpoint.
+ * Returns one page of the unit's append-only dynamic-data history ordered by `recordedAt` DESC, ties broken by `id` DESC — so paging is deterministic. A page holds at most 500 events (`limit`, default 500); while older history remains the response carries a non-null `nextCursor` — pass it back as `cursor` to fetch the next (older) page, so the **full history is retrievable** however long it grows. The cursor is opaque; a malformed value returns **400**.
  *
- * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403). Events are raw persisted rows (no Fastify response schema, nothing stripped).
+ * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403). Events are returned as stored.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listBatteryUnitEvents = <ThrowOnError extends boolean = false>(options: Options<ListBatteryUnitEventsData, ThrowOnError>): RequestResult<ListBatteryUnitEventsResponses, ListBatteryUnitEventsErrors, ThrowOnError> => (options.client ?? client).get<ListBatteryUnitEventsResponses, ListBatteryUnitEventsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -150,13 +150,36 @@ export const listBatteryUnitEvents = <ThrowOnError extends boolean = false>(opti
  *
  * **Validation (400 with the standard error triple):** `eventType` is required and must be one of `SOH_MEASUREMENT|CHARGE_CYCLE|STATUS_CHANGE|NEGATIVE_EVENT|OTHER`; `stateOfHealth` 0–100; `cycleCount` and `remainingCapacityAh` 0–9007199254740991; `temperatureC` −273.15–10000 (each may also be `null`/omitted); `status`, if present, must be a valid unit status; `recordedAt` must be Date-parseable (defaults to server time when omitted). `cycleCount` is truncated to an integer before persisting; a `payload` that is not an object or array is silently dropped (stored as `null`) — JSON **arrays** pass the server's `typeof` check and are persisted verbatim.
  *
- * **Status transition:** when `status` is present and differs from the unit's current status, the unit is updated **in the same transaction** as the event — this works with *any* `eventType`, though `STATUS_CHANGE` is the conventional carrier. Transitioning to **`RECYCLED`** (Art. 77(8)) additionally stamps `ceasedAt` (if not already set; never cleared), after which the public unit view becomes a 410 tombstone and the unit can no longer gain successor units. `status` itself is not locked afterwards — a later event may still set a different value — but `ceasedAt` persists, so the public 410 and the predecessor refusal are permanent.
+ * **Status transition:** when `status` is present and differs from the unit's current status, the unit is updated **in the same transaction** as the event — this works with *any* `eventType`, though `STATUS_CHANGE` is the conventional carrier. Transitioning to **`RECYCLED`** additionally stamps `ceasedAt` (if not already set; never cleared), after which the public unit view becomes a 410 tombstone and the unit can no longer gain successor units. `RECYCLED` is terminal: once the unit's status is `RECYCLED` this endpoint refuses **every** further event with **400** `Terminal Unit Status` — neither `status` nor telemetry can change again; serialise a successor unit via `predecessorUnitId` instead.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const recordBatteryUnitEvent = <ThrowOnError extends boolean = false>(options: Options<RecordBatteryUnitEventData, ThrowOnError>): RequestResult<RecordBatteryUnitEventResponses, RecordBatteryUnitEventErrors, ThrowOnError> => (options.client ?? client).post<RecordBatteryUnitEventResponses, RecordBatteryUnitEventErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/units/{id}/events',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Append a batch of telemetry events to a battery unit
+ *
+ * Appends up to **500** append-only dynamic-data records to one unit in a single request — the batch venue for backfilling a fleet's telemetry. **Telemetry only:** a record carrying `status` is refused per-item; a status transition is a lifecycle decision and goes through `POST /api/v1/units/{id}/events` one event at a time.
+ *
+ * **Permission:** `battery:write`. Cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only write to units whose passport belongs to their Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403). A terminal (`RECYCLED`) unit refuses the whole batch (400 `Terminal Unit Status`).
+ *
+ * **Per-record validation (collected as `[index]`-prefixed strings in `errors`, not a rejection of the whole batch):** the same field checks as the single-event endpoint — `eventType` required and valid, numeric ranges, Date-parseable `recordedAt` (defaults to server time when omitted) — plus the physics consistency checks, judged in chronological order across the batch and the unit's recorded history, so a reading that only conflicts with another batch member is caught too.
+ *
+ * **Partial success:** the response is **201 when at least one record was accepted**; skipped items are listed in `errors`. If *every* item failed you get **400** `Bulk Event Ingest Failed` with the same string array.
+ *
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ */
+export const bulkRecordBatteryUnitEvents = <ThrowOnError extends boolean = false>(options: Options<BulkRecordBatteryUnitEventsData, ThrowOnError>): RequestResult<BulkRecordBatteryUnitEventsResponses, BulkRecordBatteryUnitEventsErrors, ThrowOnError> => (options.client ?? client).post<BulkRecordBatteryUnitEventsResponses, BulkRecordBatteryUnitEventsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/units/{id}/events/bulk',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -175,7 +198,7 @@ export const recordBatteryUnitEvent = <ThrowOnError extends boolean = false>(opt
  *
  * The full row is returned to the owner, including the privileged address fields (`streetAddress`, `city`, `postalCode`) that public passport documents never expose (owner-only in JSON-LD; never emitted in AAS).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listFacilities = <ThrowOnError extends boolean = false>(options?: Options<ListFacilitiesData, ThrowOnError>): RequestResult<ListFacilitiesResponses, ListFacilitiesErrors, ThrowOnError> => (options?.client ?? client).get<ListFacilitiesResponses, ListFacilitiesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -202,7 +225,7 @@ export const listFacilities = <ThrowOnError extends boolean = false>(options?: O
  *
  * Emits a `facility.created` audit event and an in-app notification.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const createFacility = <ThrowOnError extends boolean = false>(options: Options<CreateFacilityData, ThrowOnError>): RequestResult<CreateFacilityResponses, CreateFacilityErrors, ThrowOnError> => (options.client ?? client).post<CreateFacilityResponses, CreateFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -225,7 +248,7 @@ export const createFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * Emits a `facility.deleted` audit event and an in-app notification. **404 body:** standard envelope with message `Facility <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteFacility = <ThrowOnError extends boolean = false>(options: Options<DeleteFacilityData, ThrowOnError>): RequestResult<DeleteFacilityResponses, DeleteFacilityErrors, ThrowOnError> => (options.client ?? client).delete<DeleteFacilityResponses, DeleteFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -246,7 +269,7 @@ export const deleteFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * **404 body:** standard envelope with message `Facility <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getFacility = <ThrowOnError extends boolean = false>(options: Options<GetFacilityData, ThrowOnError>): RequestResult<GetFacilityResponses, GetFacilityErrors, ThrowOnError> => (options.client ?? client).get<GetFacilityResponses, GetFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -272,7 +295,7 @@ export const getFacility = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Emits a `facility.updated` audit event recording the changed fields.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateFacility = <ThrowOnError extends boolean = false>(options: Options<UpdateFacilityData, ThrowOnError>): RequestResult<UpdateFacilityResponses, UpdateFacilityErrors, ThrowOnError> => (options.client ?? client).put<UpdateFacilityResponses, UpdateFacilityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -287,9 +310,9 @@ export const updateFacility = <ThrowOnError extends boolean = false>(options: Op
 /**
  * List access grants and pending access requests
  *
- * Lists the workspace's access grants — capability-token grants for the Battery Regulation's restricted data tiers (Reg. (EU) 2023/1542 Art. 77(9), Annex XIII(2)–(4)) — including undecided third-party access **requests** (`status: PENDING`, `issuerType: REQUEST`) submitted via the hosted request-access page.
+ * Lists the workspace's access grants — capability-token grants for the Battery Regulation's restricted data tiers (Annex XIII(2)–(4)) — including undecided third-party access **requests** (`status: PENDING`, `issuerType: REQUEST`) submitted via the hosted request-access page.
  *
- * **Permission:** `grant:read`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `grant:read`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * Paginated with `?page` (default 1) and `?limit` (default 100, max 200), grouped by `status` ascending (alphabetical: `ACTIVE`, `DENIED`, `PENDING`, `REVOKED`) and newest-first within each group. `AUTHORITY` grants (platform-issued market-surveillance access) are listed for transparency but are not tenant-revocable (`revocable: false`). Raw capability tokens are never included — only issuance/approval responses contain them, once.
  *
@@ -306,7 +329,7 @@ export const listGrants = <ThrowOnError extends boolean = false>(options?: Optio
  *
  * Directly issues an `ACTIVE` legitimate-interest access grant (no pending request involved) and mints its capability token. The raw token (`dpp_li_` + 32 hex characters) is returned **once** in this response; only its SHA-256 hash is stored. The grantee presents it to the public resolution endpoints as `Authorization: Bearer dpp_li_…` or `?grant=dpp_li_…` to unlock the restricted (tier-2 / per-unit) data of the granted scope.
  *
- * **Permission:** `grant:write` (write operations are subject to subscription gating, so 402 is possible). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. On workspaces that enforce multi-factor authentication, user sessions that did not authenticate with a second factor receive 403 on writes (API-key clients are exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `grant:write` (write operations are subject to subscription gating, so 402 is possible). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. On workspaces that enforce multi-factor authentication, user sessions that did not authenticate with a second factor receive 403 on writes (API-key clients are exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * Scope semantics:
  * - `UNIT` — `batteryUnitId` is required; the unit must belong to this workspace. The unit's parent `passportId` is recorded on the grant.
@@ -334,7 +357,7 @@ export const createGrant = <ThrowOnError extends boolean = false>(options: Optio
  *
  * The raw token is returned **once** in this response. If the request has a `granteeEmail`, the grantee is additionally e-mailed an inspection link containing the token (`…/unit/{batteryUnitId}?grant=dpp_li_…` or `…/passport/{passportId}?grant=dpp_li_…`) — the only other place the raw token ever exists. The decision is audited as `grant.approved`.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const approveGrantRequest = <ThrowOnError extends boolean = false>(options: Options<ApproveGrantRequestData, ThrowOnError>): RequestResult<ApproveGrantRequestResponses, ApproveGrantRequestErrors, ThrowOnError> => (options.client ?? client).post<ApproveGrantRequestResponses, ApproveGrantRequestErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -351,7 +374,7 @@ export const approveGrantRequest = <ThrowOnError extends boolean = false>(option
  *
  * Denies a `PENDING` third-party access request: sets `status: DENIED` and records `decidedAt`/`decidedBy`. No token is ever minted for a denied request, and no e-mail is sent to the requester. The decision is audited as `grant.denied`. The request body, if any, is ignored.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const denyGrantRequest = <ThrowOnError extends boolean = false>(options: Options<DenyGrantRequestData, ThrowOnError>): RequestResult<DenyGrantRequestResponses, DenyGrantRequestErrors, ThrowOnError> => (options.client ?? client).post<DenyGrantRequestResponses, DenyGrantRequestErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -369,7 +392,7 @@ export const denyGrantRequest = <ThrowOnError extends boolean = false>(options: 
  * - Re-revoking an already-`REVOKED` grant returns 200 again and preserves the original `revokedAt`.
  * - `AUTHORITY` grants (`kind: AUTHORITY`, platform-issued market-surveillance access) are **not tenant-revocable** — 403. Battery Reg. Art. 77 market-surveillance access must not depend on manufacturer consent; platform admins manage those.
  *
- * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const revokeGrant = <ThrowOnError extends boolean = false>(options: Options<RevokeGrantData, ThrowOnError>): RequestResult<RevokeGrantResponses, RevokeGrantErrors, ThrowOnError> => (options.client ?? client).delete<RevokeGrantResponses, RevokeGrantErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -386,7 +409,7 @@ export const revokeGrant = <ThrowOnError extends boolean = false>(options: Optio
  *
  * **Permission:** `operator:read`. Requests authenticated with an **operator-scoped API key** see only their own operator.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listOperators = <ThrowOnError extends boolean = false>(options?: Options<ListOperatorsData, ThrowOnError>): RequestResult<ListOperatorsResponses, ListOperatorsErrors, ThrowOnError> => (options?.client ?? client).get<ListOperatorsResponses, ListOperatorsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -403,11 +426,11 @@ export const listOperators = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Deduplication (per workspace):** operators are scoped to your workspace — `regId` is unique *within* your workspace, not across the platform. If **your workspace** already has an operator with the submitted `regId`, that existing record is returned and the submitted `name`, `role` and `regIdScheme` are **ignored**. A `regId` already used by *another* workspace is irrelevant — you always get **your own** operator row (so one workspace can never bind to, rename, or archive another's operator). The call is idempotent: re-registering an already-bound operator succeeds with `201` again. The per-workspace match includes **archived** operators: if your workspace's operator for that `regId` is archived, the archived record is returned as-is (`archivedAt` non-null) with `201` — registration does not un-archive it; use `POST /api/v1/operators/{id}/restore` to reactivate it.
  *
- * **Registration-id integrity:** fabricated `EORI-MOCK…` ids are rejected on every path. When `regIdScheme` is `EORI`, `regId` must match `^[A-Z]{2}[A-Za-z0-9]{1,15}$` (2-letter ISO 3166 country prefix followed by up to 15 alphanumerics, e.g. `DE1234567890`). Validation is syntax-only by default. When the node operator enables the OPT-IN `EORI_EXISTENCE_CHECK` (#404), a declared `EORI` `regId` is additionally checked for EXISTENCE against the EU Commission EOS validation service and, if not found, a NON-BLOCKING advisory is added to the 201 `warnings[]` — the operator is still registered (best-effort, fail-open: a network error, or a freshly-issued / GB EORI, never blocks registration). With the check off, `warnings` is `[]`.
+ * **Registration-id integrity:** fabricated `EORI-MOCK…` ids are rejected on every path. When `regIdScheme` is `EORI`, `regId` must match `^[A-Z]{2}[A-Za-z0-9]{1,15}$` (2-letter ISO 3166 country prefix followed by up to 15 alphanumerics, e.g. `DE1234567890`). Validation is syntax-only by default. When the node operator enables the OPT-IN EORI existence check, a declared `EORI` `regId` is additionally checked for EXISTENCE against the EU Commission EOS validation service and, if not found, a NON-BLOCKING advisory is added to the 201 `warnings[]` — the operator is still registered (best-effort, fail-open: a network error, or a freshly-issued / GB EORI, never blocks registration). With the check off, `warnings` is `[]`.
  *
  * Side effects: an `operator.created` audit event and an in-app notification are recorded.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const registerOperator = <ThrowOnError extends boolean = false>(options: Options<RegisterOperatorData, ThrowOnError>): RequestResult<RegisterOperatorResponses, RegisterOperatorErrors, ThrowOnError> => (options.client ?? client).post<RegisterOperatorResponses, RegisterOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -422,7 +445,7 @@ export const registerOperator = <ThrowOnError extends boolean = false>(options: 
 /**
  * Remove an operator (archives if it has passports, else hard-deletes)
  *
- * Removes an operator, choosing automatically between two outcomes (ESPR Art. 9(2)/77 passport-persistence compliance — an operator that still has passports must never be hard-deleted):
+ * Removes an operator, choosing automatically between two outcomes (ESPR passport-persistence compliance — an operator that still has passports must never be hard-deleted):
  *
  * - **Archive (soft delete)** — if the operator has one or more passports, it is archived instead of deleted: `archivedAt` is set on the operator and every active passport of the operator is archived with a `retentionUntil` deadline set to a platform-configured retention period from now (default 15 years). Archived passports remain **publicly resolvable** (the persistence duty) but are excluded from active management lists. Response: `{success: true, archived: true, archivedPassports: <n>}`. Fully reversible via `POST /api/v1/operators/{id}/restore`.
  * - **Hard delete** — if the operator has no passports it is permanently deleted (tenant bindings cascade-delete; user/facility/API-key references are set to null). Response: `{success: true, archived: false}` — no `archivedPassports` field.
@@ -434,7 +457,7 @@ export const registerOperator = <ThrowOnError extends boolean = false>(options: 
  *
  * Side effects: an `operator.archived` or `operator.deleted` audit event plus an in-app notification — on the primary archive and hard-delete paths only; the foreign-key fallback archive writes **no** audit event or notification. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteOperator = <ThrowOnError extends boolean = false>(options: Options<DeleteOperatorData, ThrowOnError>): RequestResult<DeleteOperatorResponses, DeleteOperatorErrors, ThrowOnError> => (options.client ?? client).delete<DeleteOperatorResponses, DeleteOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -449,7 +472,7 @@ export const deleteOperator = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `operator:read`. An **operator-scoped API key** may only fetch its own operator (`403` otherwise).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getOperator = <ThrowOnError extends boolean = false>(options: Options<GetOperatorData, ThrowOnError>): RequestResult<GetOperatorResponses, GetOperatorErrors, ThrowOnError> => (options.client ?? client).get<GetOperatorResponses, GetOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -468,7 +491,7 @@ export const getOperator = <ThrowOnError extends boolean = false>(options: Optio
  *
  * When a change is applied, an `operator.updated` audit event is recorded. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateOperator = <ThrowOnError extends boolean = false>(options: Options<UpdateOperatorData, ThrowOnError>): RequestResult<UpdateOperatorResponses, UpdateOperatorErrors, ThrowOnError> => (options.client ?? client).patch<UpdateOperatorResponses, UpdateOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -491,7 +514,7 @@ export const updateOperator = <ThrowOnError extends boolean = false>(options: Op
  *
  * Side effects: an `operator.restored` audit event and an in-app notification. Unhandled database errors are normalized by the global error handler to the standard `{success: false, error, message}` envelope with a generic message (details are logged server-side).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const restoreOperator = <ThrowOnError extends boolean = false>(options: Options<RestoreOperatorData, ThrowOnError>): RequestResult<RestoreOperatorResponses, RestoreOperatorErrors, ThrowOnError> => (options.client ?? client).post<RestoreOperatorResponses, RestoreOperatorErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -500,20 +523,20 @@ export const restoreOperator = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Rotate the tenant's eIDAS ECDSA signing key pair
+ * Rotate the tenant's ECDSA signing key pair
  *
- * Generates a brand-new ECDSA **prime256v1 (P-256)** key pair for your workspace's eIDAS advanced-seal signing and rotates it into the encrypted database vault, replacing the previous key. No request body is required; a valid JSON body, if sent, is ignored.
+ * Generates a brand-new ECDSA **prime256v1 (P-256)** key pair for your workspace's advanced-seal signing and rotates it into the encrypted database vault, replacing the previous key. No request body is required; a valid JSON body, if sent, is ignored.
  *
  * What happens:
  * - The new private key (PKCS#8) is encrypted with AES-256-GCM (per-entry HKDF-derived key; the tenant id is bound as GCM additional authenticated data) and upserted into the vault — the **previous private key is overwritten and unrecoverable**.
  * - The tenant's published `eidasPublicKey` is updated to the new public key (SPKI PEM), which is also returned in the response.
- * - A best-effort X.509 identity certificate is minted from the platform seal CA, binding the new key to the tenant's legal name (eIDAS Art. 36(1)(b) creator identification); a certificate-minting failure does **not** fail the rotation (the certificate fields simply stay null until backfilled).
+ * - A best-effort X.509 identity certificate is minted from the platform seal CA, binding the new key to the tenant's legal name (creator identification); a certificate-minting failure does **not** fail the rotation (the certificate fields simply stay null until backfilled).
  *
  * **Operational impact:** rotation does not invalidate existing seals. Each sealed passport embeds the signing public key and certificate chain at sealing time, so previously sealed passports keep verifying with their embedded key material. Passports sealed after rotation use the new key.
  *
  * **Permission:** `key:write`. Cookie-session clients must send `X-CSRF-Token`; Bearer clients are exempt.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const rotateTenantKeys = <ThrowOnError extends boolean = false>(options?: Options<RotateTenantKeysData, ThrowOnError>): RequestResult<RotateTenantKeysResponses, RotateTenantKeysErrors, ThrowOnError> => (options?.client ?? client).post<RotateTenantKeysResponses, RotateTenantKeysErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -537,7 +560,7 @@ export const rotateTenantKeys = <ThrowOnError extends boolean = false>(options?:
  * - `economicOperator.role` is **absent** from list items and `manufacturingFacility` is always `null` here — fetch a single passport (`GET /api/v1/passports/{id}`) for the facility node and operator role.
  * - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the flattened metadata keys) pass through intact — but two **declared** item keys are mangled by their subschemas: the `@context` term-map object (second array element) is always emptied to `{}`, and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — `signatureValue`, `merkleRoot`, `redactedLeaves`, `x5c` and `rfc3161` are all stripped from list output. Fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable proof block.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listPassports = <ThrowOnError extends boolean = false>(options?: Options<ListPassportsData, ThrowOnError>): RequestResult<ListPassportsResponses, ListPassportsErrors, ThrowOnError> => (options?.client ?? client).get<ListPassportsResponses, ListPassportsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -552,9 +575,9 @@ export const listPassports = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.
  *
- * **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code), and the product's EPCIS traceability lineage is audited. For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** (#400) when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.
+ * **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.
  *
  * **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: "DRAFT"` (not publicly resolvable), returns `message: "Draft passport saved"` with `warnings: []`, and does **not** emit a webhook.
  *
@@ -564,7 +587,7 @@ export const listPassports = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.
  *
- * **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `"[REDACTED - Privileged Access Required]"` (it appears as the placeholder even when you did not supply it), and for `category: "batteries"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal (#247).
+ * **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `"[REDACTED - Privileged Access Required]"` (it appears as the placeholder even when you did not supply it), and for `category: "batteries"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.
  *
  * **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{"success": false, "error": "Bad Request", "message": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{"error": "Bad Request", "message": …}`.
  */
@@ -585,10 +608,9 @@ export const createPassport = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.
  *
  * **Behavioral caveats:**
- * - The EPCIS **traceability lineage audit is NOT run** here (it only runs at real ingestion), so a payload can pass this dry-run and still fail `POST /api/v1/passports` on traceability errors.
  * - `operatorId` is accepted by the body schema but **ignored** by the handler.
  * - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body.
  * - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.
@@ -614,7 +636,7 @@ export const validatePassport = <ThrowOnError extends boolean = false>(options: 
  * **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.
  *
  * **Behavioral caveats:**
- * - No tenant context: the EPCIS traceability lineage audit is **not** run, and `operatorId` is accepted but ignored.
+ * - No tenant context: `operatorId` is accepted but ignored.
  * - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body).
  * - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`.
  * - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{"error": "Bad Request", "message": …}`; a whitespace-only `productId` or a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) gets the fuller `Bad Request` body shown below.
@@ -636,10 +658,9 @@ export const validatePassportPublic = <ThrowOnError extends boolean = false>(opt
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions; subscription gating → **402**).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that; in practice the `maxItems: 200` envelope cap is the effective bound for typical rows. Envelope violations — empty array, more than 200 items, missing `passports` — are rejected before any row is processed, with the full default validation error body (`{statusCode, code, error, message}`).
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that; in practice the `maxItems: 200` envelope cap is the effective bound for typical rows. Envelope violations — empty array, more than 200 items, missing `passports` — are rejected before any row is processed, with the full default validation error body (`{statusCode, code, error, message}`).
  *
  * **Per-row behavior (differences from `POST /api/v1/passports`):**
- * - Rows are validated with the ESPR category engine only — the **EPCIS traceability audit is NOT run** for bulk rows.
  * - No `draft` support: every inserted row is created with `status: "ACTIVE"`. No `enrichment` support.
  * - A valid GTIN-14/GRAI `productId` is **not** auto-copied into `metadata.gtin`/`metadata.grai` (unlike single ingestion).
  * - Operator resolution per row: explicit `operatorId` must be bound to your workspace; otherwise the workspace's first bound operator is used; operator-scoped API keys force their operator. Lookups are cached within the request.
@@ -666,11 +687,11 @@ export const bulkIngestPassports = <ThrowOnError extends boolean = false>(option
  *
  * **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions; subscription gating → **402**).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413**.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413**.
  *
- * **Parsing.** The environment must contain a `submodels` array including a submodel with `idShort: "ComplianceMetadata"`, whose `submodelElements` are parsed back into the metadata object; missing it fails 400 (`Ingestion Failed`). `productId` is resolved from `metadata.gtin` || `metadata.grai` || `metadata.productId` || the first shell's `assetInformation.specificAssetIds` entry named `productId` — unresolvable → 400 `Bad Request`. The parsed metadata then passes the full ESPR category validation **plus the EPCIS traceability audit** (400 `Validation Failed` with `errors[]`).
+ * **Parsing.** The environment must contain a `submodels` array including a submodel with `idShort: "ComplianceMetadata"`, whose `submodelElements` are parsed back into the metadata object; missing it fails 400 (`Ingestion Failed`). `productId` is resolved from `metadata.gtin` || `metadata.grai` || `metadata.productId` || the first shell's `assetInformation.specificAssetIds` entry named `productId` — unresolvable → 400 `Bad Request`. The parsed metadata then passes the full ESPR category validation (400 `Validation Failed` with `errors[]`).
  *
- * **eIDAS seal verification.** If the environment embeds an `eidasVerificationSeal` submodel (`digitalSealHash` / `cryptographicSignature` / `pemPublicKey` elements), the seal is verified against **your tenant's server-held eIDAS public key** — never the key embedded in the request (self-signing is rejected by design). An embedded seal that fails verification → **400 `Signature Verification Failed`**; this includes the case where your workspace holds no matching key. `isSealed`/`signatureVerified` in the 201 echo the outcome (both `false` for unsealed documents).
+ * **seal verification.** If the environment embeds an `eidasVerificationSeal` submodel (`digitalSealHash` / `cryptographicSignature` / `pemPublicKey` elements), the seal is verified against **your tenant's server-held signing public key** — never the key embedded in the request (self-signing is rejected by design). An embedded seal that fails verification → **400 `Signature Verification Failed`**; this includes the case where your workspace holds no matching key. `isSealed`/`signatureVerified` in the 201 echo the outcome (both `false` for unsealed documents).
  *
  * **Upsert semantics.** If a passport already exists for the resolved `(productId, operator)` pair: a **sealed** existing passport refuses re-ingestion (**403** — re-seal explicitly after changes); an unsealed one has its metadata, Merkle tree and seal fields **replaced**, still answering **201**. Operator resolution: operator-scoped API keys use their own operator and **403** when that operator is not bound to your workspace; otherwise the workspace's first bound operator is used; none bound → 400.
  *
@@ -692,13 +713,13 @@ export const ingestPassportFromAas = <ThrowOnError extends boolean = false>(opti
 /**
  * Catalog-wide UNTP Verifiable-Credential readiness report
  *
- * A read-only, tenant-scoped report of which SKUs in your catalog can / can't emit a UNTP **Verifiable Credential**, and why — so you can fix a whole catalog before relying on VCs, instead of probing passports one at a time. It **aggregates the same per-passport `vcReady` signal** (#247) returned on every ingest response: a passport is VC-ready only when it links a manufacturing `Facility` with a country of production.
+ * A read-only, tenant-scoped report of which SKUs in your catalog can / can't emit a UNTP **Verifiable Credential**, and why — so you can fix a whole catalog before relying on VCs, instead of probing passports one at a time. It **aggregates the same per-passport `vcReady` signal** returned on every ingest response: a passport is VC-ready only when it links a manufacturing `Facility` with a country of production.
  *
  * **Permission:** `passport:read` (read-only — no subscription/402 gate). Operator scoping + the non-archived filter match the passports list.
  *
  * **Shape:** each `results[]` row is `{ id, productId, vcReady, blockers[] }` — `blockers[]` reuses the SAME actionable reason the single-passport signal exposes (empty when ready). The top-level `ready` / `notReady` rollup is **catalog-wide** (counts every non-archived passport), while `results` is **paginated** — `page` (default 1) + `limit` (default 100, max 200), with `total` / `totalPages`. NOTE: because the rollup is catalog-wide but `results` is one page, `ready` is generally NOT the count of `vcReady:true` rows on the current page — page through all `totalPages` to enumerate every SKU.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const passportVcReadinessReport = <ThrowOnError extends boolean = false>(options?: Options<PassportVcReadinessReportData, ThrowOnError>): RequestResult<PassportVcReadinessReportResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PassportVcReadinessReportResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -711,13 +732,13 @@ export const passportVcReadinessReport = <ThrowOnError extends boolean = false>(
  *
  * Hard-deletes a passport **only while it is a DRAFT** (never published, not publicly resolvable, no retention duty). Children (history, access logs, battery units) cascade on delete.
  *
- * Published passports (ACTIVE/RECALLED/DECOMMISSIONED) are refused with **409** — they must be decommissioned/archived through the status lifecycle (`PUT /api/v1/passports/{id}/status`) to satisfy the ESPR Art. 9(2) persistence duty.
+ * Published passports (ACTIVE/RECALLED/DECOMMISSIONED) are refused with **409** — they must be decommissioned/archived through the status lifecycle (`PUT /api/v1/passports/{id}/status`) to satisfy the ESPR persistence duty.
  *
  * **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.
  *
  * **Lookup:** by passport **UUID only** (no `productId` aliasing) and only within the passport's **owning tenant** — an operator-binding alone is not sufficient, unlike PUT.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const deleteDraftPassport = <ThrowOnError extends boolean = false>(options: Options<DeleteDraftPassportData, ThrowOnError>): RequestResult<DeleteDraftPassportResponses, DeleteDraftPassportErrors, ThrowOnError> => (options.client ?? client).delete<DeleteDraftPassportResponses, DeleteDraftPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -738,7 +759,7 @@ export const deleteDraftPassport = <ThrowOnError extends boolean = false>(option
  *
  * Every successful resolution records an anonymized-IP access audit entry.
  *
- * **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling raised for `Authorization`-bearing requests; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
+ * **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
  */
 export const getPassport = <ThrowOnError extends boolean = false>(options: Options<GetPassportData, ThrowOnError>): RequestResult<GetPassportResponses, GetPassportErrors, ThrowOnError> => (options.client ?? client).get<GetPassportResponses, GetPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -769,7 +790,7 @@ export const getPassport = <ThrowOnError extends boolean = false>(options: Optio
  *
  * **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `"[REDACTED - Privileged Access Required]"` even though you are the owner.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updatePassport = <ThrowOnError extends boolean = false>(options: Options<UpdatePassportData, ThrowOnError>): RequestResult<UpdatePassportResponses, UpdatePassportErrors, ThrowOnError> => (options.client ?? client).put<UpdatePassportResponses, UpdatePassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -782,9 +803,9 @@ export const updatePassport = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * Apply the tenant's eIDAS advanced electronic seal
+ * Apply the tenant's advanced electronic seal
  *
- * Signs the passport's Merkle root (SHA-256 tree over the key-sorted top-level `metadata` entries) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an eIDAS **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).
+ * Signs the passport's Merkle root (SHA-256 tree over the key-sorted top-level `metadata` entries) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).
  *
  * A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).
  *
@@ -796,10 +817,10 @@ export const updatePassport = <ThrowOnError extends boolean = false>(options: Op
  * - The route does **not** modify the passport's `status` — despite the success message's "and published" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead.
  * - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp.
  * - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`).
- * - Requires the tenant's eIDAS key pair to exist — otherwise 400.
+ * - Requires the tenant's signing key pair to exist — otherwise 400.
  * - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const sealPassport = <ThrowOnError extends boolean = false>(options: Options<SealPassportData, ThrowOnError>): RequestResult<SealPassportResponses, SealPassportErrors, ThrowOnError> => (options.client ?? client).post<SealPassportResponses, SealPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -826,7 +847,7 @@ export const sealPassport = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Caveats:** DRAFT passports are refused with 409 (publish first via a validated `PUT /api/v1/passports/{id}`). Sealed passports CAN change status — `status` is stored alongside the document, not inside the sealed metadata Merkle tree. The returned `passport` document is serialized at the **public** redaction tier.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updatePassportStatus = <ThrowOnError extends boolean = false>(options: Options<UpdatePassportStatusData, ThrowOnError>): RequestResult<UpdatePassportStatusResponses, UpdatePassportStatusErrors, ThrowOnError> => (options.client ?? client).put<UpdatePassportStatusResponses, UpdatePassportStatusErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -846,13 +867,13 @@ export const updatePassportStatus = <ThrowOnError extends boolean = false>(optio
  * **Content negotiation** — the representation is chosen by RFC 7231 §5.3.2 `Accept` q-value negotiation (highest q wins; ties broken by media-range specificity, then the client's stated order): `application/aas+json` (or bare `aas+json`) → role-filtered Asset Administration Shell environment; `application/vc+jwt` (or bare `vc+jwt`) → a signed UNTP DigitalProductPassport credential (public tier; `406 Not Acceptable` when the passport has no manufacturing facility with a country of production); `application/vc+ld+json` (or bare `vc+ld+json`) → the same credential with an embedded W3C Data Integrity proof (`ecdsa-jcs-2019`), same `406` condition; `application/dc+sd-jwt` (or the legacy `vc+sd-jwt`) → the same credential as an SD-JWT-VC for cryptographic selective disclosure (a holder presents a subset of `credentialSubject` claims), same `406` condition; `text/html` → server-rendered passport page. An absent `Accept`, or one matching only `**`, yields the canonical default JSON-LD (`application/ld+json`); an unsupported type is ignored. Because q-values and client order are honoured, `Accept: text/html, application/vc+jwt` selects HTML (the client's first preference), NOT `vc+jwt`. `Vary: Accept` is always set on the 200.
  *
  * **Access tiers** — no permission string (public endpoint). Credentials are *optional* and never produce 401/402/403 here; an invalid or foreign credential silently degrades to the public tier:
- * - **Public** (anonymous): restricted metadata keys (for category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when present) and the owner-only key `facilityDetails` (present-as-placeholder in every non-owner response, even when the underlying metadata never contained it) carry the literal placeholder `[REDACTED - Privileged Access Required]`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the eIDAS seal stays offline-verifiable after redaction; a placeholder-valued key with no `redactedLeaves` entry was never in the sealed metadata and must be excluded when rebuilding the root.
+ * - **Public** (anonymous): restricted metadata keys (for category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when present) and the owner-only key `facilityDetails` (present-as-placeholder in every non-owner response, even when the underlying metadata never contained it) carry the literal placeholder `[REDACTED - Privileged Access Required]`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction; a placeholder-valued key with no `redactedLeaves` entry was never in the sealed metadata and must be excluded when rebuilding the root.
  * - **Legitimate interest / authority**: a capability grant token — `dpp_li_…` (tenant-issued) or `dpp_auth_…` (platform-issued, not tenant-revocable) — sent as `Authorization: Bearer <token>` or `?grant=<token>`, with TENANT or PASSPORT scope covering this passport, unlocks the restricted tier-2 keys. `facilityDetails`, the facility street address and DRAFT passports stay hidden. Grant-unlocked responses add `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`.
- * - **Owner**: a tenant **API key** (`op_dpp_token_…`, shown once at creation) belonging to the owning tenant or to a tenant bound to the passport's economic operator — sent as Bearer or, legacy, as the literal value of the `opendpp_session` cookie. Only API keys are matched on the public resolvers: a Console JWT login session in that cookie does **not** unlock owner tier (it silently resolves as public). Owners see everything, including DRAFT passports, owner-only metadata keys and the facility street address (`manufacturingFacility.streetAddress`/`city`/`postalCode`). In the AAS representation the owner credential's API-key role drives element filtering; a grant maps to the `legitimate_interest` filter tier, anonymous to `public`.
+ * - **Owner**: a tenant **API key** (`op_dpp_token_…`, shown once at creation) belonging to the owning tenant or to a tenant bound to the passport's economic operator — sent as a Bearer token. Only API keys are matched on the public resolvers: a Console JWT login session does **not** unlock owner tier (it silently resolves as public). Owners see everything, including DRAFT passports, owner-only metadata keys and the facility street address (`manufacturingFacility.streetAddress`/`city`/`postalCode`). In the AAS representation the owner credential's API-key role drives element filtering; a grant maps to the `legitimate_interest` filter tier, anonymous to `public`.
  *
  * DRAFT passports are hidden from everyone but the owner (404 with a body identical to a true miss). Every resolution is recorded in the passport's access audit log with an anonymized IP.
  *
- * **Rate limit:** 30 requests/min/IP via a per-process in-memory limiter; its 429 body is the two-field public error shape (no `success` field). This limiter adds no headers of its own — the `x-ratelimit-*` headers still present on responses (including these 429s) belong to the global platform limit (100 req/min/IP, 600/min for known crawler user agents), which applies on top.
+ * **Rate limit:** 30 requests/min/IP; its 429 body is the two-field public error shape (no `success` field). This limiter adds no headers of its own — the `x-ratelimit-*` headers still present on responses (including these 429s) belong to the global platform limit (100 req/min/IP, 600/min for known crawler user agents), which applies on top.
  */
 export const resolvePublicPassport = <ThrowOnError extends boolean = false>(options: Options<ResolvePublicPassportData, ThrowOnError>): RequestResult<ResolvePublicPassportResponses, ResolvePublicPassportErrors, ThrowOnError> => (options.client ?? client).get<ResolvePublicPassportResponses, ResolvePublicPassportErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -865,11 +886,11 @@ export const resolvePublicPassport = <ThrowOnError extends boolean = false>(opti
  *
  * Unified GS1 Digital Link gateway, GTIN branch. The GTIN-14 is matched against `metadata.gtin`, `metadata.grai`, or the passport's `productId`. On tenant workspaces (`https://{tenant}.opendpp-node.eu`) the lookup is scoped to that tenant — an unknown subdomain returns 404. Without a tenant scope, a GTIN matching more than one passport is rejected with 400 (ambiguous); disambiguate via a brand subdomain (the `?subdomain=` query override is honoured in non-production environments only).
  *
- * Content negotiation (RFC 7231 §5.3.2 `Accept` q-value negotiation; JSON-LD default / `application/aas+json` / `application/vc+jwt` / `application/vc+ld+json` / `application/dc+sd-jwt` / `text/html`, `Vary: Accept` always set), access tiers (public / `dpp_li_…`·`dpp_auth_…` grant via Bearer or `?grant=` / owner = a tenant **API key** sent as Bearer or, legacy, as the literal `opendpp_session` cookie value — Console JWT login sessions do **not** unlock owner tier), DRAFT hiding, access-audit logging (anonymized IP), and grant response headers (`Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`) are identical to `GET /passport/{id}` — see that operation for the full tier semantics. No permission string (public endpoint); invalid credentials silently degrade to the public tier, never 401/403.
+ * Content negotiation (RFC 7231 §5.3.2 `Accept` q-value negotiation; JSON-LD default / `application/aas+json` / `application/vc+jwt` / `application/vc+ld+json` / `application/dc+sd-jwt` / `text/html`, `Vary: Accept` always set), access tiers (public / `dpp_li_…`·`dpp_auth_…` grant via Bearer or `?grant=` / owner = a tenant **API key** sent as a Bearer token — Console JWT login sessions do **not** unlock owner tier), DRAFT hiding, access-audit logging (anonymized IP), and grant response headers (`Cache-Control: private, no-store`, `Referrer-Policy: no-referrer`) are identical to `GET /passport/{id}` — see that operation for the full tier semantics. No permission string (public endpoint); invalid credentials silently degrade to the public tier, never 401/403.
  *
- * The gateway also accepts additional GS1 AI key/value path pairs after the GTIN; the only one acted on is AI 21 (serial) — documented separately as `GET /01/{gtin14}/21/{serial}`. (The underlying route is `GET /{ai}*`; AI prefixes other than `01` and `8003` get a 400.) This resolver handles only the **UNCOMPRESSED** GS1 Digital Link grammar; a **compressed** Digital Link (its AI data encoded as a base64url blob) is detected and rejected with a clear 400 that points to the uncompressed form (#261).
+ * The gateway also accepts additional GS1 AI key/value path pairs after the GTIN; the only one acted on is AI 21 (serial) — documented separately as `GET /01/{gtin14}/21/{serial}`. (The underlying route is `GET /{ai}*`; AI prefixes other than `01` and `8003` get a 400.) This resolver handles only the **UNCOMPRESSED** GS1 Digital Link grammar; a **compressed** Digital Link (its AI data encoded as a base64url blob) is detected and rejected with a clear 400 that points to the uncompressed form.
  *
- * **Rate limit:** 30 requests/min/IP, per-process in-memory limiter; two-field 429 body without `success`. The limiter adds no headers of its own — `x-ratelimit-*` headers on responses come from the global platform limit (100 req/min/IP), which applies on top.
+ * **Rate limit:** 30 requests/min/IP; two-field 429 body without `success`. The limiter adds no headers of its own — `x-ratelimit-*` headers on responses come from the global platform limit (100 req/min/IP), which applies on top.
  */
 export const resolveGs1Gtin = <ThrowOnError extends boolean = false>(options: Options<ResolveGs1GtinData, ThrowOnError>): RequestResult<ResolveGs1GtinResponses, ResolveGs1GtinErrors, ThrowOnError> => (options.client ?? client).get<ResolveGs1GtinResponses, ResolveGs1GtinErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -882,20 +903,20 @@ export const resolveGs1Gtin = <ThrowOnError extends boolean = false>(options: Op
  *
  * GS1 Digital Link resolution of an *individual serialised item*. This path never returns a document directly — on success it issues a `302` redirect (the query string, including `?grant=`, is preserved on the `Location` URL):
  *
- * 1. If the GTIN resolves to a SKU/type passport that has a serialised battery unit whose `serialNumber` equals the AI-21 value → `302` to `/unit/{unitId}` (Battery Reg. Art. 77(2) per-unit view).
+ * 1. If the GTIN resolves to a SKU/type passport that has a serialised battery unit whose `serialNumber` equals the AI-21 value → `302` to `/unit/{unitId}` (per-unit view).
  * 2. Otherwise (legacy fallback) the AI-21 value is matched against the passport UUID, `metadata.serialNumber`, or `metadata["21"]`; if a passport matches → `302` to `/passport/{passportId}`.
  * 3. Otherwise → `404` (content-negotiated).
  *
  * The ambiguity check of the bare-GTIN branch is skipped when an AI-21 serial is present. The redirect handler itself never evaluates credentials — access tiers (owner / grant / public) apply at the redirect target; carry the grant in `?grant=` (preserved across the redirect) or re-send the `Authorization` header to the target. On tenant subdomains the lookup is scoped to that tenant (unknown subdomain → 404, JSON only).
  *
- * No permission string (public endpoint). **Rate limit:** 30 requests/min/IP (in-memory public limiter; two-field 429 body without `success`). The limiter adds no headers of its own — `x-ratelimit-*` headers come from the global platform limit, which applies on top — and the redirect target counts as a second request against both.
+ * No permission string (public endpoint). **Rate limit:** 30 requests/min/IP (two-field 429 body without `success`). The limiter adds no headers of its own — `x-ratelimit-*` headers come from the global platform limit, which applies on top — and the redirect target counts as a second request against both.
  */
 export const resolveGs1GtinSerial = <ThrowOnError extends boolean = false>(options: Options<ResolveGs1GtinSerialData, ThrowOnError>): RequestResult<unknown, ResolveGs1GtinSerialErrors, ThrowOnError> => (options.client ?? client).get<unknown, ResolveGs1GtinSerialErrors, ThrowOnError>({ url: '/01/{gtin14}/21/{serial}', ...options });
 
 /**
  * GS1 Digital Link resolution by GRAI (AI 8003)
  *
- * Unified GS1 Digital Link gateway, GRAI branch (Global Returnable Asset Identifier). The GRAI is matched against `metadata.gtin`, `metadata.grai`, or the passport's `productId`. Everything else — content negotiation (JSON-LD default / `application/aas+json` / `application/vc+jwt` / `application/vc+ld+json` / `application/dc+sd-jwt` / `text/html`, `Vary: Accept`), access tiers (public / grant `dpp_li_…`·`dpp_auth_…` via Bearer or `?grant=` / owner = tenant API key as Bearer or legacy `opendpp_session` cookie value, never a Console JWT session), DRAFT hiding, tenant-subdomain scoping, the no-tenant-scope ambiguity 400, access-audit logging, grant response headers, and the 30 req/min/IP in-memory rate limit (two-field 429 body without `success`; the limiter adds no headers of its own — `x-ratelimit-*` headers come from the global 100 req/min/IP limit, which applies on top) — is identical to `GET /01/{gtin14}`; see that operation and `GET /passport/{id}` for full semantics.
+ * Unified GS1 Digital Link gateway, GRAI branch (Global Returnable Asset Identifier). The GRAI is matched against `metadata.gtin`, `metadata.grai`, or the passport's `productId`. Everything else — content negotiation (JSON-LD default / `application/aas+json` / `application/vc+jwt` / `application/vc+ld+json` / `application/dc+sd-jwt` / `text/html`, `Vary: Accept`), access tiers (public / grant `dpp_li_…`·`dpp_auth_…` via Bearer or `?grant=` / owner = tenant API key as Bearer, never a Console JWT session), DRAFT hiding, tenant-subdomain scoping, the no-tenant-scope ambiguity 400, access-audit logging, grant response headers, and the 30 req/min/IP rate limit (two-field 429 body without `success`; the limiter adds no headers of its own — `x-ratelimit-*` headers come from the global 100 req/min/IP limit, which applies on top) — is identical to `GET /01/{gtin14}`; see that operation and `GET /passport/{id}` for full semantics.
  *
  * An additional `/21/{serial}` AI pair after the GRAI behaves exactly like `GET /01/{gtin14}/21/{serial}` (302 redirect to `/unit/{id}` or `/passport/{id}`). No permission string (public endpoint).
  */
@@ -908,15 +929,15 @@ export const resolveGs1Grai = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Resolve an individual serialised battery unit
  *
- * Public, content-negotiated view of one individual serialised unit (battery; Reg. (EU) 2023/1542 Art. 77(2)) by its unit UUID, including the embedded SKU/type passport (`ofModel`, masked by the same tier rules as `GET /passport/{id}`).
+ * Public, content-negotiated view of one individual serialised unit (battery) by its unit UUID, including the embedded SKU/type passport (`ofModel`, masked by the same tier rules as `GET /passport/{id}`).
  *
  * **Content negotiation:** `Accept` containing `application/vc+jwt` (or bare `vc+jwt`) → a signed PER-UNIT (item-granularity) UNTP DigitalProductPassport credential (public tier; `406 Not Acceptable` when the unit's type passport has no manufacturing facility with a country of production); `application/vc+ld+json` (or bare `vc+ld+json`) → the same per-unit credential with an embedded `ecdsa-jcs-2019` Data Integrity proof, same `406`; `text/html` → server-rendered unit page; everything else → JSON-LD (`application/ld+json`). No AAS representation on this route. `Vary: Accept` always set on the 200. The `410` tombstone check (below) precedes content negotiation, so a recycled/ceased unit never yields a `vc+jwt` or `vc+ld+json`.
  *
- * **Per-unit telemetry is never public** (Annex XIII(2)-(4)): anonymous responses omit `currentState`/`dynamicData` and instead carry a `restrictedData` notice with a `/request-access` pointer. An owner credential — a tenant **API key** (`op_dpp_token_…`) of the owning or operator-bound tenant, sent as Bearer or, legacy, as the literal `opendpp_session` cookie value (a Console JWT login session does **not** unlock owner tier) — or a valid grant token (`dpp_li_…`/`dpp_auth_…` as Bearer or `?grant=`; TENANT, PASSPORT or UNIT scope) unlocks `currentState` and `dynamicData` — up to the 500 most recent events, newest first. Invalid credentials silently degrade to the public tier (never 401/402/403). Grant-unlocked responses add `Cache-Control: private, no-store` + `Referrer-Policy: no-referrer`. No permission string (public endpoint).
+ * **Per-unit telemetry is never public** (Annex XIII(2)-(4)): anonymous responses omit `currentState`/`dynamicData` and instead carry a `restrictedData` notice with a `/request-access` pointer. An owner credential — a tenant **API key** (`op_dpp_token_…`) of the owning or operator-bound tenant, sent as a Bearer token (a Console JWT login session does **not** unlock owner tier) — or a valid grant token (`dpp_li_…`/`dpp_auth_…` as Bearer or `?grant=`; TENANT, PASSPORT or UNIT scope) unlocks `currentState` and `dynamicData` — up to the 500 most recent events, newest first. Invalid credentials silently degrade to the public tier (never 401/402/403). Grant-unlocked responses add `Cache-Control: private, no-store` + `Referrer-Policy: no-referrer`. No permission string (public endpoint).
  *
- * **Art. 77(8) tombstone:** once the unit's status is `RECYCLED` (or `ceasedAt` is set) this URL answers `410 Gone` with a minimal tombstone for everyone — grants and owner credentials do NOT override it (the owning tenant retains internal access via `GET /api/v1/units/{id}`).
+ * **Tombstone:** once the unit's status is `RECYCLED` (or `ceasedAt` is set) this URL answers `410 Gone` with a minimal tombstone for everyone — grants and owner credentials do NOT override it (the owning tenant retains internal access via `GET /api/v1/units/{id}`).
  *
- * Every resolution is access-audit-logged with an anonymized IP. **Rate limit:** 30 requests/min/IP (in-memory public limiter; two-field 429 body without `success`). The limiter adds no headers of its own — `x-ratelimit-*` headers come from the global platform limit, which applies on top.
+ * Every resolution is access-audit-logged with an anonymized IP. **Rate limit:** 30 requests/min/IP (two-field 429 body without `success`). The limiter adds no headers of its own — `x-ratelimit-*` headers come from the global platform limit, which applies on top.
  */
 export const resolvePublicBatteryUnit = <ThrowOnError extends boolean = false>(options: Options<ResolvePublicBatteryUnitData, ThrowOnError>): RequestResult<ResolvePublicBatteryUnitResponses, ResolvePublicBatteryUnitErrors, ThrowOnError> => (options.client ?? client).get<ResolvePublicBatteryUnitResponses, ResolvePublicBatteryUnitErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -927,11 +948,11 @@ export const resolvePublicBatteryUnit = <ThrowOnError extends boolean = false>(o
 /**
  * Download the platform seal-CA certificate (PEM)
  *
- * Downloads the platform seal-CA certificate as PEM. Third parties pin this CA to validate the `x5c` certificate chains embedded in sealed-passport `proof` blocks — the chain's leaf certificate binds a tenant's signing key to its legal identity (eIDAS Art. 36(1)(b) creator identification; the seal is an eIDAS *advanced*, not qualified, electronic seal). The certificate is provisioned server-side on first use.
+ * Downloads the platform seal-CA certificate as PEM. Third parties pin this CA to validate the `x5c` certificate chains embedded in sealed-passport `proof` blocks — the chain's leaf certificate binds a tenant's signing key to its legal identity (the advanced-seal creator identification; the seal is an *advanced*, not qualified, electronic seal). The certificate is provisioned server-side on first use.
  *
  * No authentication, no permission (public endpoint). Successful responses carry `Cache-Control: public, max-age=3600`. Like every documented path except `/health`, a request on an unknown tenant workspace host receives a platform-level JSON 404 before this handler runs.
  *
- * **Rate limit:** 30 requests/min/IP via the in-memory public limiter — note that this route's 429 body carries ONLY `{"error": "Too Many Requests"}` (no `message`, no `success`), unlike the other public resolvers. The global platform limit (100 req/min/IP) applies on top: a global-limit 429 carries the platform's default `{statusCode, error, message}` body instead, and the global limiter's `x-ratelimit-*` headers appear on every response from this route. Returns `503` if the seal CA cannot be provisioned or loaded.
+ * **Rate limit:** 30 requests/min/IP — note that this route's 429 body carries ONLY `{"error": "Too Many Requests"}` (no `message`, no `success`), unlike the other public resolvers. The global platform limit (100 req/min/IP) applies on top: a global-limit 429 carries the platform's default `{statusCode, error, message}` body instead, and the global limiter's `x-ratelimit-*` headers appear on every response from this route. Returns `503` if the seal CA cannot be provisioned or loaded.
  */
 export const getSealCaCertificate = <ThrowOnError extends boolean = false>(options?: Options<GetSealCaCertificateData, ThrowOnError>): RequestResult<GetSealCaCertificateResponses, GetSealCaCertificateErrors, ThrowOnError> => (options?.client ?? client).get<GetSealCaCertificateResponses, GetSealCaCertificateErrors, ThrowOnError>({ url: '/.well-known/opendpp-seal-ca.pem', ...options });
 
@@ -971,21 +992,21 @@ export const getJsonLdContext = <ThrowOnError extends boolean = false>(options?:
 /**
  * Service health check
  *
- * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt` — the same fields as `GET /api/v1/version`). No authentication, no permission. **Exempt from the platform rate limit** (#810) so a monitor or uptime check can poll it freely — it carries no `x-ratelimit-*` headers. This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
+ * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt` — the same fields as `GET /api/v1/version`). No authentication, no permission. **Exempt from the platform rate limit** so a monitor or uptime check can poll it freely — it carries no `x-ratelimit-*` headers. This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
  */
 export const getHealth = <ThrowOnError extends boolean = false>(options?: Options<GetHealthData, ThrowOnError>): RequestResult<GetHealthResponses, GetHealthErrors, ThrowOnError> => (options?.client ?? client).get<GetHealthResponses, GetHealthErrors, ThrowOnError>({ url: '/health', ...options });
 
 /**
  * Running API contract version & build identity
  *
- * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP anonymous, higher for `Authorization`-bearing requests and known crawler user agents; standard `x-ratelimit-*` headers on responses).
+ * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP anonymous, higher for authenticated callers; standard `x-ratelimit-*` headers on responses).
  */
 export const getApiVersion = <ThrowOnError extends boolean = false>(options?: Options<GetApiVersionData, ThrowOnError>): RequestResult<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError> => (options?.client ?? client).get<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError>({ url: '/api/v1/version', ...options });
 
 /**
  * Compute a GTIN check digit from a company prefix + item reference
  *
- * The actionable counterpart to the non-GS1 ingest advisory (#255): given the **GS1 company prefix your organisation legally owns** plus an item reference, OpenDPP computes the GS1 **mod-10 check digit** and returns the resulting 14-digit GTIN + a Digital Link preview. Set the GTIN as a passport `productId` to get a scannable GS1 Digital Link.
+ * The actionable counterpart to the non-GS1 ingest advisory: given the **GS1 company prefix your organisation legally owns** plus an item reference, OpenDPP computes the GS1 **mod-10 check digit** and returns the resulting 14-digit GTIN + a Digital Link preview. Set the GTIN as a passport `productId` to get a scannable GS1 Digital Link.
  *
  * **It ONLY completes the check digit** — it never allocates a GS1 company prefix or asserts ownership (a real GTIN requires a prefix licensed to you by GS1). `gs1CompanyPrefix` is REQUIRED; a request with none is refused (**400**). `gs1CompanyPrefix + itemRef` must be exactly **13 digits** (the check digit forms the 14th) and both must be digit strings, else **400**.
  *
@@ -1045,7 +1066,7 @@ export const decodeGs1Batch = <ThrowOnError extends boolean = false>(options: Op
  *
  * Renders the passport's GS1 Digital Link URI (its `digitalLinkUri`, e.g. `https://opendpp-node.eu/01/09501101530003`) as a print-grade QR code and returns it as a binary file download. The printed carrier resolves through the public GS1 gateway.
  *
- * **Permission:** `passport:read` (read-only — subscription status is **not** checked on `:read` permissions, so this endpoint never returns 402). Works with a Bearer API key, a Bearer JWT, or the `opendpp_session` cookie — plain same-origin `<a href>` downloads are supported for browser sessions.
+ * **Permission:** `passport:read` (read-only — subscription status is **not** checked on `:read` permissions, so this endpoint never returns 402). Works with a Bearer API key, a Bearer JWT, or an authenticated browser session — plain same-origin `<a href>` downloads are supported.
  *
  * **Identifier resolution:** `{id}` is matched first against the passport UUID, then against the caller-supplied `productId` (GTIN-14/GRAI/SKU), always scoped to your tenant. Credentials scoped to an Economic Operator receive **403** (`Your access is restricted to Economic Operator: <operatorId>`) when the passport belongs to a different operator.
  *
@@ -1053,7 +1074,7 @@ export const decodeGs1Batch = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Errors:** an invalid query option returns **400** with one of these exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`. An unknown passport returns **404** with message `Passport <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getPassportQrCode = <ThrowOnError extends boolean = false>(options: Options<GetPassportQrCodeData, ThrowOnError>): RequestResult<GetPassportQrCodeResponses, GetPassportQrCodeErrors, ThrowOnError> => (options.client ?? client).get<GetPassportQrCodeResponses, GetPassportQrCodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1070,9 +1091,9 @@ export const getPassportQrCode = <ThrowOnError extends boolean = false>(options:
  *
  * **Partial success:** an id that is unknown, not owned by your tenant, or outside an operator-scoped key's bound operator is **skipped and reported** in `manifest.json` (`{ id, reason }`) — it never fails the whole batch. Only the caller's own passports resolve, so this cannot enumerate another tenant's catalog.
  *
- * **Limits:** at most **200** ids per call (`MAX_BULK_LABELS`, mirrors the bulk-import cap); more returns **400** pointing at the async export. `hri: true` requires `format: "svg"` (same constraint as the single QR). `size` is clamped to 128–2048.
+ * **Limits:** at most **200** ids per call (mirrors the bulk-import cap); more returns **400** pointing at the async export. `hri: true` requires `format: "svg"` (same constraint as the single QR). `size` is clamped to 128–2048.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const bulkExportPassportLabels = <ThrowOnError extends boolean = false>(options: Options<BulkExportPassportLabelsData, ThrowOnError>): RequestResult<BulkExportPassportLabelsResponses, BulkExportPassportLabelsErrors, ThrowOnError> => (options.client ?? client).post<BulkExportPassportLabelsResponses, BulkExportPassportLabelsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1087,9 +1108,9 @@ export const bulkExportPassportLabels = <ThrowOnError extends boolean = false>(o
 /**
  * Export a print-grade QR code for an individual battery unit
  *
- * Renders the battery unit's GS1 Digital Link URI as a print-grade QR code — the AI-21 path segment carries the unit's **real physical serial number** (e.g. `https://opendpp-node.eu/01/09501101530003/21/BAT-2026-000123`). This is the carrier each individual battery must wear (per-unit passports, Battery Regulation Art. 77(2)).
+ * Renders the battery unit's GS1 Digital Link URI as a print-grade QR code — the AI-21 path segment carries the unit's **real physical serial number** (e.g. `https://opendpp-node.eu/01/09501101530003/21/BAT-2026-000123`). This is the carrier each individual battery must wear (per-unit passports, per the EU Battery Regulation).
  *
- * **Permission:** `battery:read` (read-only — subscription status is **not** checked on `:read` permissions, so this endpoint never returns 402). Works with a Bearer API key, a Bearer JWT, or the `opendpp_session` cookie.
+ * **Permission:** `battery:read` (read-only — subscription status is **not** checked on `:read` permissions, so this endpoint never returns 402). Works with a Bearer API key, a Bearer JWT, or an authenticated browser session.
  *
  * **Identifier resolution:** `{id}` is the BatteryUnit **UUID only** — unlike the passport QR route there is **no** serial-number fallback. Lookup is tenant-scoped. Credentials scoped to an Economic Operator receive **403** (`Your access is restricted to Economic Operator: <operatorId>`) when the unit's parent passport belongs to a different operator.
  *
@@ -1097,7 +1118,7 @@ export const bulkExportPassportLabels = <ThrowOnError extends boolean = false>(o
  *
  * **Errors:** an invalid query option returns **400** with one of these exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`. An unknown unit returns **404** with message `Battery unit <id> not found under your Tenant workspace`.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const getBatteryUnitQrCode = <ThrowOnError extends boolean = false>(options: Options<GetBatteryUnitQrCodeData, ThrowOnError>): RequestResult<GetBatteryUnitQrCodeResponses, GetBatteryUnitQrCodeErrors, ThrowOnError> => (options.client ?? client).get<GetBatteryUnitQrCodeResponses, GetBatteryUnitQrCodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1110,7 +1131,7 @@ export const getBatteryUnitQrCode = <ThrowOnError extends boolean = false>(optio
  *
  * Lists active entries from the platform-global material vocabulary that powers the searchable material/fiber/chemistry pickers in the passport form. This is shared reference data, deliberately **not** tenant-scoped, so DPP data stays comparable across tenants.
  *
- * **Auth:** any authenticated session — Bearer API key, Bearer JWT, or `opendpp_session` cookie. **No specific permission string is required** and subscription status is not checked, so this endpoint never returns 402. On a tenant-subdomain host, credentials belonging to a different tenant receive **403** with message `Cross-tenant access blocked.`.
+ * **Auth:** any authenticated session — Bearer API key, Bearer JWT, or browser session. **No specific permission string is required** and subscription status is not checked, so this endpoint never returns 402. On a tenant-subdomain host, credentials belonging to a different tenant receive **403** with message `Cross-tenant access blocked.`.
  *
  * **Filtering & ordering:** `kind` filters by vocabulary kind — an unrecognized value is **silently ignored** (the filter simply isn't applied; no 400). `search` is a trimmed, case-insensitive substring match on `name` (blank values ignored). Only active entries are returned, ordered by `kind` ascending then `name` ascending. `limit` is clamped to 1–1000 (default 1000); there is no pagination.
  *
@@ -1118,7 +1139,7 @@ export const getBatteryUnitQrCode = <ThrowOnError extends boolean = false>(optio
  *
  * **Curation:** this vocabulary is curated by the platform operator — the API is read-only for tenant credentials. Free-text material values in passport metadata remain allowed but are never auto-added to this vocabulary.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listMaterials = <ThrowOnError extends boolean = false>(options?: Options<ListMaterialsData, ThrowOnError>): RequestResult<ListMaterialsResponses, ListMaterialsErrors, ThrowOnError> => (options?.client ?? client).get<ListMaterialsResponses, ListMaterialsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1133,12 +1154,12 @@ export const listMaterials = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Permission:** `passport:update` (write operation — subscription gating applies, see 402). When the node operator enforces MFA, writes from user-backed sessions (cookie or Bearer JWT) whose MFA policy requires a second factor (user policy `REQUIRED`, or `DEFAULT` with the workspace's MFA-by-default setting, which is on by default) receive 403 without one; API-key clients are exempt. Cookie-session clients must send the `X-CSRF-Token` header (double-submit with the `opendpp_csrf` cookie); Bearer JWT / API-key clients are exempt.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Validation pipeline (in order):**
  * 1. *Structural* — the body must be an object containing `credentialSubject`, otherwise 400 `Bad Request`.
  * 2. *EPCIS rule* — `action` is strictly forbidden on `TransformationEvent` (any non-null value → 400 `Schema Validation Error`).
- * 3. *Cryptographic* — the credential's `proof` MUST be a conformant W3C `DataIntegrityProof` with `cryptosuite: "ecdsa-jcs-2019"` and a multibase base58btc (`z…`) `proofValue`; any other proof shape (e.g. the legacy key-sorted `MerkleTreeAttestationProof`) is rejected. The ECDSA P-256 signature is verified per that cryptosuite over `sha256(JCS(proof options)) ‖ sha256(JCS(credential without proof))` — RFC 8785 JCS canonicalization, IEEE-P1363 raw r‖s — a conformant, interoperable Data Integrity suite, which is what makes the persisted `isUntpCompliant: true` honest. The verification key is resolved in trust order: (a) an embedded `proof.verificationMethod.x5c` chain, accepted ONLY when the node has eIDAS trust anchors configured, the chain validates against them, every certificate is currently valid, and the leaf attests the issuer; (b) ALL of the authoritative vault keys (current + retired, so a pre-rotation credential still verifies) of the tenant whose UNIQUE subdomain EXACTLY equals the trailing `:`-segment of the issuer DID. If no key resolves or the signature does not verify → 400 `Cryptographic Verification Failed`.
+ * 3. *Cryptographic* — the credential's `proof` MUST be a conformant W3C `DataIntegrityProof` with `cryptosuite: "ecdsa-jcs-2019"` and a multibase base58btc (`z…`) `proofValue`; any other proof shape (e.g. the legacy key-sorted `MerkleTreeAttestationProof`) is rejected. The ECDSA P-256 signature is verified per that cryptosuite over `sha256(JCS(proof options)) ‖ sha256(JCS(credential without proof))` — RFC 8785 JCS canonicalization, IEEE-P1363 raw r‖s — a conformant, interoperable Data Integrity suite, which is what makes the persisted `isUntpCompliant: true` honest. The verification key is resolved in trust order: (a) an embedded `proof.verificationMethod.x5c` chain, accepted ONLY when the node has trust anchors configured, the chain validates against them, every certificate is currently valid, and the leaf attests the issuer; (b) ALL of the authoritative vault keys (current + retired, so a pre-rotation credential still verifies) of the tenant whose UNIQUE subdomain EXACTLY equals the trailing `:`-segment of the issuer DID. If no key resolves or the signature does not verify → 400 `Cryptographic Verification Failed`.
  * 4. *Operator scoping* — if your API key is scoped to an Economic Operator, the credential's declared operator DID — the `issuer` DID, or `credentialSubject.responsibleOperatorDid` only when `issuer` is absent — must contain the bound operator's registration id (e.g. `EU-DEFAULT-001`), otherwise 403 with `message: "Your access is restricted to Economic Operator: <operatorId> (<regId>)"`.
  *
  * **Persistence:** the stored event id is ALWAYS server-generated (UUID) — the credential's own `id` is never used as the primary key (prevents cross-tenant id squatting); the issuer DID is retained as `issuerDid`. Defaults applied on write: `bizStep` → `urn:epcglobal:cbv:bizstep:receiving`; `disposition` → `urn:epcglobal:cbv:disp:in_progress`; `readPoint` → `geo:<latitude>,<longitude>` derived from `credentialSubject.originLocation` when present; `bizLocation` → `responsibleOperatorDid`; `eventTime` → `issuanceDate`, else the server clock; `epcList` → `[credentialSubject.id]` when not supplied as an array (or `[]`). The row is stored with `isUntpCompliant: true` and the `proof.proofValue` retained.
@@ -1162,7 +1183,7 @@ export const registerTraceabilityEvent = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `passport:update` (write operation — subscription gating applies, see 402). When the node operator enforces MFA, writes from user-backed sessions (cookie or Bearer JWT) whose MFA policy requires a second factor (user policy `REQUIRED`, or `DEFAULT` with the workspace's MFA-by-default setting, which is on by default) receive 403 without one; API-key clients are exempt. Cookie-session clients must send the `X-CSRF-Token` header (double-submit with the `opendpp_csrf` cookie); Bearer JWT / API-key clients are exempt.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Validation:** the WHOLE document is validated against the official GS1 EPCIS **2.0.1** JSON Schema (vendored and pinned on the node) before any event is stored — a non-conformant document is rejected 400 with the first few schema violations under `errors[]`. Notable rules the OFFICIAL schema enforces: `@context` and `creationDate` are required; `bizStep`/`disposition` must use the CBV **short names** (e.g. `commissioning`, `in_transit`) or a custom (non-CBV) URI — the legacy `urn:epcglobal:cbv:*` URN form is REJECTED by the standard's schema; `action` is forbidden on `TransformationEvent`; `readPoint`/`bizLocation` carry `{id: <uri>}`. Only `type: "EPCISDocument"` is accepted (no `EPCISQueryDocument`, no bare events), and `epcisBody.eventList` must be non-empty.
  *
@@ -1187,9 +1208,9 @@ export const captureEpcisDocument = <ThrowOnError extends boolean = false>(optio
  *
  * Returns the full upstream pedigree of a traceability event as a recursive Directed Acyclic Graph: the root event plus, in `parents`, every event linked upstream through lineage relations registered on the node, walked transitively (parents of parents). A shared ancestor reached through multiple downstream paths is repeated under EACH path — the DAG is expanded into a tree in the response, not deduplicated; only a true cycle aborts the walk (400).
  *
- * **Permission:** `passport:read`. Every node in the walk — the root AND each upstream parent — is scoped to the caller's tenant; an event belonging to another tenant is invisible and the request fails with 404 (no cross-tenant pedigree reads). Sessions with the `SUPER_ADMIN` role are exempt from tenant scoping.
+ * **Permission:** `passport:read`. Every node in the walk — the root AND each upstream parent — is scoped to the caller's tenant; an event belonging to another tenant is invisible and the request fails with 404 (no cross-tenant pedigree reads).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
  * **Caveats:** if the lineage graph contains a circular reference the walk aborts with 400. Any other failure (unknown id, other-tenant id, missing parent) is reported as the same deliberately generic 404 body. `eventTime` is serialized as ISO 8601 UTC; `epcs` is parsed from the stored EPC list (a non-array value degrades to `[]`); `location` mirrors the stored `bizLocation`.
  *
@@ -1202,42 +1223,20 @@ export const getEventLineage = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Run heuristic UFLPA/EUDR compliance screening over an event's lineage
- *
- * Walks the same upstream lineage DAG as `GET /api/v1/events/{id}/lineage` and screens every node's location data against two heuristic rules:
- *
- * - **UFLPA** — flags any node whose `bizLocation` starts with `CN-65` (ISO 3166-2 Xinjiang), contains the keyword `XINJIANG` (case-insensitive), or whose `readPoint` contains the coordinate pair `43.8256,87.6168`.
- * - **EUDR** — flags any node whose `readPoint` parses as `geo:<lat>,<lng>` (or bare `<lat>,<lng>`) coordinates inside the sample deforestation polygon lat −5.0…−3.0, lng −65.0…−60.0.
- *
- * These are geographic screening heuristics evaluated against the data registered on this node — not a legal compliance determination.
- *
- * **Permission:** `passport:read` (a read permission despite the POST verb — no subscription gating). Cookie-session clients must send the `X-CSRF-Token` header; Bearer clients are exempt. Tenant scoping and the `SUPER_ADMIN` bypass are identical to the lineage endpoint. **No request body is read** — send an empty body (an empty or absent JSON body is accepted).
- *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
- *
- * When zero violations are found, the response embeds a `TraceabilityComplianceCertificate` object (status `SCREENED_NO_MATCHES`, screens `OpenDPP-EUDR-heuristic` / `OpenDPP-UFLPA-screen`); otherwise `certificate` is `null` and `errors` lists each violation as a human-readable string. ANY failure — unknown event id, other-tenant id, or even a circular lineage graph — is reported as the same generic 404 body.
- */
-export const auditEventLineage = <ThrowOnError extends boolean = false>(options: Options<AuditEventLineageData, ThrowOnError>): RequestResult<AuditEventLineageResponses, AuditEventLineageErrors, ThrowOnError> => (options.client ?? client).post<AuditEventLineageResponses, AuditEventLineageErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/events/{id}/audit',
-    ...options
-});
-
-/**
- * Publicly verify a passport's eIDAS seal, certificate chain and timestamp
+ * Publicly verify a passport's seal, certificate chain and timestamp
  *
  * **Public seal-verification API** — cryptographically verifies that a Digital Product Passport document was sealed by an economic-operator tenant registered on this node and has not been tampered with. No authentication required.
  *
- * **Rate limit:** custom in-memory token bucket, **30 requests/min per IP** (per app instance). This bucket emits no rate-limit headers of its own — any `x-ratelimit-*` headers on responses (including this 429) come from the global 100 req/min limiter and describe that budget, not the 30/min one. The 429 body is the two-field `{"error": "Too Many Requests", "message": "Rate limit exceeded."}`.
+ * **Rate limit:** **30 requests/min per IP**. This bucket emits no rate-limit headers of its own — any `x-ratelimit-*` headers on responses (including this 429) come from the global 100 req/min limiter and describe that budget, not the 30/min one. The 429 body is the two-field `{"error": "Too Many Requests", "message": "Rate limit exceeded."}`.
  *
  * **Input resolution.** `payload` is required. `signature` and `publicKey` may be supplied top-level, or are extracted from the document's embedded proof block: `signature` ← `payload.proof.proofValue` (else `payload.proof.signatureValue`); `publicKey` ← `payload.proof.publicKeyPem`, else the leaf certificate's SPKI when `payload.proof.x5c` is present. If, after extraction, any of the three is still missing → 400. The public key is CRLF-normalized and trimmed before matching.
  *
  * **Verification pipeline (in order):**
- * 1. **Certificate-chain report (optional).** If `payload.proof.x5c` is a non-empty array of base64-DER certificates (leaf first), the chain is parsed and a `certificate` report is built: the leaf's `subject` / `issuer` / `validFrom` / `validTo` (X.509 textual dates such as `Jan 10 00:00:00 2026 GMT` — NOT ISO 8601), `chainValid` (every link signature-verifies against the next certificate, every certificate is inside its validity window, and the top of the chain is anchored to this node's seal CA — SHA-256 fingerprint match or signature under the CA key; the CA is published at `GET /.well-known/opendpp-seal-ca.pem`), and `keyMatchesProof` (the leaf SPKI equals the supplied `publicKey`, whitespace-insensitive; always `true` when no explicit key was supplied). An unparseable chain yields `{"chainValid": false, "error": "Unparseable x5c certificate chain"}` and does NOT fail the request. This reports the CERTIFIED identity of the seal creator (eIDAS Art. 36(1)(b)). SECURITY: the report is attached ONLY on a `verified: true` outcome whose chain is TRUSTED (`chainValid` AND `keyMatchesProof` both true) — an untrusted/self-signed chain, one outside its validity window or not anchored to this node's seal CA, or one whose leaf key does not match the verifying key, is never surfaced as a `certificate` block (it must not present an unverified identity as authoritative). The two policy-failure responses omit it too.
- * 2. **Key-registration gate.** The `publicKey` must exactly match the registered eIDAS public key of a tenant on this node (trailing-newline tolerant) — otherwise HTTP **200** with `verified: false` and an explanatory `message`. Verification-policy failures are reported in-band, never as HTTP errors.
+ * 1. **Certificate-chain report (optional).** If `payload.proof.x5c` is a non-empty array of base64-DER certificates (leaf first), the chain is parsed and a `certificate` report is built: the leaf's `subject` / `issuer` / `validFrom` / `validTo` (X.509 textual dates such as `Jan 10 00:00:00 2026 GMT` — NOT ISO 8601), `chainValid` (every link signature-verifies against the next certificate, every certificate is inside its validity window, and the top of the chain is anchored to this node's seal CA — SHA-256 fingerprint match or signature under the CA key; the CA is published at `GET /.well-known/opendpp-seal-ca.pem`), and `keyMatchesProof` (the leaf SPKI equals the supplied `publicKey`, whitespace-insensitive; always `true` when no explicit key was supplied). An unparseable chain yields `{"chainValid": false, "error": "Unparseable x5c certificate chain"}` and does NOT fail the request. This reports the CERTIFIED identity of the seal creator. SECURITY: the report is attached ONLY on a `verified: true` outcome whose chain is TRUSTED (`chainValid` AND `keyMatchesProof` both true) — an untrusted/self-signed chain, one outside its validity window or not anchored to this node's seal CA, or one whose leaf key does not match the verifying key, is never surfaced as a `certificate` block (it must not present an unverified identity as authoritative). The two policy-failure responses omit it too.
+ * 2. **Key-registration gate.** The `publicKey` must exactly match the registered signing public key of a tenant on this node (trailing-newline tolerant) — otherwise HTTP **200** with `verified: false` and an explanatory `message`. Verification-policy failures are reported in-band, never as HTTP errors.
  * 3. **Operator-binding gate (fail-closed).** If the payload declares an operator registration id (`payload.operator.regId`, else `payload.economicOperator.regId`), that id MUST resolve to an Economic Operator registered on this node AND that operator MUST be bound to the signing tenant (a workspace–operator binding registered on this node). A declared operator that is unregistered, or registered but not bound to the key-owning tenant, → 200 `verified: false` with an explanatory `message`. Payloads that declare no operator id skip this gate.
  * 4. **Signature verification (two phases).** *Phase 1 — Merkle seal:* when `payload.metadata` is an object (or, when the `metadata` key is entirely absent, the whole `payload` is treated as the metadata), the SHA-256 Merkle tree over the metadata's top-level properties is rebuilt and the base64 ECDSA (P-256 / SHA-256) `signature` is verified against the recomputed root. Every leaf is recomputed from the actual values — caller-supplied redacted-leaf hashes are NOT accepted (they would let a tampered field be smuggled past verification), so a publicly redacted document will not pass the Merkle phase: verify the unredacted, privileged document. *Phase 2 — fallback:* if the Merkle phase does not verify, the signature is verified over the deterministic key-sorted canonicalization of the entire `payload`.
- * 5. **RFC 3161 timestamp report (optional).** When `payload.proof.rfc3161.token` is a non-empty base64-DER TimeStampToken, the response includes `timestamp` with the TSA-asserted `genTime` parsed from the token's TSTInfo (or `genTime: null` plus a `note` when the token cannot be parsed). When the node has a TSA CA configured (`TSA_CA_PEM`), the report also carries `timeAuthenticated` — the node's own verification of the token's CMS SignedData signature over its TSTInfo PLUS full RFC 3161 trust-path validation of the signer to that anchor (a critical `id-kp-timeStamping` EKU, validity at the asserted `genTime`, CA-constrained intermediates) (`false`, and the asserted time unauthenticated, when no CA is configured, the signature fails, or the path is not policy-valid); a verifier may still run its own `openssl ts -verify`. Like `certificate`, it appears only on the final verification outcome.
+ * 5. **RFC 3161 timestamp report (optional).** When `payload.proof.rfc3161.token` is a non-empty base64-DER TimeStampToken, the response includes `timestamp` with the TSA-asserted `genTime` parsed from the token's TSTInfo (or `genTime: null` plus a `note` when the token cannot be parsed). When the node has a TSA trust anchor configured, the report also carries `timeAuthenticated` — the node's own verification of the token's CMS SignedData signature over its TSTInfo PLUS full RFC 3161 trust-path validation of the signer to that anchor (a critical `id-kp-timeStamping` EKU, validity at the asserted `genTime`, CA-constrained intermediates) (`false`, and the asserted time unauthenticated, when no CA is configured, the signature fails, or the path is not policy-valid); a verifier may still run its own `openssl ts -verify`. Like `certificate`, it appears only on the final verification outcome.
  *
  * **Outcome.** A processed verification ALWAYS returns HTTP 200 with `verified: true|false`; 400 is reserved for missing parameters or an exception thrown while verifying (e.g. an undecodable public key). `timestamp` is attached only when verification proceeds past the key-registration and operator-binding gates; `certificate` is attached only on a `verified: true` outcome whose chain is trusted (`chainValid` AND `keyMatchesProof`) — the two policy `verified: false` responses (and any untrusted-chain outcome) omit `certificate`, even when an x5c chain and/or an RFC 3161 token were supplied. The 400 bodies on this public endpoint are `{"success": false, "message": "..."}` — they include `success` but OMIT the `error` field. (A syntactically malformed JSON body is rejected earlier by the framework with its default `{statusCode, error, message}` body; a POST with no body at all — no `Content-Type` — fails before processing with a framework-default 500, so send at least `{}`. An empty `application/json` body is treated as `{}` and yields the documented 400.)
  */
@@ -1253,7 +1252,7 @@ export const verifyPassportSeal = <ThrowOnError extends boolean = false>(options
 /**
  * Resolve a tenant's did:web DID document
  *
- * Resolves the issuing workspace's `did:web` DID document (`application/did+json`). The DID is `did:web:opendpp-node.eu:tenants:{tenantId}`, which per the did:web method dereferences here. The document exposes **only public key material** — the workspace's eIDAS public key(s) as `JsonWebKey2020` verification methods, each with a stable `#key-<index>` id matching the `kid` of the credentials it signs.
+ * Resolves the issuing workspace's `did:web` DID document (`application/did+json`). The DID is `did:web:opendpp-node.eu:tenants:{tenantId}`, which per the did:web method dereferences here. The document exposes **only public key material** — the workspace's signing public key(s) as `JsonWebKey2020` verification methods, each with a stable `#key-<index>` id matching the `kid` of the credentials it signs.
  *
  * Use it to verify any OpenDPP-issued Verifiable Credential (`Accept: application/vc+jwt`, `application/vc+ld+json`, or `application/dc+sd-jwt` on the public resolution endpoints) without out-of-band key exchange. Both current and retired keys are published and listed in `assertionMethod`/`authentication`, so credentials issued before a key rotation still verify; new credentials always use the current key. The optional `name` is the issuer's authoritative legal name (the same value used in every credential's `issuer.name`).
  *
@@ -1332,7 +1331,7 @@ export const deleteWebhookSubscription = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `webhook:write`. Cookie sessions must send `X-CSRF-Token`; write permissions are subscription-gated (**402** when lapsed).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const updateWebhookSubscription = <ThrowOnError extends boolean = false>(options: Options<UpdateWebhookSubscriptionData, ThrowOnError>): RequestResult<UpdateWebhookSubscriptionResponses, UpdateWebhookSubscriptionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateWebhookSubscriptionResponses, UpdateWebhookSubscriptionErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1353,7 +1352,7 @@ export const updateWebhookSubscription = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `webhook:write`. Cookie sessions must send `X-CSRF-Token`; write permissions are subscription-gated (**402** when lapsed).
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const rotateWebhookSecret = <ThrowOnError extends boolean = false>(options: Options<RotateWebhookSecretData, ThrowOnError>): RequestResult<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError> => (options.client ?? client).post<RotateWebhookSecretResponses, RotateWebhookSecretErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1370,7 +1369,7 @@ export const rotateWebhookSecret = <ThrowOnError extends boolean = false>(option
  *
  * **Permission:** `webhook:read`.
  *
- * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const listWebhookDeliveries = <ThrowOnError extends boolean = false>(options?: Options<ListWebhookDeliveriesData, ThrowOnError>): RequestResult<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError> => (options?.client ?? client).get<ListWebhookDeliveriesResponses, ListWebhookDeliveriesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1383,7 +1382,7 @@ export const listWebhookDeliveries = <ThrowOnError extends boolean = false>(opti
  *
  * Delivers a single **signed sample** event to the subscription's URL right now and reports the outcome — use it to confirm your endpoint is reachable and that your signature verification works, without waiting for a real passport event. The payload is a representative public JSON-LD passport document marked `_test: true`; it is signed exactly like a production delivery (HMAC-SHA256 over `${timestamp}.${body}`). The event type is a concrete value from the subscription's filter (the `*` wildcard is skipped; defaults to `passport.sealed`).
  *
- * **Permission:** `webhook:write`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is raised for `Authorization`-bearing requests, so it is not the binding limit here. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+ * **Permission:** `webhook:write`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
 export const testWebhookSubscription = <ThrowOnError extends boolean = false>(options: Options<TestWebhookSubscriptionData, ThrowOnError>): RequestResult<TestWebhookSubscriptionResponses, TestWebhookSubscriptionErrors, ThrowOnError> => (options.client ?? client).post<TestWebhookSubscriptionResponses, TestWebhookSubscriptionErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

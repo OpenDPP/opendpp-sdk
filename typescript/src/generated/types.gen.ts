@@ -27,7 +27,7 @@ export type Error = {
      */
     requestId?: string;
     /**
-     * Optional MACHINE-STABLE error code for the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) — branch on this instead of parsing `message`. Present on the errors it covers (see src/constants/api-error-codes.ts), omitted otherwise.
+     * Optional MACHINE-STABLE error code for the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) — branch on this instead of parsing `message`. Present on the errors it covers — the `code` enum below is the full set — and omitted otherwise.
      */
     code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
 };
@@ -173,7 +173,7 @@ export type WhoamiResponse = {
 };
 
 /**
- * Annex XIII battery-status vocabulary (Battery Reg. (EU) 2023/1542). `RECYCLED` means the passport has ceased to exist (Art. 77(8)): the public unit view answers 410 Gone whenever `status` is `RECYCLED` **or** `ceasedAt` is set. Terminality is enforced via `ceasedAt`, which only the events-route transition stamps (and never clears): the predecessor-refusal check keys on `ceasedAt` alone, so a unit *created* with initial status `RECYCLED` (no `ceasedAt`) is already a public 410 tombstone yet can still be referenced as a predecessor; conversely, once `ceasedAt` is set the events endpoint will still accept later `status` values, but the 410 tombstone and the predecessor refusal persist.
+ * Annex XIII battery-status vocabulary (EU Battery Regulation). `RECYCLED` means the passport has ceased to exist: the public unit view answers 410 Gone whenever `status` is `RECYCLED` **or** `ceasedAt` is set. `RECYCLED` is terminal however it is reached: a unit *created* with initial status `RECYCLED` has `ceasedAt` stamped at creation, exactly like one transitioned there via the events route (the stamp is never cleared). A terminal unit is refused as a `predecessorUnitId`, and the events endpoint refuses every further event (400 `Terminal Unit Status`), so neither `status` nor telemetry can change again.
  */
 export type BatteryUnitStatus = 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | 'REPURPOSED' | 'REMANUFACTURED' | 'REUSED' | 'WASTE' | 'RECYCLED';
 
@@ -183,12 +183,12 @@ export type BatteryUnitStatus = 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | '
 export type BatteryUnitEventType = 'SOH_MEASUREMENT' | 'CHARGE_CYCLE' | 'STATUS_CHANGE' | 'NEGATIVE_EVENT' | 'OTHER';
 
 /**
- * Fastify's default 400 error body, returned when a syntactically malformed JSON request body is rejected by the framework **before the handler runs** (so none of the handler-built `{success:false, ...}` shapes apply).
+ * The framework's default 400 error body, returned when a syntactically malformed JSON request body is rejected by the framework **before the handler runs** (so none of the handler-built `{success:false, ...}` shapes apply).
  */
 export type FastifyDefaultBadRequest = {
     statusCode: 400;
     /**
-     * Fastify error code, e.g. `FST_ERR_CTP_INVALID_JSON_BODY`. May be absent.
+     * Framework error code, e.g. `FST_ERR_CTP_INVALID_JSON_BODY`. May be absent.
      */
     code?: string;
     error: 'Bad Request';
@@ -196,7 +196,7 @@ export type FastifyDefaultBadRequest = {
 };
 
 /**
- * One physical serialised battery (raw persisted row — these routes declare no Fastify response schema, so all model fields are returned as-is). A `BatteryUnit` is an individual instance of a SKU/type-level passport, carrying its real serial in GS1 AI-21.
+ * One physical serialised battery — the reads return exactly the fields documented here. A `BatteryUnit` is an individual instance of a SKU/type-level passport, carrying its real serial in GS1 AI-21.
  */
 export type BatteryUnitRow = {
     id: string;
@@ -205,7 +205,7 @@ export type BatteryUnitRow = {
      */
     serialNumber: string;
     /**
-     * Per-unit GS1 Digital Link: `{BASE_URL}/{01|8003}/{productId}/21/{serialNumber}` — AI `01` for GTIN (and non-GS1 SKUs), `8003` for GRAI. Unique platform-wide.
+     * Per-unit GS1 Digital Link: `{origin}/{01|8003}/{productId}/21/{serialNumber}` — AI `01` for GTIN (and non-GS1 SKUs), `8003` for GRAI. Unique platform-wide.
      */
     digitalLinkUri: string;
     /**
@@ -213,17 +213,17 @@ export type BatteryUnitRow = {
      */
     passportId: string;
     /**
-     * Owning tenant id (the demo tenant uses the fixed id `tenant-demo-opendpp`; regular tenants use UUIDs).
+     * Owning tenant id.
      */
     tenantId: string;
     manufacturedAt: string | null;
     status: BatteryUnitStatus;
     /**
-     * Stamped when the events endpoint transitions `status` to `RECYCLED` (Art. 77(8) cease-to-exist); never cleared afterwards, even if a later event changes `status` again. Non-null means the public unit view is a 410 tombstone and the unit is refused as a `predecessorUnitId`. Note: a unit *created* with initial status `RECYCLED` does NOT get `ceasedAt` stamped (the public view still tombstones on the status alone, but the predecessor refusal does not apply).
+     * Stamped when the unit enters a terminal status — at creation for a unit created with initial status `RECYCLED`, or by the events endpoint on the `RECYCLED` transition; never cleared afterwards. Non-null means the public unit view is a 410 tombstone and the unit is refused as a `predecessorUnitId`.
      */
     ceasedAt: string | null;
     /**
-     * Art. 77(7) lineage: the original unit this battery was repurposed/remanufactured from (`null` for first-life units).
+     * Lineage: the original unit this battery was repurposed/remanufactured from (`null` for first-life units).
      */
     predecessorUnitId: string | null;
     createdAt: string;
@@ -231,7 +231,7 @@ export type BatteryUnitRow = {
 };
 
 /**
- * One immutable per-unit telemetry record (raw persisted row). Append-only: no update or delete path exists.
+ * One immutable per-unit telemetry record — the reads return exactly the fields documented here. Append-only: no update or delete path exists.
  */
 export type BatteryUnitEventRow = {
     id: string;
@@ -283,11 +283,11 @@ export type BatteryUnitCreateItem = {
      */
     manufacturedAt?: string | number;
     /**
-     * Optional initial status. Defaults to `IN_SERVICE`. Note: creating a unit directly with `RECYCLED` makes the public view a 410 tombstone but does NOT stamp `ceasedAt` (only the events-route transition does), so such a unit can still be referenced as a predecessor.
+     * Optional initial status. Defaults to `IN_SERVICE`. Creating a unit directly with `RECYCLED` records an already-ceased battery: `ceasedAt` is stamped at creation, the public view is a 410 tombstone, and the unit is refused as a `predecessorUnitId`.
      */
     status?: BatteryUnitStatus;
     /**
-     * Optional Art. 77(7) linkage: id of an existing unit **in your tenant** (any passport) that this battery was repurposed/remanufactured from. A recycled predecessor (`ceasedAt` set) is refused — the check keys on `ceasedAt`, which only the events-route `RECYCLED` transition stamps. Atomically with creation, a `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}`) is appended to the predecessor and its status set to `predecessorStatus`.
+     * Optional lineage linkage: id of an existing unit **in your tenant** (any passport) that this battery was repurposed/remanufactured from. A recycled predecessor is refused — the check keys on terminality (`ceasedAt` set or a terminal `status`), however the unit reached it. Atomically with creation, a `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}`) is appended to the predecessor and its status set to `predecessorStatus`.
      */
     predecessorUnitId?: string;
     /**
@@ -414,7 +414,7 @@ export type BatteryUnitJsonLd = {
     status: BatteryUnitStatus;
     manufacturedAt: string | null;
     /**
-     * Art. 77(7) predecessor link. **Always `null` on `GET /api/v1/units/{id}`** — the authenticated handler does not load the lineage relation; use the public resolver `GET /unit/{id}` to see resolved lineage.
+     * Predecessor link. **Always `null` on `GET /api/v1/units/{id}`** — the authenticated handler does not load the lineage relation; use the public resolver `GET /unit/{id}` to see resolved lineage.
      */
     repurposedFrom: BatteryUnitLineageRef | null;
     /**
@@ -432,14 +432,6 @@ export type BatteryUnitJsonLd = {
     dynamicData: Array<BatteryUnitDynamicDataEvent>;
     createdAt: string;
     updatedAt: string;
-};
-
-/**
- * Confirmation that a battery unit was deleted.
- */
-export type BatteryUnitDeleteResponse = {
-    success: true;
-    message: 'Battery unit deleted.';
 };
 
 /**
@@ -474,7 +466,7 @@ export type RecordBatteryUnitEventRequest = {
      */
     recordedAt?: string | number;
     /**
-     * Optional status transition, applied to the unit in the same transaction when it differs from the current status (works with any `eventType`; conventionally paired with `STATUS_CHANGE`). Transitioning to `RECYCLED` stamps `ceasedAt` (if not already set; never cleared) and turns the public unit view into a 410 tombstone (Art. 77(8)); `status` itself is not locked afterwards — a later event may still set a different value — but `ceasedAt` persists, so the 410 and the predecessor refusal are permanent.
+     * Optional status transition, applied to the unit in the same transaction when it differs from the current status (works with any `eventType`; conventionally paired with `STATUS_CHANGE`). Transitioning to `RECYCLED` stamps `ceasedAt` (if not already set; never cleared) and turns the public unit view into a 410 tombstone; `RECYCLED` is terminal — once the unit's status is `RECYCLED` every further event is refused (400 `Terminal Unit Status`), so the status can never change again.
      */
     status?: BatteryUnitStatus;
 };
@@ -489,12 +481,12 @@ export type RecordBatteryUnitEventResponse = {
 };
 
 /**
- * A battery unit's append-only dynamic-data history, newest first.
+ * One page of a battery unit's append-only dynamic-data history, newest first.
  */
 export type BatteryUnitEventListResponse = {
     success: true;
     /**
-     * Equals `events.length`; never exceeds 500.
+     * Equals `events.length`; never exceeds the page `limit`.
      */
     count: number;
     /**
@@ -502,9 +494,68 @@ export type BatteryUnitEventListResponse = {
      */
     serialNumber: string;
     /**
-     * Newest first by `recordedAt`, capped at the 500 most recent.
+     * Opaque cursor for the next (older) page — pass it as the `cursor` query parameter. `null` when this page ends the history.
+     */
+    nextCursor: string | null;
+    /**
+     * Newest first by `recordedAt` (ties broken by `id`), at most one page (`limit`) per response.
      */
     events: Array<BatteryUnitEventRow>;
+};
+
+/**
+ * A batch of telemetry records for one unit. Telemetry only — a record carrying `status` is refused per-item; status transitions go through the single-event endpoint.
+ */
+export type BulkBatteryUnitEventsRequest = {
+    events: Array<{
+        eventType: BatteryUnitEventType;
+        /**
+         * State of Health, %.
+         */
+        stateOfHealth?: number | null;
+        /**
+         * Cumulative full-equivalent cycles; truncated to an integer before persisting.
+         */
+        cycleCount?: number | null;
+        /**
+         * Measured remaining capacity, Ah.
+         */
+        remainingCapacityAh?: number | null;
+        /**
+         * Observed temperature, °C.
+         */
+        temperatureC?: number | null;
+        /**
+         * Free-form context, persisted verbatim; any non-object, non-array value is dropped (stored as `null`).
+         */
+        payload?: {
+            [key: string]: unknown;
+        } | Array<unknown> | null;
+        /**
+         * When the measurement was taken; defaults to server time when omitted.
+         */
+        recordedAt?: string;
+    }>;
+};
+
+/**
+ * The partial-success report of a bulk telemetry ingest.
+ */
+export type BulkBatteryUnitEventsResponse = {
+    success: true;
+    message: string;
+    /**
+     * How many records were accepted — equals `events.length`.
+     */
+    count: number;
+    /**
+     * The persisted rows, in the order the accepted records appeared in the request.
+     */
+    events: Array<BatteryUnitEventRow>;
+    /**
+     * Skipped records as `[index]`-prefixed reasons; empty when the whole batch was accepted.
+     */
+    errors: Array<string>;
 };
 
 /**
@@ -923,7 +974,7 @@ export type RegisterOperatorResponse = {
     message: string;
     operator: OperatorRow;
     /**
-     * Non-blocking advisories (#404). Carries a single EORI-not-found note when the OPT-IN `EORI_EXISTENCE_CHECK` is enabled and a declared EORI is not found in the EU EOS register. Empty `[]` otherwise. Never blocks registration.
+     * Non-blocking advisories. Carries a single EORI-not-found note when the OPT-IN EORI existence check is enabled and a declared EORI is not found in the EU EOS register. Empty `[]` otherwise. Never blocks registration.
      */
     warnings: Array<AdvisoryItem>;
 };
@@ -982,7 +1033,7 @@ export type RestoreOperatorResponse = {
 export type RotateTenantKeysResponse = {
     success: true;
     /**
-     * Always `"eIDAS Asymmetric Key Pair generated and rotated in secure DB custody successfully"`.
+     * Outcome message. On a first provisioning: `"eIDAS Asymmetric Key Pair generated in secure DB custody successfully."` On a rotation, a message noting that the previous key is retired but retained in your DID document so existing credentials keep verifying.
      */
     message: string;
     /**
@@ -1097,7 +1148,7 @@ export type PassportCreateRequest = {
     facilityId?: string;
     metadata: PassportMetadataInput;
     /**
-     * When true: skips ALL ESPR/traceability validation, stores the passport with `status: "DRAFT"` (not publicly resolvable), and emits no webhook. Publish later via a validated edit.
+     * When true: skips ALL ESPR validation, stores the passport with `status: "DRAFT"` (not publicly resolvable), and emits no webhook. Publish later via a validated edit.
      */
     draft?: boolean;
     enrichment?: PassportEnrichmentInput;
@@ -1117,7 +1168,7 @@ export type PassportIngestCreated = {
      */
     passport: PublicPassportJsonLd;
     /**
-     * Non-blocking findings — a MIX of ESPR validation warnings (no `code`) and machine-coded advisories (a `code` per src/constants/api-advisories.ts, e.g. `NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`). Always present; empty for drafts. See `AdvisoryItem` for the coded shape.
+     * Non-blocking findings — a MIX of ESPR validation warnings (no `code`) and machine-coded advisories (a stable `code`, e.g. `NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`). Always present; empty for drafts. See `AdvisoryItem` for the coded shape.
      */
     warnings: Array<ValidationErrorItem>;
     /**
@@ -1125,7 +1176,7 @@ export type PassportIngestCreated = {
      */
     notices: Array<AdvisoryItem>;
     /**
-     * #247: whether this passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked (`producedAtFacility` + `countryOfProduction` are required by the UNTP DPP schema; a GLN is optional). The passport still publishes and resolves as AAS / JSON-LD / HTML regardless.
+     * Whether this passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked (`producedAtFacility` + `countryOfProduction` are required by the UNTP DPP schema; a GLN is optional). The passport still publishes and resolves as AAS / JSON-LD / HTML regardless.
      */
     vcReady?: boolean;
     /**
@@ -1188,7 +1239,7 @@ export type PassportValidateOnlyError = {
 };
 
 /**
- * One bulk-ingestion row. The HTTP layer only requires each row to be an object; rows missing `productId` or `metadata`, failing ESPR validation, referencing unbound operators/unknown facilities, or duplicating an existing `(productId, operatorId)` pair are SKIPPED and reported as strings in the response `errors[]` — they never fail the whole request (unless every row fails). Bulk rows do not support `draft` or `enrichment`, are always created with `status: "ACTIVE"`, skip the EPCIS traceability audit, and do NOT get `metadata.gtin`/`metadata.grai` auto-injected.
+ * One bulk-ingestion row. The HTTP layer only requires each row to be an object; rows missing `productId` or `metadata`, failing ESPR validation, referencing unbound operators/unknown facilities, or duplicating an existing `(productId, operatorId)` pair are SKIPPED and reported as strings in the response `errors[]` — they never fail the whole request (unless every row fails). Bulk rows do not support `draft` or `enrichment`, are always created with `status: "ACTIVE"`, and do NOT get `metadata.gtin`/`metadata.grai` auto-injected.
  */
 export type PassportBulkRow = {
     /**
@@ -1226,7 +1277,7 @@ export type PassportBulkRequest = {
 };
 
 /**
- * 201 partial-success envelope of `POST /api/v1/passports/bulk`. Returned whenever at least one row was inserted, even if other rows failed. Each result row carries a `vcReady` UNTP Verifiable-Credential readiness signal (#247) and a per-row non-blocking `warnings[]` (#249 non-GS1 advisory + #400 PII-shape privacy advisory; empty when the row is clean).
+ * 201 partial-success envelope of `POST /api/v1/passports/bulk`. Returned whenever at least one row was inserted, even if other rows failed. Each result row carries a `vcReady` UNTP Verifiable-Credential readiness signal and a per-row non-blocking `warnings[]` (non-GS1 advisory + PII-shape privacy advisory; empty when the row is clean).
  */
 export type PassportBulkResult = {
     success: true;
@@ -1245,7 +1296,7 @@ export type PassportBulkResult = {
          */
         digitalLinkUri: string;
         /**
-         * #247: whether this row's passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked. On a `dryRun` preview this reflects the EFFECTIVE facility after import (the row's facility, else the existing passport's preserved one).
+         * Whether this row's passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked. On a `dryRun` preview this reflects the EFFECTIVE facility after import (the row's facility, else the existing passport's preserved one).
          */
         vcReady: boolean;
         /**
@@ -1253,7 +1304,7 @@ export type PassportBulkResult = {
          */
         vcReadyReason?: string | null;
         /**
-         * Per-row non-blocking advisories — the #249 non-GS1 "no scannable QR" note and the #400 PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
+         * Per-row non-blocking advisories — the non-GS1 "no scannable QR" note and the PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
          */
         warnings?: Array<AdvisoryItem>;
     }>;
@@ -1276,7 +1327,7 @@ export type PassportBulkFailure = {
 };
 
 /**
- * An Asset Administration Shell (AAS) JSON Environment — the format produced by OpenDPP's AAS export of a passport. MUST contain a submodel with `idShort: "ComplianceMetadata"` whose `submodelElements` (AAS `Property` elements and `SubmodelElementCollection`s) are parsed back into the passport metadata object; absence fails 400 `Ingestion Failed`. MAY contain an `eidasVerificationSeal` submodel (elements `digitalSealHash`, `cryptographicSignature`, `pemPublicKey`) — when present, the seal is verified against the tenant's SERVER-HELD eIDAS public key (the embedded `pemPublicKey` is never trusted as the verification key). Body limit 256 KiB.
+ * An Asset Administration Shell (AAS) JSON Environment — the format produced by OpenDPP's AAS export of a passport. MUST contain a submodel with `idShort: "ComplianceMetadata"` whose `submodelElements` (AAS `Property` elements and `SubmodelElementCollection`s) are parsed back into the passport metadata object; absence fails 400 `Ingestion Failed`. MAY contain an `eidasVerificationSeal` submodel (elements `digitalSealHash`, `cryptographicSignature`, `pemPublicKey`) — when present, the seal is verified against the tenant's SERVER-HELD signing public key (the embedded `pemPublicKey` is never trusted as the verification key). Body limit 256 KiB.
  */
 export type AasEnvironmentInput = {
     /**
@@ -1298,7 +1349,7 @@ export type AasEnvironmentInput = {
 };
 
 /**
- * 201 envelope of `POST /api/v1/passports/aas/ingest`. Returned for both newly created passports and in-place updates of existing UNSEALED passports. No webhook event is emitted by this endpoint. `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness (#247) and `warnings` carries the non-GS1 advisory (#249), for parity with `POST /api/v1/passports`.
+ * 201 envelope of `POST /api/v1/passports/aas/ingest`. Returned for both newly created passports and in-place updates of existing UNSEALED passports. No webhook event is emitted by this endpoint. `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness and `warnings` carries the non-GS1 advisory, for parity with `POST /api/v1/passports`.
  */
 export type AasIngestCreated = {
     success: true;
@@ -1310,11 +1361,11 @@ export type AasIngestCreated = {
      */
     isSealed: boolean;
     /**
-     * True when the embedded seal verified against the tenant's server-held eIDAS public key. Always false for unsealed documents. (A sealed-but-unverified document never reaches 201 — it fails 400.)
+     * True when the embedded seal verified against the tenant's server-held signing public key. Always false for unsealed documents. (A sealed-but-unverified document never reaches 201 — it fails 400.)
      */
     signatureVerified: boolean;
     /**
-     * #247: whether the ingested passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked. AAS ingestion does not set a facility, so a newly created passport is false; an in-place update preserves whatever facility the existing passport had.
+     * Whether the ingested passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked. AAS ingestion does not set a facility, so a newly created passport is false; an in-place update preserves whatever facility the existing passport had.
      */
     vcReady: boolean;
     /**
@@ -1322,7 +1373,7 @@ export type AasIngestCreated = {
      */
     vcReadyReason?: string | null;
     /**
-     * #249: non-blocking advisories. Always present (empty array when none); carries the non-GS1 advisory when the resolved `productId` is not a GS1 GTIN-14/GRAI.
+     * Non-blocking advisories. Always present (empty array when none); carries the non-GS1 advisory when the resolved `productId` is not a GS1 GTIN-14/GRAI.
      */
     warnings: Array<ValidationErrorItem>;
 };
@@ -1392,7 +1443,7 @@ export type PassportUpdateRequest = {
 };
 
 /**
- * 200 envelope of PUT /api/v1/passports/{id}. The passport document is serialized at the PUBLIC redaction tier (owner-only/restricted metadata keys masked) even for the owner. Also carries the `vcReady`/`vcReadyReason` UNTP readiness signal (#247) and a non-blocking `warnings[]`.
+ * 200 envelope of PUT /api/v1/passports/{id}. The passport document is serialized at the PUBLIC redaction tier (owner-only/restricted metadata keys masked) even for the owner. Also carries the `vcReady`/`vcReadyReason` UNTP readiness signal and a non-blocking `warnings[]`.
  */
 export type PassportUpdateResponse = {
     /**
@@ -1433,7 +1484,7 @@ export type PassportSealResponse = {
     success: boolean;
     message: 'Passport sealed with the tenant\'s eIDAS advanced electronic seal and published.';
     /**
-     * Base64 ECDSA P-256 (prime256v1) SHA-256 signature over the metadata Merkle root (eIDAS ADVANCED electronic seal — not a qualified seal, not a W3C DataIntegrityProof).
+     * Base64 ECDSA P-256 (prime256v1) SHA-256 signature over the metadata Merkle root (ADVANCED electronic seal — not a qualified seal, not a W3C DataIntegrityProof).
      */
     digitalSeal: string;
     /**
@@ -1442,7 +1493,7 @@ export type PassportSealResponse = {
     signingPublicKey: string;
     passport: PublicPassportJsonLd;
     /**
-     * #255 publish-time re-warning: a single non-GS1 advisory when the sealed passport's `productId` is not a GS1 GTIN/GRAI (it has no scannable Digital Link — mint a GTIN you own via `POST /api/v1/gs1/gtin`). Empty `[]` when the productId is GS1-keyed. Non-blocking.
+     * Publish-time re-warning: a single non-GS1 advisory when the sealed passport's `productId` is not a GS1 GTIN/GRAI (it has no scannable Digital Link — mint a GTIN you own via `POST /api/v1/gs1/gtin`). Empty `[]` when the productId is GS1-keyed. Non-blocking.
      */
     warnings: Array<AdvisoryItem>;
 };
@@ -1506,11 +1557,11 @@ export type PassportListItem = {
      */
     productId: string;
     /**
-     * SKU/type-level GS1 Digital Link URI: `{BASE_URL}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
+     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
      */
     digitalLinkUri: string;
     /**
-     * eIDAS ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
+     * ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
      */
     digitalSeal: string | null;
     /**
@@ -1555,7 +1606,7 @@ export type PassportListItem = {
 };
 
 /**
- * The public, redacted JSON-LD Digital Product Passport document (`application/ld+json`). All listed top-level keys are ALWAYS present (`null` where not applicable). Additionally, every key of the (masked) `metadata` object — except the reserved document keys (`@context`, `@type`, `@id`, `id`, `productId`, `digitalLinkUri`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `proof`, `createdAt`, `updatedAt`, `economicOperator`, `manufacturingFacility`, `metadata`) — is ALSO flattened onto the document root for direct semantic-graph querying (hence `additionalProperties: true`); flattened values are identical to the corresponding `metadata` values, including redaction placeholders. Tier-masked metadata keys are replaced (in both places) with the literal string `[REDACTED - Privileged Access Required]`. Masking by tier: anonymous public callers lose the per-category restricted keys (category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when actually present) AND the owner-only key `facilityDetails`; legitimate-interest/authority grant holders lose only `facilityDetails`; owner-tier responses are unmasked and additionally include the facility street address fields. Note: `facilityDetails` is placeholder-masked in EVERY non-owner response, even when the underlying metadata never contained the key — in that case it has no entry in `proof.redactedLeaves`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the eIDAS seal stays verifiable offline after redaction (see `MerkleTreeAttestationProof` for the reconstruction rule).
+ * The public, redacted JSON-LD Digital Product Passport document (`application/ld+json`). All listed top-level keys are ALWAYS present (`null` where not applicable). Additionally, every key of the (masked) `metadata` object — except the reserved document keys (`@context`, `@type`, `@id`, `id`, `productId`, `digitalLinkUri`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `proof`, `createdAt`, `updatedAt`, `economicOperator`, `manufacturingFacility`, `metadata`) — is ALSO flattened onto the document root for direct semantic-graph querying (hence `additionalProperties: true`); flattened values are identical to the corresponding `metadata` values, including redaction placeholders. Tier-masked metadata keys are replaced (in both places) with the literal string `[REDACTED - Privileged Access Required]`. Masking by tier: anonymous public callers lose the per-category restricted keys (category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when actually present) AND the owner-only key `facilityDetails`; legitimate-interest/authority grant holders lose only `facilityDetails`; owner-tier responses are unmasked and additionally include the facility street address fields. Note: `facilityDetails` is placeholder-masked in EVERY non-owner response, even when the underlying metadata never contained the key — in that case it has no entry in `proof.redactedLeaves`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the seal stays verifiable offline after redaction (see `MerkleTreeAttestationProof` for the reconstruction rule).
  */
 export type PublicPassportJsonLd = {
     /**
@@ -1583,11 +1634,11 @@ export type PublicPassportJsonLd = {
      */
     productId: string;
     /**
-     * SKU/type-level GS1 Digital Link URI: `{BASE_URL}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
+     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
      */
     digitalLinkUri: string;
     /**
-     * eIDAS ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
+     * ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
      */
     digitalSeal: string | null;
     /**
@@ -1630,7 +1681,7 @@ export type PublicPassportJsonLd = {
 };
 
 /**
- * OpenDPP's own proof type — an eIDAS ADVANCED electronic seal: an ECDSA prime256v1 signature over a SHA-256 Merkle root of the key-sorted metadata (one leaf per top-level metadata key). Deliberately NOT a W3C DataIntegrityProof / `ecdsa-jcs-2019` Verifiable Credential (no RFC 8785 JCS canonicalization). Verifiable offline: rebuild the Merkle root from `metadata` — substituting each `redactedLeaves` hash for its placeholder-masked key, and EXCLUDING any placeholder-masked key that has no `redactedLeaves` entry (such a key was never present in the sealed metadata; the serializer injects the owner-only placeholder unconditionally) — then verify `signatureValue` with `publicKeyPem`; the `x5c` chain validates against the platform seal CA (`GET /.well-known/opendpp-seal-ca.pem`) and the `rfc3161` token via `openssl ts -verify`.
+ * OpenDPP's own proof type — an ADVANCED electronic seal: an ECDSA prime256v1 signature over a SHA-256 Merkle root of the key-sorted metadata (one leaf per top-level metadata key). Deliberately NOT a W3C DataIntegrityProof / `ecdsa-jcs-2019` Verifiable Credential (no RFC 8785 JCS canonicalization). Verifiable offline: rebuild the Merkle root from `metadata` — substituting each `redactedLeaves` hash for its placeholder-masked key, and EXCLUDING any placeholder-masked key that has no `redactedLeaves` entry (such a key was never present in the sealed metadata; the serializer injects the owner-only placeholder unconditionally) — then verify `signatureValue` with `publicKeyPem`; the `x5c` chain validates against the platform seal CA (`GET /.well-known/opendpp-seal-ca.pem`) and the `rfc3161` token via `openssl ts -verify`.
  */
 export type MerkleTreeAttestationProof = {
     /**
@@ -1736,14 +1787,14 @@ export type PublicFacilityNode = {
 };
 
 /**
- * An Asset Administration Shell (AAS) v3.0 environment export of the passport, served as `application/aas+json`. Three top-level keys: `assetAdministrationShells` (asset identity — `urn:opendpp:aas:{passportId}` / `urn:opendpp:asset:{operatorId}:{productId}`, GS1 GLN-qualified specific asset ids), `submodels`, and `conceptDescriptions` (semantic concept records from the admin-curated registry, `urn:opendpp:concept:…`; empty array when the registry is empty). Submodels: a `GeneralProductInformation` submodel (`urn:opendpp:submodel:general:{passportId}`), a `ComplianceMetadata` submodel (`urn:opendpp:submodel:compliance`) mapping the passport metadata through the concept registry, an IDTA Digital Nameplate submodel (idShort `Nameplate`) whenever manufacturer/product identity is available — carrying `ManufacturerName` / `ManufacturerProductDesignation` for EU-index (CIRPASS-2) discoverability — one or more additive per-category submodel views (ESPR-category views such as CarbonFootprint / TechnicalData, id prefix `urn:opendpp:submodel:category:`), and — whenever the issuing tenant's eIDAS signing key is provisioned (the normal case) — an `eidasVerificationSeal` submodel (`urn:opendpp:submodel:security-seal:{passportId}`) carrying `digitalSealHash`, `cryptographicSignature`, `pemPublicKey` and an optional `x509CertificateChain`. The seal submodel is present for EVERY access tier. Role filtering strips restricted and commercial owner-only elements from the `ComplianceMetadata` submodel before sending: owner credentials are filtered by their API-key role, grant holders by the `legitimate_interest` tier, anonymous callers by the `public` tier. Submodel internals are intentionally not enumerated in this specification.
+ * An Asset Administration Shell (AAS) v3.0 environment export of the passport, served as `application/aas+json`. Three top-level keys: `assetAdministrationShells` (asset identity — `urn:opendpp:aas:{passportId}` / `urn:opendpp:asset:{operatorId}:{productId}`, GS1 GLN-qualified specific asset ids), `submodels`, and `conceptDescriptions` (semantic concept records from the admin-curated registry, `urn:opendpp:concept:…`; empty array when the registry is empty). Submodels: a `GeneralProductInformation` submodel (`urn:opendpp:submodel:general:{passportId}`), a `ComplianceMetadata` submodel (`urn:opendpp:submodel:compliance`) mapping the passport metadata through the concept registry, an IDTA Digital Nameplate submodel (idShort `Nameplate`) whenever manufacturer/product identity is available — carrying `ManufacturerName` / `ManufacturerProductDesignation` for downstream index discoverability — one or more additive per-category submodel views (ESPR-category views such as CarbonFootprint / TechnicalData, id prefix `urn:opendpp:submodel:category:`), and — whenever the issuing tenant's signing key is provisioned (the normal case) — an `eidasVerificationSeal` submodel (`urn:opendpp:submodel:security-seal:{passportId}`) carrying `digitalSealHash`, `cryptographicSignature`, `pemPublicKey` and an optional `x509CertificateChain`. The seal submodel is present for EVERY access tier. Role filtering strips restricted and commercial owner-only elements from the `ComplianceMetadata` submodel before sending: owner credentials are filtered by their API-key role, grant holders by the `legitimate_interest` tier, anonymous callers by the `public` tier. Submodel internals are intentionally not enumerated in this specification.
  */
 export type AasEnvironment = {
     [key: string]: unknown;
 };
 
 /**
- * Public JSON-LD document for one individual serialised battery unit (Reg. (EU) 2023/1542 Art. 77(2)). The listed required keys are always present. EXACTLY ONE of two tier-dependent groups is added: anonymous (public) responses carry `restrictedData` (Annex XIII(2)-(4) notice) and OMIT `currentState`/`dynamicData` entirely; owner/grant (privileged) responses carry `currentState` (latest measurement or `null`) and `dynamicData` (up to 500 events, newest first) and omit `restrictedData`. The embedded `ofModel` passport is masked by the caller's tier like `GET /passport/{id}`.
+ * Public JSON-LD document for one individual serialised battery unit (EU Battery Regulation). The listed required keys are always present. EXACTLY ONE of two tier-dependent groups is added: anonymous (public) responses carry `restrictedData` (Annex XIII(2)-(4) notice) and OMIT `currentState`/`dynamicData` entirely; owner/grant (privileged) responses carry `currentState` (latest measurement or `null`) and `dynamicData` (up to 500 events, newest first) and omit `restrictedData`. The embedded `ofModel` passport is masked by the caller's tier like `GET /passport/{id}`.
  */
 export type PublicBatteryUnitJsonLd = {
     /**
@@ -1774,7 +1825,7 @@ export type PublicBatteryUnitJsonLd = {
     status: 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | 'REPURPOSED' | 'REMANUFACTURED' | 'REUSED' | 'WASTE' | 'RECYCLED';
     manufacturedAt: string | null;
     /**
-     * Art. 77(7) lineage: the original unit this repurposed/remanufactured battery came from. The link itself is public.
+     * Lineage: the original unit this repurposed/remanufactured battery came from. The link itself is public.
      */
     repurposedFrom: BatteryUnitLineageRef | null;
     /**
@@ -1802,7 +1853,7 @@ export type PublicBatteryUnitJsonLd = {
 };
 
 /**
- * Public lineage pointer between battery units (Art. 77(7)).
+ * Public lineage pointer between battery units.
  */
 export type BatteryUnitLineageRef = {
     unitId: string;
@@ -1866,7 +1917,7 @@ export type BatteryUnitEventNode = {
 };
 
 /**
- * Marker replacing per-unit telemetry in anonymous (public-tier) responses, with a pointer for requesting legitimate-interest access (Reg. (EU) 2023/1542, Annex XIII(2)-(4)).
+ * Marker replacing per-unit telemetry in anonymous (public-tier) responses, with a pointer for requesting legitimate-interest access (Annex XIII(2)-(4)).
  */
 export type BatteryUnitRestrictedDataNotice = {
     reason: 'LEGITIMATE_INTEREST_REQUIRED';
@@ -1879,7 +1930,7 @@ export type BatteryUnitRestrictedDataNotice = {
 };
 
 /**
- * Art. 77(8) tombstone (HTTP 410): once a battery is recycled its passport has ceased to exist. This minimal record confirms the unit existed, that it was recycled and when, plus the (still living) model-passport link. Grants and owner credentials do not override the tombstone on the public URL; the underlying data is retained internally for the statutory retention window.
+ * Tombstone (HTTP 410): once a battery is recycled its passport has ceased to exist. This minimal record confirms the unit existed, that it was recycled and when, plus the (still living) model-passport link. Grants and owner credentials do not override the tombstone on the public URL; the underlying data is retained internally for the statutory retention window.
  */
 export type BatteryUnitTombstoneJsonLd = {
     '@context': [
@@ -2145,7 +2196,7 @@ export type UntpEventProof = {
 };
 
 /**
- * Embedded verification-method object. The `x5c` chain (base64 DER, leaf first) is honoured ONLY when the node has eIDAS trust anchors configured, every certificate is currently valid, each link verifies against the next, the top is anchored, and the leaf attests the credential issuer — otherwise it is ignored and the registered tenant key is used instead.
+ * Embedded verification-method object. The `x5c` chain (base64 DER, leaf first) is honoured ONLY when the node has trust anchors configured, every certificate is currently valid, each link verifies against the next, the top is anchored, and the leaf attests the credential issuer — otherwise it is ignored and the registered tenant key is used instead.
  */
 export type UntpVerificationMethod = {
     id?: string;
@@ -2163,7 +2214,7 @@ export type UntpVerificationMethod = {
 export type TraceEventRegistered = {
     status: 'success';
     /**
-     * Server-generated event id. Use it with `GET /api/v1/events/{id}/lineage` and `POST /api/v1/events/{id}/audit`.
+     * Server-generated event id. Use it with `GET /api/v1/events/{id}/lineage`.
      */
     eventId: string;
     untpVerified: true;
@@ -2201,43 +2252,6 @@ export type TraceLineageNode = {
 export type TraceLineageResponse = {
     success: true;
     lineage: TraceLineageNode;
-};
-
-/**
- * The verdict of auditing a traceability lineage: whether it is compliant, any errors found, and the resulting certificate.
- */
-export type TraceComplianceAuditResponse = {
-    success: true;
-    /**
-     * Echo of the audited root event id.
-     */
-    eventId: string;
-    compliant: boolean;
-    /**
-     * Human-readable violation strings, e.g. `UFLPA Compliance Failure: Event [<uuid>] contains raw materials originating from prohibited Xinjiang region (<location>).` or `EUDR Compliance Failure: Farm coordinates [<lat>, <lng>] intersect with deforested area plots.` Empty when compliant.
-     */
-    errors: Array<string>;
-    auditedAt: string;
-    /**
-     * Present only when `compliant` is true; `null` otherwise.
-     */
-    certificate: TraceComplianceCertificate | null;
-};
-
-/**
- * A compliance certificate for an audited traceability lineage, naming the root event and the regulatory standards checked.
- */
-export type TraceComplianceCertificate = {
-    type: 'TraceabilityComplianceCertificate';
-    rootEventId: string;
-    /**
-     * Screening outcome — informational (e.g. `SCREENED_NO_MATCHES` when no geographic screen matched); NOT a legal compliance verdict.
-     */
-    status: string;
-    /**
-     * Vendor screening-heuristic identifiers applied (e.g. `OpenDPP-EUDR-heuristic`, `OpenDPP-UFLPA-screen`) — informational, NOT EU regulatory standards.
-     */
-    regulatoryStandards: Array<string>;
 };
 
 /**
@@ -2325,7 +2339,7 @@ export type SealVerifyResponse = {
 };
 
 /**
- * Present only for x5c-carrying proofs on a `verified: true` outcome whose chain is TRUSTED — `chainValid` AND `keyMatchesProof` both true (the two policy `verified: false` responses AND any untrusted-chain outcome omit it): the certified legal identity of the seal creator (eIDAS Art. 36(1)(b)). An untrusted chain is never surfaced, so an emitted report always has `chainValid: true`.
+ * Present only for x5c-carrying proofs on a `verified: true` outcome whose chain is TRUSTED — `chainValid` AND `keyMatchesProof` both true (the two policy `verified: false` responses AND any untrusted-chain outcome omit it): the certified legal identity of the seal creator. An untrusted chain is never surfaced, so an emitted report always has `chainValid: true`.
  */
 export type SealCertificateReport = {
     /**
@@ -2359,7 +2373,7 @@ export type SealCertificateReport = {
 };
 
 /**
- * Present only when `payload.proof.rfc3161.token` was supplied AND verification proceeds past the key-registration and operator-binding gates (the two policy `verified: false` responses omit it). Reports presence, the TSA-asserted genTime from the token's TSTInfo, and — when the node has a TSA CA configured (`TSA_CA_PEM`) — `timeAuthenticated`: the result of verifying the token's CMS SignedData signature over its TSTInfo and chaining the signer certificate to that anchor.
+ * Present only when `payload.proof.rfc3161.token` was supplied AND verification proceeds past the key-registration and operator-binding gates (the two policy `verified: false` responses omit it). Reports presence, the TSA-asserted genTime from the token's TSTInfo, and — when the node has a TSA trust anchor configured — `timeAuthenticated`: the result of verifying the token's CMS SignedData signature over its TSTInfo and chaining the signer certificate to that anchor.
  */
 export type SealTimestampReport = {
     present: true;
@@ -2368,7 +2382,7 @@ export type SealTimestampReport = {
      */
     genTime: string | null;
     /**
-     * True only when the token's RFC 3161 CMS SignedData signature verifies over its TSTInfo AND the signer passes full trust-path validation to the node's configured TSA CA anchor (`TSA_CA_PEM`): the signer is an end-entity timestamping certificate (a CRITICAL `id-kp-timeStamping` EKU, not a CA) that is VALID at the asserted `genTime` and chains through CA-constrained, genTime-valid intermediates to the anchor (itself a CA valid at `genTime`). False when the signature fails, when the path is not policy-valid, and when no TSA CA is configured (the asserted `genTime` is then unauthenticated). This is the node's own cryptographic check and does not replace a verifier's independent `openssl ts -verify`.
+     * True only when the token's RFC 3161 CMS SignedData signature verifies over its TSTInfo AND the signer passes full trust-path validation to the node's configured TSA trust anchor: the signer is an end-entity timestamping certificate (a CRITICAL `id-kp-timeStamping` EKU, not a CA) that is VALID at the asserted `genTime` and chains through CA-constrained, genTime-valid intermediates to the anchor (itself a CA valid at `genTime`). False when the signature fails, when the path is not policy-valid, and when no TSA CA is configured (the asserted `genTime` is then unauthenticated). This is the node's own cryptographic check and does not replace a verifier's independent `openssl ts -verify`.
      */
     timeAuthenticated?: boolean;
     /**
@@ -2727,7 +2741,7 @@ export type WhoamiErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -2848,7 +2862,7 @@ export type ListBatteryUnitsErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -2887,7 +2901,7 @@ export type SerializeBatteryUnitsData = {
 
 export type SerializeBatteryUnitsErrors = {
     /**
-     * Three shapes: (1) standard `Bad Request` triple when the body is not a JSON object, the `units` array is empty, or more than 200 units are sent; (2) `Serialisation Failed` (`{success:false, error:"Serialisation Failed", errors: string[]}` — **no `message` field**) when *every* item in the batch failed per-item validation/creation; (3) a syntactically malformed JSON body is rejected by the framework before the handler runs, with Fastify's default `{statusCode:400, error:"Bad Request", message}` body.
+     * Three shapes: (1) standard `Bad Request` triple when the body is not a JSON object, the `units` array is empty, or more than 200 units are sent; (2) `Serialisation Failed` (`{success:false, error:"Serialisation Failed", errors: string[]}` — **no `message` field**) when *every* item in the batch failed per-item validation/creation; (3) a syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
      */
     400: Error | BatteryUnitSerialisationFailedError | FastifyDefaultBadRequest;
     /**
@@ -2907,7 +2921,7 @@ export type SerializeBatteryUnitsErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -2962,7 +2976,11 @@ export type DeleteBatteryUnitErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Always, for an existing unit under your workspace — the unit represents a marketed physical item and cannot be deleted; its record and telemetry are retained. The message names the lifecycle venue to use instead.
+     */
+    409: Error;
+    /**
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -2977,15 +2995,6 @@ export type DeleteBatteryUnitErrors = {
 };
 
 export type DeleteBatteryUnitError = DeleteBatteryUnitErrors[keyof DeleteBatteryUnitErrors];
-
-export type DeleteBatteryUnitResponses = {
-    /**
-     * The unit and its events were permanently deleted.
-     */
-    200: BatteryUnitDeleteResponse;
-};
-
-export type DeleteBatteryUnitResponse = DeleteBatteryUnitResponses[keyof DeleteBatteryUnitResponses];
 
 export type GetBatteryUnitData = {
     body?: never;
@@ -3013,7 +3022,7 @@ export type GetBatteryUnitErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3046,11 +3055,24 @@ export type ListBatteryUnitEventsData = {
          */
         id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Page size (1–500). Out-of-range or non-integer values return **400**.
+         */
+        limit?: number;
+        /**
+         * Opaque page cursor — the `nextCursor` value from the previous page. Omit for the first (newest) page; a malformed value returns **400**.
+         */
+        cursor?: string;
+    };
     url: '/api/v1/units/{id}/events';
 };
 
 export type ListBatteryUnitEventsErrors = {
+    /**
+     * Malformed `cursor`, or `limit` outside 1–500.
+     */
+    400: Error;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -3064,7 +3086,7 @@ export type ListBatteryUnitEventsErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3082,7 +3104,7 @@ export type ListBatteryUnitEventsError = ListBatteryUnitEventsErrors[keyof ListB
 
 export type ListBatteryUnitEventsResponses = {
     /**
-     * The unit's telemetry history. `count` equals `events.length` (≤ 500); `serialNumber` echoes the unit's physical serial.
+     * One page of the unit's telemetry history. `count` equals `events.length` (≤ `limit`); `serialNumber` echoes the unit's physical serial; `nextCursor` is non-null while older events remain.
      */
     200: BatteryUnitEventListResponse;
 };
@@ -3091,6 +3113,12 @@ export type ListBatteryUnitEventsResponse = ListBatteryUnitEventsResponses[keyof
 
 export type RecordBatteryUnitEventData = {
     body: RecordBatteryUnitEventRequest;
+    headers?: {
+        /**
+         * Optional client idempotency key (≤255 characters, no control characters). Retrying this request with the same `Idempotency-Key` replays the ORIGINAL response — same status and body, plus an `idempotent-replayed: true` response header — instead of appending a duplicate reading. Scoped per (workspace, unit, key) and consulted within a 24-hour window; a malformed key returns **400**. Best-effort: the replay is recorded after the write commits, so in the rare window between commit and recording (or across an instance restart) a retry appends normally — the reading may then be recorded twice.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * Battery unit UUID (tenant-scoped).
@@ -3103,7 +3131,7 @@ export type RecordBatteryUnitEventData = {
 
 export type RecordBatteryUnitEventErrors = {
     /**
-     * Two shapes: (1) the standard error triple from handler validation — messages: `Request body must be a valid JSON object`; `eventType must be one of: SOH_MEASUREMENT, CHARGE_CYCLE, STATUS_CHANGE, NEGATIVE_EVENT, OTHER`; `<field> must be a number between <lo> and <hi>` (stateOfHealth/cycleCount/remainingCapacityAh/temperatureC); `status must be one of: IN_SERVICE, DECOMMISSIONED, RECALLED, REPURPOSED, REMANUFACTURED, REUSED, WASTE, RECYCLED`; `recordedAt is not a valid date`. (2) A syntactically malformed JSON body is rejected by the framework before the handler runs, with Fastify's default `{statusCode:400, error:"Bad Request", message}` body.
+     * Two shapes: (1) the standard error triple from handler validation — messages: `Request body must be a valid JSON object`; `eventType must be one of: SOH_MEASUREMENT, CHARGE_CYCLE, STATUS_CHANGE, NEGATIVE_EVENT, OTHER`; `<field> must be a number between <lo> and <hi>` (stateOfHealth/cycleCount/remainingCapacityAh/temperatureC); `status must be one of: IN_SERVICE, DECOMMISSIONED, RECALLED, REPURPOSED, REMANUFACTURED, REUSED, WASTE, RECYCLED`; `recordedAt is not a valid date`. (2) A syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
      */
     400: Error | FastifyDefaultBadRequest;
     /**
@@ -3123,7 +3151,7 @@ export type RecordBatteryUnitEventErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3147,6 +3175,71 @@ export type RecordBatteryUnitEventResponses = {
 };
 
 export type RecordBatteryUnitEventResponse2 = RecordBatteryUnitEventResponses[keyof RecordBatteryUnitEventResponses];
+
+export type BulkRecordBatteryUnitEventsData = {
+    body: BulkBatteryUnitEventsRequest;
+    headers?: {
+        /**
+         * Optional client idempotency key (≤255 characters, no control characters). Retrying this batch with the same `Idempotency-Key` replays the ORIGINAL result — same status and body, plus an `idempotent-replayed: true` response header — instead of re-inserting the batch. Scoped per (workspace, unit, key) and consulted within a 24-hour window; a malformed key returns **400**. Best-effort: the result is recorded after the batch commits, so in the rare window between commit and recording (or across an instance restart) a retry re-processes the batch normally and readings may then be recorded twice.
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Battery unit UUID (tenant-scoped).
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/units/{id}/events/bulk';
+};
+
+export type BulkRecordBatteryUnitEventsErrors = {
+    /**
+     * Invalid body envelope (missing/empty `events`, more than 500 items, malformed `Idempotency-Key`), a terminal unit (`Terminal Unit Status`), or every record failed (`Bulk Event Ingest Failed` with the per-record `errors`).
+     */
+    400: Error;
+    /**
+     * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
+     */
+    401: Error;
+    /**
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     */
+    402: PassportQuotaError;
+    /**
+     * Authenticated but not allowed: the key lacks the required permission, the request crosses workspaces, or an MFA-gated write was attempted without an MFA session.
+     */
+    403: Error;
+    /**
+     * The resource does not exist or is not visible to the calling workspace.
+     */
+    404: Error;
+    /**
+     * Rate-limiter default body.
+     */
+    429: {
+        statusCode: number;
+        code?: string;
+        error: string;
+        message: string;
+    };
+    /**
+     * Unexpected server error. Unhandled errors are normalized by the global error handler to this envelope with a generic message; some routes catch their own failures and return the same envelope with a route-specific message. Details are logged server-side and never returned.
+     */
+    500: Error;
+};
+
+export type BulkRecordBatteryUnitEventsError = BulkRecordBatteryUnitEventsErrors[keyof BulkRecordBatteryUnitEventsErrors];
+
+export type BulkRecordBatteryUnitEventsResponses = {
+    /**
+     * At least one record was accepted. `count` equals `events.length`; skipped items are listed in `errors` in `[index]`-prefixed form.
+     */
+    201: BulkBatteryUnitEventsResponse;
+};
+
+export type BulkRecordBatteryUnitEventsResponse = BulkRecordBatteryUnitEventsResponses[keyof BulkRecordBatteryUnitEventsResponses];
 
 export type ListFacilitiesData = {
     body?: never;
@@ -3174,7 +3267,7 @@ export type ListFacilitiesErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3228,7 +3321,7 @@ export type CreateFacilityErrors = {
      */
     409: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3237,7 +3330,7 @@ export type CreateFacilityErrors = {
         message: string;
     };
     /**
-     * Internal error (standard envelope). This route's catch block returns message `Failed to register facility` for unexpected database errors; a failure inside the auth layer returns message `Authentication verification failed`.
+     * Internal error (standard envelope), with the message `Failed to register facility` for unexpected database errors; a failure inside the auth layer returns message `Authentication verification failed`.
      */
     500: Error;
 };
@@ -3283,7 +3376,7 @@ export type DeleteFacilityErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3334,7 +3427,7 @@ export type GetFacilityErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3373,7 +3466,7 @@ export type UpdateFacilityData = {
 
 export type UpdateFacilityErrors = {
     /**
-     * `country` was present as a string but is not a 2-letter ISO code. (This is the only body validation that errors; other invalid fields are silently ignored.) Note: a syntactically malformed JSON body is rejected earlier by Fastify's content-type parser with its **default** error shape (`{"statusCode": 400, "code": "FST_ERR_CTP_…", "error": "Bad Request", "message": …}`), not this envelope.
+     * `country` was present as a string but is not a 2-letter ISO code. (This is the only body validation that errors; other invalid fields are silently ignored.) Note: a syntactically malformed JSON body is rejected earlier by the content-type parser with its **default** error shape (`{"statusCode": 400, "code": "FST_ERR_CTP_…", "error": "Bad Request", "message": …}`), not this envelope.
      */
     400: Error;
     /**
@@ -3393,7 +3486,7 @@ export type UpdateFacilityErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3444,7 +3537,7 @@ export type ListGrantsErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3498,7 +3591,7 @@ export type CreateGrantErrors = {
      */
     404: GrantRouteError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3561,7 +3654,7 @@ export type ApproveGrantRequestErrors = {
      */
     409: GrantRouteError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3620,7 +3713,7 @@ export type DenyGrantRequestErrors = {
      */
     409: GrantRouteError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3675,7 +3768,7 @@ export type RevokeGrantErrors = {
      */
     404: GrantRouteError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3722,7 +3815,7 @@ export type ListOperatorsErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3772,7 +3865,7 @@ export type RegisterOperatorErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3781,7 +3874,7 @@ export type RegisterOperatorErrors = {
         message: string;
     };
     /**
-     * Database/handler failure. The route handler emits the minimal envelope (`{success: false, message}`, **no** `error` key, message taken from the underlying error); a failure inside the authentication layer instead emits the standard three-field envelope.
+     * Database/handler failure. Returns the standard envelope with the generic message "An unexpected error occurred."; the underlying error is logged server-side and never returned.
      */
     500: OperatorMinimalError | Error;
 };
@@ -3831,7 +3924,7 @@ export type DeleteOperatorErrors = {
      */
     409: OperatorMinimalError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3882,7 +3975,7 @@ export type GetOperatorErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3937,7 +4030,7 @@ export type UpdateOperatorErrors = {
      */
     404: OperatorMinimalError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -3992,7 +4085,7 @@ export type RestoreOperatorErrors = {
      */
     404: OperatorMinimalError;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4038,7 +4131,7 @@ export type RotateTenantKeysErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4106,7 +4199,7 @@ export type ListPassportsErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4151,7 +4244,7 @@ export type CreatePassportData = {
 
 export type CreatePassportErrors = {
     /**
-     * Three variants share this status: (1) **Validation Failed** — the metadata failed ESPR category / cross-field / traceability validation; carries per-field `errors[]` (and `warnings[]` only when at least one warning exists). (2) **Bad Request** triple — whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), no economic operator bound to the workspace, or unknown `facilityId`; `{success, error, message}` with no `errors`/`warnings`. (3) Pre-handler rejections — request-body schema violations (e.g. missing `productId`) and malformed JSON return only `{error, message}`.
+     * Three variants share this status: (1) **Validation Failed** — the metadata failed ESPR category / cross-field validation; carries per-field `errors[]` (and `warnings[]` only when at least one warning exists). (2) **Bad Request** triple — whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), no economic operator bound to the workspace, or unknown `facilityId`; `{success, error, message}` with no `errors`/`warnings`. (3) Pre-handler rejections — request-body schema violations (e.g. missing `productId`) and malformed JSON return only `{error, message}`.
      */
     400: {
         success: false;
@@ -4192,7 +4285,7 @@ export type CreatePassportErrors = {
         message: string;
     };
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4256,7 +4349,7 @@ export type ValidatePassportErrors = {
         message: string;
     };
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4390,7 +4483,7 @@ export type BulkIngestPassportsErrors = {
         message: string;
     };
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4429,7 +4522,7 @@ export type IngestPassportFromAasData = {
 
 export type IngestPassportFromAasErrors = {
     /**
-     * Four variants share this status: `Bad Request` (non-object body, unresolvable productId, no bound operator), `Signature Verification Failed` (embedded seal invalid/altered or no matching tenant key), `Validation Failed` (ESPR/traceability — carries `errors[]`, and `warnings[]` when present), and `Ingestion Failed` (catch-all parse/processing error with the underlying message).
+     * Four variants share this status: `Bad Request` (non-object body, unresolvable productId, no bound operator), `Signature Verification Failed` (embedded seal invalid/altered or no matching tenant key), `Validation Failed` (ESPR — carries `errors[]`, and `warnings[]` when present), and `Ingestion Failed` (catch-all parse/processing error with the underlying message).
      */
     400: Error | {
         success: false;
@@ -4463,7 +4556,7 @@ export type IngestPassportFromAasErrors = {
         message: string;
     };
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4576,7 +4669,7 @@ export type DeleteDraftPassportErrors = {
      */
     409: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4703,7 +4796,7 @@ export type UpdatePassportErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4712,7 +4805,7 @@ export type UpdatePassportErrors = {
         message: string;
     };
     /**
-     * History snapshot or transactional update failure returns the standard envelope (`message` may echo the internal error text or fall back to "Failed to update passport"). Unexpected server error. Unhandled errors are normalized by the global error handler to the standard envelope with the generic message "An unexpected error occurred"; details are logged server-side, never returned.
+     * History snapshot or transactional update failure returns the standard envelope with the message "Failed to update passport". Unexpected server error. Unhandled errors are normalized by the global error handler to the standard envelope with the generic message "An unexpected error occurred"; details are logged server-side, never returned.
      */
     500: Error;
 };
@@ -4742,7 +4835,7 @@ export type SealPassportData = {
 
 export type SealPassportErrors = {
     /**
-     * Missing identifier, or the tenant has no eIDAS key pair configured.
+     * Missing identifier, or the tenant has no signing key pair configured.
      */
     400: Error;
     /**
@@ -4762,7 +4855,7 @@ export type SealPassportErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -4825,7 +4918,7 @@ export type UpdatePassportStatusErrors = {
      */
     409: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5076,7 +5169,7 @@ export type ResolvePublicBatteryUnitErrors = {
      */
     406: Error;
     /**
-     * Gone — the unit was RECYCLED (or `ceasedAt` is set): the battery passport has ceased to exist (Art. 77(8)). A minimal tombstone is returned to everyone; grants and owner credentials do not override it. Content-negotiated: HTML tombstone for `Accept: text/html`, JSON-LD otherwise.
+     * Gone — the unit was RECYCLED (or `ceasedAt` is set): the battery passport has ceased to exist. A minimal tombstone is returned to everyone; grants and owner credentials do not override it. Content-negotiated: HTML tombstone for `Accept: text/html`, JSON-LD otherwise.
      */
     410: BatteryUnitTombstoneJsonLd;
     /**
@@ -5109,7 +5202,7 @@ export type GetSealCaCertificateData = {
 
 export type GetSealCaCertificateErrors = {
     /**
-     * Rate limited (30/min/IP in-memory public limiter). This route's 429 body has ONLY the `error` field — no `message`, no `success`. (Any `x-ratelimit-*` headers on the response belong to the global platform limiter.)
+     * Rate limited (30/min/IP). This route's 429 body has ONLY the `error` field — no `message`, no `success`. (Any `x-ratelimit-*` headers on the response belong to the global platform limiter.)
      */
     429: {
         error: 'Too Many Requests';
@@ -5149,7 +5242,7 @@ export type GetSectorSchemaErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5179,7 +5272,7 @@ export type GetDppJsonLdContextData = {
 
 export type GetDppJsonLdContextErrors = {
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5209,7 +5302,7 @@ export type GetJsonLdContextData = {
 
 export type GetJsonLdContextErrors = {
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5239,7 +5332,7 @@ export type GetHealthData = {
 
 export type GetHealthErrors = {
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5269,7 +5362,7 @@ export type GetApiVersionData = {
 
 export type GetApiVersionErrors = {
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5377,7 +5470,7 @@ export type DecodeGs1Errors = {
      */
     400: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5452,7 +5545,7 @@ export type DecodeGs1BatchErrors = {
      */
     400: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5547,7 +5640,7 @@ export type GetPassportQrCodeErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5608,7 +5701,7 @@ export type BulkExportPassportLabelsErrors = {
      */
     401: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5680,7 +5773,7 @@ export type GetBatteryUnitQrCodeErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5733,7 +5826,7 @@ export type ListMaterialsErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5783,7 +5876,7 @@ export type RegisterTraceabilityEventErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5833,7 +5926,7 @@ export type CaptureEpcisDocumentErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5884,7 +5977,7 @@ export type GetEventLineageErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -5908,57 +6001,6 @@ export type GetEventLineageResponses = {
 };
 
 export type GetEventLineageResponse = GetEventLineageResponses[keyof GetEventLineageResponses];
-
-export type AuditEventLineageData = {
-    body?: never;
-    path: {
-        /**
-         * EPCIS event id — the server-generated UUID returned as `eventId` by `POST /api/v1/events`. Used as the root of the audited lineage DAG.
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/events/{id}/audit';
-};
-
-export type AuditEventLineageErrors = {
-    /**
-     * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
-     */
-    401: Error;
-    /**
-     * Authenticated but not allowed: the key lacks the required permission, the request crosses workspaces, or an MFA-gated write was attempted without an MFA session.
-     */
-    403: Error;
-    /**
-     * The audit could not be completed: unknown event id, an event belonging to another tenant, or a circular lineage graph. The `error` value is `Compliance Audit Failed` (not the standard `Not Found`).
-     */
-    404: Error;
-    /**
-     * Fastify rate-limit plugin default body.
-     */
-    429: {
-        statusCode: number;
-        code?: string;
-        error: string;
-        message: string;
-    };
-    /**
-     * Unexpected server error. Unhandled errors are normalized by the global error handler to this envelope with a generic message; some routes catch their own failures and return the same envelope with a route-specific message. Details are logged server-side and never returned.
-     */
-    500: Error;
-};
-
-export type AuditEventLineageError = AuditEventLineageErrors[keyof AuditEventLineageErrors];
-
-export type AuditEventLineageResponses = {
-    /**
-     * Audit completed (compliant or not — violations are reported in-band, not as HTTP errors).
-     */
-    200: TraceComplianceAuditResponse;
-};
-
-export type AuditEventLineageResponse = AuditEventLineageResponses[keyof AuditEventLineageResponses];
 
 export type VerifyPassportSealData = {
     body: SealVerifyRequest;
@@ -6010,7 +6052,7 @@ export type GetTenantDidDocumentErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6049,7 +6091,7 @@ export type GetTenantRevocationStatusListErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6087,7 +6129,7 @@ export type ListWebhookSubscriptionsErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6141,7 +6183,7 @@ export type CreateWebhookSubscriptionErrors = {
      */
     409: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6196,7 +6238,7 @@ export type DeleteWebhookSubscriptionErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6255,7 +6297,7 @@ export type UpdateWebhookSubscriptionErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6310,7 +6352,7 @@ export type RotateWebhookSecretErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6361,7 +6403,7 @@ export type ListWebhookDeliveriesErrors = {
      */
     403: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;
@@ -6416,7 +6458,7 @@ export type TestWebhookSubscriptionErrors = {
      */
     404: Error;
     /**
-     * Fastify rate-limit plugin default body.
+     * Rate-limiter default body.
      */
     429: {
         statusCode: number;

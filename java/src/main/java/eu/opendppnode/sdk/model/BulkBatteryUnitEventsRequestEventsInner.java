@@ -24,166 +24,59 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import eu.opendppnode.sdk.model.BatteryUnitEventType;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import org.openapitools.jackson.nullable.JsonNullable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.util.NoSuchElementException;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 import eu.opendppnode.sdk.invoker.ApiClient;
 /**
- * One append-only telemetry event (owner/grant tiers only).
+ * BulkBatteryUnitEventsRequestEventsInner
  */
 @JsonPropertyOrder({
-  BatteryUnitEventNode.JSON_PROPERTY_AT_TYPE,
-  BatteryUnitEventNode.JSON_PROPERTY_EVENT_TYPE,
-  BatteryUnitEventNode.JSON_PROPERTY_STATE_OF_HEALTH,
-  BatteryUnitEventNode.JSON_PROPERTY_CYCLE_COUNT,
-  BatteryUnitEventNode.JSON_PROPERTY_REMAINING_CAPACITY_AH,
-  BatteryUnitEventNode.JSON_PROPERTY_TEMPERATURE_C,
-  BatteryUnitEventNode.JSON_PROPERTY_PAYLOAD,
-  BatteryUnitEventNode.JSON_PROPERTY_RECORDED_AT
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_EVENT_TYPE,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_STATE_OF_HEALTH,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_CYCLE_COUNT,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_REMAINING_CAPACITY_AH,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_TEMPERATURE_C,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_PAYLOAD,
+  BulkBatteryUnitEventsRequestEventsInner.JSON_PROPERTY_RECORDED_AT
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class BatteryUnitEventNode {
-  /**
-   * Gets or Sets atType
-   */
-  public enum AtTypeEnum {
-    BATTERY_UNIT_EVENT(String.valueOf("BatteryUnitEvent")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
-
-    private String value;
-
-    AtTypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static AtTypeEnum fromValue(String value) {
-      for (AtTypeEnum b : AtTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
-  public static final String JSON_PROPERTY_AT_TYPE = "@type";
-  @jakarta.annotation.Nonnull
-  private AtTypeEnum atType;
-
-  /**
-   * Gets or Sets eventType
-   */
-  public enum EventTypeEnum {
-    SOH_MEASUREMENT(String.valueOf("SOH_MEASUREMENT")),
-    
-    CHARGE_CYCLE(String.valueOf("CHARGE_CYCLE")),
-    
-    STATUS_CHANGE(String.valueOf("STATUS_CHANGE")),
-    
-    NEGATIVE_EVENT(String.valueOf("NEGATIVE_EVENT")),
-    
-    OTHER(String.valueOf("OTHER")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
-
-    private String value;
-
-    EventTypeEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static EventTypeEnum fromValue(String value) {
-      for (EventTypeEnum b : EventTypeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
+public class BulkBatteryUnitEventsRequestEventsInner {
   public static final String JSON_PROPERTY_EVENT_TYPE = "eventType";
   @jakarta.annotation.Nonnull
-  private EventTypeEnum eventType;
+  private BatteryUnitEventType eventType;
 
   public static final String JSON_PROPERTY_STATE_OF_HEALTH = "stateOfHealth";
-  @jakarta.annotation.Nullable
-  private BigDecimal stateOfHealth;
+  private JsonNullable<BigDecimal> stateOfHealth = JsonNullable.<BigDecimal>undefined();
 
   public static final String JSON_PROPERTY_CYCLE_COUNT = "cycleCount";
-  @jakarta.annotation.Nullable
-  private Integer cycleCount;
+  private JsonNullable<BigDecimal> cycleCount = JsonNullable.<BigDecimal>undefined();
 
   public static final String JSON_PROPERTY_REMAINING_CAPACITY_AH = "remainingCapacityAh";
-  @jakarta.annotation.Nullable
-  private BigDecimal remainingCapacityAh;
+  private JsonNullable<BigDecimal> remainingCapacityAh = JsonNullable.<BigDecimal>undefined();
 
   public static final String JSON_PROPERTY_TEMPERATURE_C = "temperatureC";
-  @jakarta.annotation.Nullable
-  private BigDecimal temperatureC;
+  private JsonNullable<BigDecimal> temperatureC = JsonNullable.<BigDecimal>undefined();
 
   public static final String JSON_PROPERTY_PAYLOAD = "payload";
-  @jakarta.annotation.Nullable
-  private Object payload = null;
+  private JsonNullable<Object> payload = JsonNullable.<Object>of(null);
 
   public static final String JSON_PROPERTY_RECORDED_AT = "recordedAt";
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   private OffsetDateTime recordedAt;
 
-  public BatteryUnitEventNode() { 
+  public BulkBatteryUnitEventsRequestEventsInner() { 
   }
 
-  public BatteryUnitEventNode atType(@jakarta.annotation.Nonnull AtTypeEnum atType) {
-    this.atType = atType;
-    return this;
-  }
-
-  /**
-   * Get atType
-   * @return atType
-   */
-  @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_AT_TYPE)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public AtTypeEnum getAtType() {
-    return atType;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_AT_TYPE)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setAtType(@jakarta.annotation.Nonnull AtTypeEnum atType) {
-    this.atType = atType;
-  }
-
-
-  public BatteryUnitEventNode eventType(@jakarta.annotation.Nonnull EventTypeEnum eventType) {
+  public BulkBatteryUnitEventsRequestEventsInner eventType(@jakarta.annotation.Nonnull BatteryUnitEventType eventType) {
     this.eventType = eventType;
     return this;
   }
@@ -195,116 +88,154 @@ public class BatteryUnitEventNode {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_EVENT_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public EventTypeEnum getEventType() {
+  public BatteryUnitEventType getEventType() {
     return eventType;
   }
 
 
   @JsonProperty(JSON_PROPERTY_EVENT_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setEventType(@jakarta.annotation.Nonnull EventTypeEnum eventType) {
+  public void setEventType(@jakarta.annotation.Nonnull BatteryUnitEventType eventType) {
     this.eventType = eventType;
   }
 
 
-  public BatteryUnitEventNode stateOfHealth(@jakarta.annotation.Nullable BigDecimal stateOfHealth) {
-    this.stateOfHealth = stateOfHealth;
+  public BulkBatteryUnitEventsRequestEventsInner stateOfHealth(@jakarta.annotation.Nullable BigDecimal stateOfHealth) {
+    this.stateOfHealth = JsonNullable.<BigDecimal>of(stateOfHealth);
     return this;
   }
 
   /**
-   * Percent, 0-100.
+   * State of Health, %.
+   * minimum: 0
+   * maximum: 100
    * @return stateOfHealth
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_STATE_OF_HEALTH)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  @JsonIgnore
   public BigDecimal getStateOfHealth() {
-    return stateOfHealth;
+        return stateOfHealth.orElse(null);
   }
 
-
   @JsonProperty(JSON_PROPERTY_STATE_OF_HEALTH)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setStateOfHealth(@jakarta.annotation.Nullable BigDecimal stateOfHealth) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<BigDecimal> getStateOfHealth_JsonNullable() {
+    return stateOfHealth;
+  }
+  
+  @JsonProperty(JSON_PROPERTY_STATE_OF_HEALTH)
+  public void setStateOfHealth_JsonNullable(JsonNullable<BigDecimal> stateOfHealth) {
     this.stateOfHealth = stateOfHealth;
   }
 
+  public void setStateOfHealth(@jakarta.annotation.Nullable BigDecimal stateOfHealth) {
+    this.stateOfHealth = JsonNullable.<BigDecimal>of(stateOfHealth);
+  }
 
-  public BatteryUnitEventNode cycleCount(@jakarta.annotation.Nullable Integer cycleCount) {
-    this.cycleCount = cycleCount;
+
+  public BulkBatteryUnitEventsRequestEventsInner cycleCount(@jakarta.annotation.Nullable BigDecimal cycleCount) {
+    this.cycleCount = JsonNullable.<BigDecimal>of(cycleCount);
     return this;
   }
 
   /**
-   * Get cycleCount
+   * Cumulative full-equivalent cycles; truncated to an integer before persisting.
+   * minimum: 0
    * @return cycleCount
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CYCLE_COUNT)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public Integer getCycleCount() {
-    return cycleCount;
+  @JsonIgnore
+  public BigDecimal getCycleCount() {
+        return cycleCount.orElse(null);
   }
 
-
   @JsonProperty(JSON_PROPERTY_CYCLE_COUNT)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setCycleCount(@jakarta.annotation.Nullable Integer cycleCount) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<BigDecimal> getCycleCount_JsonNullable() {
+    return cycleCount;
+  }
+  
+  @JsonProperty(JSON_PROPERTY_CYCLE_COUNT)
+  public void setCycleCount_JsonNullable(JsonNullable<BigDecimal> cycleCount) {
     this.cycleCount = cycleCount;
   }
 
+  public void setCycleCount(@jakarta.annotation.Nullable BigDecimal cycleCount) {
+    this.cycleCount = JsonNullable.<BigDecimal>of(cycleCount);
+  }
 
-  public BatteryUnitEventNode remainingCapacityAh(@jakarta.annotation.Nullable BigDecimal remainingCapacityAh) {
-    this.remainingCapacityAh = remainingCapacityAh;
+
+  public BulkBatteryUnitEventsRequestEventsInner remainingCapacityAh(@jakarta.annotation.Nullable BigDecimal remainingCapacityAh) {
+    this.remainingCapacityAh = JsonNullable.<BigDecimal>of(remainingCapacityAh);
     return this;
   }
 
   /**
-   * Get remainingCapacityAh
+   * Measured remaining capacity, Ah.
+   * minimum: 0
    * @return remainingCapacityAh
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_REMAINING_CAPACITY_AH)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  @JsonIgnore
   public BigDecimal getRemainingCapacityAh() {
-    return remainingCapacityAh;
+        return remainingCapacityAh.orElse(null);
   }
 
-
   @JsonProperty(JSON_PROPERTY_REMAINING_CAPACITY_AH)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setRemainingCapacityAh(@jakarta.annotation.Nullable BigDecimal remainingCapacityAh) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<BigDecimal> getRemainingCapacityAh_JsonNullable() {
+    return remainingCapacityAh;
+  }
+  
+  @JsonProperty(JSON_PROPERTY_REMAINING_CAPACITY_AH)
+  public void setRemainingCapacityAh_JsonNullable(JsonNullable<BigDecimal> remainingCapacityAh) {
     this.remainingCapacityAh = remainingCapacityAh;
   }
 
+  public void setRemainingCapacityAh(@jakarta.annotation.Nullable BigDecimal remainingCapacityAh) {
+    this.remainingCapacityAh = JsonNullable.<BigDecimal>of(remainingCapacityAh);
+  }
 
-  public BatteryUnitEventNode temperatureC(@jakarta.annotation.Nullable BigDecimal temperatureC) {
-    this.temperatureC = temperatureC;
+
+  public BulkBatteryUnitEventsRequestEventsInner temperatureC(@jakarta.annotation.Nullable BigDecimal temperatureC) {
+    this.temperatureC = JsonNullable.<BigDecimal>of(temperatureC);
     return this;
   }
 
   /**
-   * Get temperatureC
+   * Observed temperature, °C.
+   * minimum: -273.15
+   * maximum: 10000
    * @return temperatureC
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TEMPERATURE_C)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  @JsonIgnore
   public BigDecimal getTemperatureC() {
-    return temperatureC;
+        return temperatureC.orElse(null);
   }
 
-
   @JsonProperty(JSON_PROPERTY_TEMPERATURE_C)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setTemperatureC(@jakarta.annotation.Nullable BigDecimal temperatureC) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<BigDecimal> getTemperatureC_JsonNullable() {
+    return temperatureC;
+  }
+  
+  @JsonProperty(JSON_PROPERTY_TEMPERATURE_C)
+  public void setTemperatureC_JsonNullable(JsonNullable<BigDecimal> temperatureC) {
     this.temperatureC = temperatureC;
   }
 
+  public void setTemperatureC(@jakarta.annotation.Nullable BigDecimal temperatureC) {
+    this.temperatureC = JsonNullable.<BigDecimal>of(temperatureC);
+  }
 
-  public BatteryUnitEventNode payload(@jakarta.annotation.Nullable Object payload) {
-    this.payload = payload;
+
+  public BulkBatteryUnitEventsRequestEventsInner payload(@jakarta.annotation.Nullable Object payload) {
+    this.payload = JsonNullable.<Object>of(payload);
     return this;
   }
 
@@ -313,46 +244,54 @@ public class BatteryUnitEventNode {
    * @return payload
    */
   @jakarta.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PAYLOAD)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  @JsonIgnore
   public Object getPayload() {
-    return payload;
+        return payload.orElse(null);
   }
 
-
   @JsonProperty(JSON_PROPERTY_PAYLOAD)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setPayload(@jakarta.annotation.Nullable Object payload) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public JsonNullable<Object> getPayload_JsonNullable() {
+    return payload;
+  }
+  
+  @JsonProperty(JSON_PROPERTY_PAYLOAD)
+  public void setPayload_JsonNullable(JsonNullable<Object> payload) {
     this.payload = payload;
   }
 
+  public void setPayload(@jakarta.annotation.Nullable Object payload) {
+    this.payload = JsonNullable.<Object>of(payload);
+  }
 
-  public BatteryUnitEventNode recordedAt(@jakarta.annotation.Nonnull OffsetDateTime recordedAt) {
+
+  public BulkBatteryUnitEventsRequestEventsInner recordedAt(@jakarta.annotation.Nullable OffsetDateTime recordedAt) {
     this.recordedAt = recordedAt;
     return this;
   }
 
   /**
-   * When the measurement was taken (client-supplied at ingestion).
+   * When the measurement was taken; defaults to server time when omitted.
    * @return recordedAt
    */
-  @jakarta.annotation.Nonnull
+  @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_RECORDED_AT)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public OffsetDateTime getRecordedAt() {
     return recordedAt;
   }
 
 
   @JsonProperty(JSON_PROPERTY_RECORDED_AT)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setRecordedAt(@jakarta.annotation.Nonnull OffsetDateTime recordedAt) {
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setRecordedAt(@jakarta.annotation.Nullable OffsetDateTime recordedAt) {
     this.recordedAt = recordedAt;
   }
 
 
   /**
-   * Return true if this BatteryUnitEventNode object is equal to o.
+   * Return true if this BulkBatteryUnitEventsRequest_events_inner object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -362,27 +301,36 @@ public class BatteryUnitEventNode {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BatteryUnitEventNode batteryUnitEventNode = (BatteryUnitEventNode) o;
-    return Objects.equals(this.atType, batteryUnitEventNode.atType) &&
-        Objects.equals(this.eventType, batteryUnitEventNode.eventType) &&
-        Objects.equals(this.stateOfHealth, batteryUnitEventNode.stateOfHealth) &&
-        Objects.equals(this.cycleCount, batteryUnitEventNode.cycleCount) &&
-        Objects.equals(this.remainingCapacityAh, batteryUnitEventNode.remainingCapacityAh) &&
-        Objects.equals(this.temperatureC, batteryUnitEventNode.temperatureC) &&
-        Objects.equals(this.payload, batteryUnitEventNode.payload) &&
-        Objects.equals(this.recordedAt, batteryUnitEventNode.recordedAt);
+    BulkBatteryUnitEventsRequestEventsInner bulkBatteryUnitEventsRequestEventsInner = (BulkBatteryUnitEventsRequestEventsInner) o;
+    return Objects.equals(this.eventType, bulkBatteryUnitEventsRequestEventsInner.eventType) &&
+        equalsNullable(this.stateOfHealth, bulkBatteryUnitEventsRequestEventsInner.stateOfHealth) &&
+        equalsNullable(this.cycleCount, bulkBatteryUnitEventsRequestEventsInner.cycleCount) &&
+        equalsNullable(this.remainingCapacityAh, bulkBatteryUnitEventsRequestEventsInner.remainingCapacityAh) &&
+        equalsNullable(this.temperatureC, bulkBatteryUnitEventsRequestEventsInner.temperatureC) &&
+        equalsNullable(this.payload, bulkBatteryUnitEventsRequestEventsInner.payload) &&
+        Objects.equals(this.recordedAt, bulkBatteryUnitEventsRequestEventsInner.recordedAt);
+  }
+
+  private static <T> boolean equalsNullable(JsonNullable<T> a, JsonNullable<T> b) {
+    return a == b || (a != null && b != null && a.isPresent() && b.isPresent() && Objects.deepEquals(a.get(), b.get()));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(atType, eventType, stateOfHealth, cycleCount, remainingCapacityAh, temperatureC, payload, recordedAt);
+    return Objects.hash(eventType, hashCodeNullable(stateOfHealth), hashCodeNullable(cycleCount), hashCodeNullable(remainingCapacityAh), hashCodeNullable(temperatureC), hashCodeNullable(payload), recordedAt);
+  }
+
+  private static <T> int hashCodeNullable(JsonNullable<T> a) {
+    if (a == null) {
+      return 1;
+    }
+    return a.isPresent() ? Arrays.deepHashCode(new Object[]{a.get()}) : 31;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class BatteryUnitEventNode {\n");
-    sb.append("    atType: ").append(toIndentedString(atType)).append("\n");
+    sb.append("class BulkBatteryUnitEventsRequestEventsInner {\n");
     sb.append("    eventType: ").append(toIndentedString(eventType)).append("\n");
     sb.append("    stateOfHealth: ").append(toIndentedString(stateOfHealth)).append("\n");
     sb.append("    cycleCount: ").append(toIndentedString(cycleCount)).append("\n");
@@ -436,11 +384,6 @@ public class BatteryUnitEventNode {
     }
 
     StringJoiner joiner = new StringJoiner("&");
-
-    // add `@type` to the URL query string
-    if (getAtType() != null) {
-      joiner.add(String.format("%s@type%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAtType()))));
-    }
 
     // add `eventType` to the URL query string
     if (getEventType() != null) {

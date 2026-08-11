@@ -24,8 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import eu.opendppnode.sdk.model.AdvisoryItem;
-import eu.opendppnode.sdk.model.OperatorRow;
+import eu.opendppnode.sdk.model.BulkBatteryUnitEventsRequestEventsInner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,176 +33,54 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import eu.opendppnode.sdk.invoker.ApiClient;
 /**
- * Confirmation that an economic operator was registered, carrying the stored record and any non-blocking advisories.
+ * A batch of telemetry records for one unit. Telemetry only — a record carrying &#x60;status&#x60; is refused per-item; status transitions go through the single-event endpoint.
  */
 @JsonPropertyOrder({
-  RegisterOperatorResponse.JSON_PROPERTY_SUCCESS,
-  RegisterOperatorResponse.JSON_PROPERTY_MESSAGE,
-  RegisterOperatorResponse.JSON_PROPERTY_OPERATOR,
-  RegisterOperatorResponse.JSON_PROPERTY_WARNINGS
+  BulkBatteryUnitEventsRequest.JSON_PROPERTY_EVENTS
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class RegisterOperatorResponse {
-  /**
-   * Gets or Sets success
-   */
-  public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
+public class BulkBatteryUnitEventsRequest {
+  public static final String JSON_PROPERTY_EVENTS = "events";
+  @jakarta.annotation.Nonnull
+  private List<BulkBatteryUnitEventsRequestEventsInner> events = new ArrayList<>();
 
-    private Boolean value;
-
-    SuccessEnum(Boolean value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public Boolean getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SuccessEnum fromValue(Boolean value) {
-      for (SuccessEnum b : SuccessEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
+  public BulkBatteryUnitEventsRequest() { 
   }
 
-  public static final String JSON_PROPERTY_SUCCESS = "success";
-  @jakarta.annotation.Nonnull
-  private SuccessEnum success;
-
-  public static final String JSON_PROPERTY_MESSAGE = "message";
-  @jakarta.annotation.Nonnull
-  private String message;
-
-  public static final String JSON_PROPERTY_OPERATOR = "operator";
-  @jakarta.annotation.Nonnull
-  private OperatorRow operator;
-
-  public static final String JSON_PROPERTY_WARNINGS = "warnings";
-  @jakarta.annotation.Nonnull
-  private List<AdvisoryItem> warnings = new ArrayList<>();
-
-  public RegisterOperatorResponse() { 
+  public BulkBatteryUnitEventsRequest events(@jakarta.annotation.Nonnull List<BulkBatteryUnitEventsRequestEventsInner> events) {
+    this.events = events;
+    return this;
   }
 
-  public RegisterOperatorResponse success(@jakarta.annotation.Nonnull SuccessEnum success) {
-    this.success = success;
+  public BulkBatteryUnitEventsRequest addEventsItem(BulkBatteryUnitEventsRequestEventsInner eventsItem) {
+    if (this.events == null) {
+      this.events = new ArrayList<>();
+    }
+    this.events.add(eventsItem);
     return this;
   }
 
   /**
-   * Get success
-   * @return success
+   * Get events
+   * @return events
    */
   @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_SUCCESS)
+  @JsonProperty(JSON_PROPERTY_EVENTS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public SuccessEnum getSuccess() {
-    return success;
+  public List<BulkBatteryUnitEventsRequestEventsInner> getEvents() {
+    return events;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SUCCESS)
+  @JsonProperty(JSON_PROPERTY_EVENTS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setSuccess(@jakarta.annotation.Nonnull SuccessEnum success) {
-    this.success = success;
-  }
-
-
-  public RegisterOperatorResponse message(@jakarta.annotation.Nonnull String message) {
-    this.message = message;
-    return this;
-  }
-
-  /**
-   * Always &#x60;\&quot;Economic Operator supplier registered successfully\&quot;&#x60; (also when an existing operator was bound rather than created).
-   * @return message
-   */
-  @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public String getMessage() {
-    return message;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setMessage(@jakarta.annotation.Nonnull String message) {
-    this.message = message;
-  }
-
-
-  public RegisterOperatorResponse operator(@jakarta.annotation.Nonnull OperatorRow operator) {
-    this.operator = operator;
-    return this;
-  }
-
-  /**
-   * Get operator
-   * @return operator
-   */
-  @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_OPERATOR)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public OperatorRow getOperator() {
-    return operator;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_OPERATOR)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setOperator(@jakarta.annotation.Nonnull OperatorRow operator) {
-    this.operator = operator;
-  }
-
-
-  public RegisterOperatorResponse warnings(@jakarta.annotation.Nonnull List<AdvisoryItem> warnings) {
-    this.warnings = warnings;
-    return this;
-  }
-
-  public RegisterOperatorResponse addWarningsItem(AdvisoryItem warningsItem) {
-    if (this.warnings == null) {
-      this.warnings = new ArrayList<>();
-    }
-    this.warnings.add(warningsItem);
-    return this;
-  }
-
-  /**
-   * Non-blocking advisories. Carries a single EORI-not-found note when the OPT-IN EORI existence check is enabled and a declared EORI is not found in the EU EOS register. Empty &#x60;[]&#x60; otherwise. Never blocks registration.
-   * @return warnings
-   */
-  @jakarta.annotation.Nonnull
-  @JsonProperty(JSON_PROPERTY_WARNINGS)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public List<AdvisoryItem> getWarnings() {
-    return warnings;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_WARNINGS)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setWarnings(@jakarta.annotation.Nonnull List<AdvisoryItem> warnings) {
-    this.warnings = warnings;
+  public void setEvents(@jakarta.annotation.Nonnull List<BulkBatteryUnitEventsRequestEventsInner> events) {
+    this.events = events;
   }
 
 
   /**
-   * Return true if this RegisterOperatorResponse object is equal to o.
+   * Return true if this BulkBatteryUnitEventsRequest object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -213,26 +90,20 @@ public class RegisterOperatorResponse {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    RegisterOperatorResponse registerOperatorResponse = (RegisterOperatorResponse) o;
-    return Objects.equals(this.success, registerOperatorResponse.success) &&
-        Objects.equals(this.message, registerOperatorResponse.message) &&
-        Objects.equals(this.operator, registerOperatorResponse.operator) &&
-        Objects.equals(this.warnings, registerOperatorResponse.warnings);
+    BulkBatteryUnitEventsRequest bulkBatteryUnitEventsRequest = (BulkBatteryUnitEventsRequest) o;
+    return Objects.equals(this.events, bulkBatteryUnitEventsRequest.events);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(success, message, operator, warnings);
+    return Objects.hash(events);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class RegisterOperatorResponse {\n");
-    sb.append("    success: ").append(toIndentedString(success)).append("\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
-    sb.append("    operator: ").append(toIndentedString(operator)).append("\n");
-    sb.append("    warnings: ").append(toIndentedString(warnings)).append("\n");
+    sb.append("class BulkBatteryUnitEventsRequest {\n");
+    sb.append("    events: ").append(toIndentedString(events)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -280,26 +151,11 @@ public class RegisterOperatorResponse {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `success` to the URL query string
-    if (getSuccess() != null) {
-      joiner.add(String.format("%ssuccess%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSuccess()))));
-    }
-
-    // add `message` to the URL query string
-    if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
-    }
-
-    // add `operator` to the URL query string
-    if (getOperator() != null) {
-      joiner.add(getOperator().toUrlQueryString(prefix + "operator" + suffix));
-    }
-
-    // add `warnings` to the URL query string
-    if (getWarnings() != null) {
-      for (int i = 0; i < getWarnings().size(); i++) {
-        if (getWarnings().get(i) != null) {
-          joiner.add(getWarnings().get(i).toUrlQueryString(String.format("%swarnings%s%s", prefix, suffix,
+    // add `events` to the URL query string
+    if (getEvents() != null) {
+      for (int i = 0; i < getEvents().size(); i++) {
+        if (getEvents().get(i) != null) {
+          joiner.add(getEvents().get(i).toUrlQueryString(String.format("%sevents%s%s", prefix, suffix,
           "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
