@@ -38,44 +38,9 @@ import eu.opendppnode.sdk.invoker.ApiClient;
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class DecodeGs1Batch200ResponseResultsInnerOneOf1 {
-  /**
-   * Gets or Sets ok
-   */
-  public enum OkEnum {
-    FALSE(Boolean.valueOf("false")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
-
-    private Boolean value;
-
-    OkEnum(Boolean value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public Boolean getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static OkEnum fromValue(Boolean value) {
-      for (OkEnum b : OkEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
   public static final String JSON_PROPERTY_OK = "ok";
   @jakarta.annotation.Nonnull
-  private OkEnum ok;
+  private Boolean ok;
 
   public static final String JSON_PROPERTY_ERROR = "error";
   @jakarta.annotation.Nonnull
@@ -84,7 +49,7 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf1 {
   public DecodeGs1Batch200ResponseResultsInnerOneOf1() { 
   }
 
-  public DecodeGs1Batch200ResponseResultsInnerOneOf1 ok(@jakarta.annotation.Nonnull OkEnum ok) {
+  public DecodeGs1Batch200ResponseResultsInnerOneOf1 ok(@jakarta.annotation.Nonnull Boolean ok) {
     this.ok = ok;
     return this;
   }
@@ -96,14 +61,14 @@ public class DecodeGs1Batch200ResponseResultsInnerOneOf1 {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_OK)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public OkEnum getOk() {
+  public Boolean getOk() {
     return ok;
   }
 
 
   @JsonProperty(JSON_PROPERTY_OK)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setOk(@jakarta.annotation.Nonnull OkEnum ok) {
+  public void setOk(@jakarta.annotation.Nonnull Boolean ok) {
     this.ok = ok;
   }
 

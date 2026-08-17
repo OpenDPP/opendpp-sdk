@@ -1,12 +1,16 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "OpenDPP SDKs",
-  "description": "Official client SDKs for the OpenDPP Digital Product Passport API — fully-typed clients generated from the public OpenAPI contract and version-locked to it. TypeScript (@opendpp/sdk) is live; Python (opendpp) is planned.",
+  "description": "Official client SDKs for the OpenDPP Digital Product Passport API — fully-typed clients generated from the public OpenAPI contract and version-locked to it: TypeScript (@opendpp/sdk on npm), Java/Kotlin (eu.opendpp-node:opendpp-sdk on Maven Central), and Python (opendpp-sdk on PyPI).",
   "folders": [],
   "excludeFolders": [
     "node_modules",
     "dist",
-    "typescript/src/generated"
+    "typescript/src/generated",
+    "java/src/main/java",
+    "python/opendpp_sdk/api",
+    "python/opendpp_sdk/models",
+    "python/.venv"
   ],
   "excludeFiles": [
     "LICENSE",
@@ -21,6 +25,8 @@
     "`baseUrl` defaults to the public hosted node `https://opendpp-node.eu`. The API key is sent as `Authorization: Bearer <key>` only on operations that declare a security requirement — public operations like `getHealth` need no key.",
     "Every endpoint is a tree-shakeable, fully-typed function (`createPassport`, `getPassport`, `sealPassport`, `decodeGs1`, `resolveGs1Gtin`, `whoami`, …) and every request/response shape is an exported type. Import named operations from the package root; do not reach into `src/generated`.",
     "The TypeScript SDK is ESM-only, targets Node >= 20, and has zero runtime dependencies (the fetch client is bundled).",
+    "The Python SDK (pip install opendpp-sdk) is pydantic v2 + urllib3, synchronous, Python >= 3.9. Create a client with opendpp_sdk.ergonomics.create_opendpp_client(api_key=...) and pass it to the generated API classes (PassportsApi, ServiceApi, PublicResolutionApi, ...); use the resolve_*_as helpers for alternate representations of the content-negotiated public resolvers.",
+    "Python response models never reject unknown fields — additive server changes land in each model's additional_properties dict instead of raising.",
     "The SDK is ergonomics only — it embeds no tier/masking logic and no restricted-key knowledge. All privileged behavior lives in the hosted node behind a Developer-Plan key."
   ],
   "url": "https://context7.com/opendpp/opendpp-sdk",

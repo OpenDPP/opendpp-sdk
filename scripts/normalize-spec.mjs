@@ -58,6 +58,14 @@ function isMap(v) {
  *    Direct anyOf/oneOf/allOf branches are compositions: a `{type:"null"}` branch there is the
  *    standard 3.1 nullable idiom, which the generators handle natively (typed field + nullable) —
  *    those must NOT be collapsed.
+ *
+ * 6. BOOLEAN single-value constraints (`const: true|false`, or an all-boolean `enum`) are stripped
+ *    from the generation input: openapi-generator STRINGIFIES the allowed value into the emitted
+ *    validator (`if value not in set(['true'])` in python), which then rejects the boolean the
+ *    server actually sends — every `success: false` error body and the gs1-batch `ok` discriminant
+ *    failed to parse. The union stays unambiguous without it: the branches' `required` sets are
+ *    disjoint. The published contract keeps the `const` — it is true and idiomatic 3.1; only the
+ *    generators can't be trusted with it. (String consts generate correct validators and are kept.)
  */
 function relax(node, inComposition) {
   if (Array.isArray(node)) {
@@ -91,6 +99,10 @@ function relax(node, inComposition) {
     const desc = node.description;
     for (const key of Object.keys(node)) delete node[key];
     if (desc !== undefined) node.description = desc;
+  }
+  if (t === "boolean" || (Array.isArray(t) && t.includes("boolean"))) {
+    if (typeof node.const === "boolean") delete node.const;
+    if (Array.isArray(node.enum) && node.enum.every((v) => typeof v === "boolean")) delete node.enum;
   }
 }
 

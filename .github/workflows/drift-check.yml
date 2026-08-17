@@ -10,9 +10,10 @@ name: Drift check
 # stale**: the published SDK targets a contract state that no longer exists, and looks identical to a
 # current one. Only a comparison against LIVE can catch that, which is what this does.
 #
-# There are TWO vendored copies (typescript/openapi.json + java/openapi.json). Both are compared to
-# live, and their agreement with EACH OTHER is checked too — the TS and Java clients claiming different
-# contracts is its own defect, and regenerating only one of them is the obvious way to cause it.
+# There are THREE vendored copies (typescript/openapi.json + java/openapi.json + python/openapi.json).
+# All are compared to live, and their agreement with EACH OTHER is checked too — the lanes claiming
+# different contracts is its own defect, and regenerating only one of them is the obvious way to
+# cause it.
 
 on:
   schedule:
@@ -58,7 +59,7 @@ jobs:
             const canon = (f) => JSON.stringify(sort(read(f)));
             const ver = (f) => read(f).info?.version ?? "unknown";
 
-            const COPIES = ["typescript/openapi.json", "java/openapi.json"];
+            const COPIES = ["typescript/openapi.json", "java/openapi.json", "python/openapi.json"];
             const live = canon("live-openapi.json");
             const liveVer = ver("live-openapi.json");
 

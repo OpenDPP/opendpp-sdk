@@ -52,44 +52,9 @@ import eu.opendppnode.sdk.invoker.ApiClient;
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class AasIngestCreated {
-  /**
-   * Gets or Sets success
-   */
-  public enum SuccessEnum {
-    TRUE(Boolean.valueOf("true")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
-
-    private Boolean value;
-
-    SuccessEnum(Boolean value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public Boolean getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SuccessEnum fromValue(Boolean value) {
-      for (SuccessEnum b : SuccessEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
   public static final String JSON_PROPERTY_SUCCESS = "success";
   @jakarta.annotation.Nonnull
-  private SuccessEnum success;
+  private Boolean success;
 
   /**
    * Gets or Sets message
@@ -160,7 +125,7 @@ public class AasIngestCreated {
   public AasIngestCreated() { 
   }
 
-  public AasIngestCreated success(@jakarta.annotation.Nonnull SuccessEnum success) {
+  public AasIngestCreated success(@jakarta.annotation.Nonnull Boolean success) {
     this.success = success;
     return this;
   }
@@ -172,14 +137,14 @@ public class AasIngestCreated {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_SUCCESS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public SuccessEnum getSuccess() {
+  public Boolean getSuccess() {
     return success;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SUCCESS)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setSuccess(@jakarta.annotation.Nonnull SuccessEnum success) {
+  public void setSuccess(@jakarta.annotation.Nonnull Boolean success) {
     this.success = success;
   }
 
