@@ -100,123 +100,23 @@ dependencies {
 }
 
 // ─── Generation input normalization ─────────────────────────────────────────
-// The published contract is OpenAPI 3.1 with a top-level `webhooks:` block (inbound delivery callbacks:
-// passport.ingested/sealed/recalled/status_updated/updated). A CLIENT SDK never *calls* those, and the
-// Java generator maps them to the SAME WebhooksApi class as the real `Webhooks`-tagged management
-// endpoints (create/list/update/delete subscription, rotate-secret, deliveries, test) — so the inbound
-// block silently OVERWRITES the management operations. We strip the inbound block from the GENERATION
-// INPUT only; the committed openapi.json (which drives the version lock) stays the pristine published
-// contract, and the WebhookEnvelope payload model — a named component schema — is still generated so
-// consumers can deserialize deliveries. (Groovy JSON ships with Gradle; no extra dependency.)
+// The generation input is the pristine vendored contract rewritten by the SHARED normalizer
+// `scripts/normalize-spec.mjs` (repo root) — one tested rewrite for every openapi-generator lane
+// (Java here, Python in python/), replacing the private Groovy transform that used to live inline in
+// this file. The script documents each transform and the generator failure it prevents (webhooks
+// collision, @context polymorphism, additionalProperties → extends HashMap / extra="forbid",
+// 3.1 multi-type containers, Accept-union content negotiation). It is AUTHORED in opendpp-node
+// (scripts/lib/spec-codegen-normalize.mjs, unit-tested there) and synced into this repo by the same
+// mechanism that carries CHANGELOG.md — edit it upstream, never here. The committed openapi.json
+// (which drives the version lock) stays the pristine published contract. Requires `node` on PATH
+// (already true everywhere this build runs: CI sets up Node for the version-lock step).
+val normalizerScript = layout.projectDirectory.file("../scripts/normalize-spec.mjs").asFile
 val generatorSpec = layout.buildDirectory.file("openapi-generator/openapi.json")
-val prepareSpec = tasks.register("prepareSpec") {
+val prepareSpec = tasks.register<Exec>("prepareSpec") {
     inputs.file(specFile)
+    inputs.file(normalizerScript)
     outputs.file(generatorSpec)
-    doLast {
-        @Suppress("UNCHECKED_CAST")
-        val doc = groovy.json.JsonSlurper().parse(specFile) as MutableMap<String, Any?>
-        doc.remove("webhooks")
-        // JSON-LD `@context` is polymorphic (string | array | object). openapi-generator's 3.1 anyOf
-        // deserializer emits illegal `List<Object>.class` / `Map<..>.class` for those composed models
-        // (EpcisDocumentContext, PassportListItemContextInner, PublicBatteryUnitJsonLdContextInner),
-        // which break javac. A typed client never hand-builds @context, so we relax every @context
-        // property to a free-form schema (→ Object) in the generation input only.
-        fun relax(node: Any?, inComposition: Boolean) {
-            when (node) {
-                is MutableMap<*, *> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val m = node as MutableMap<String, Any?>
-                    val props = m["properties"]
-                    if (props is MutableMap<*, *> && props.containsKey("@context")) {
-                        @Suppress("UNCHECKED_CAST")
-                        val p = props as MutableMap<String, Any?>
-                        val relaxed = linkedMapOf<String, Any?>()
-                        ((p["@context"] as? Map<*, *>)?.get("description"))?.let { relaxed["description"] = it }
-                        p["@context"] = relaxed
-                    }
-                    // A schema with typed `properties` PLUS `additionalProperties` (the JSON-LD documents
-                    // flatten metadata onto the root, hence additionalProperties:true) makes the generator
-                    // emit `class X extends HashMap` — and Jackson deserializes any Map subtype AS A MAP,
-                    // never calling the typed setters: every typed getter silently returns null. Strip
-                    // additionalProperties from such schemas so they generate as plain beans; nothing is
-                    // lost — the flattened root keys are documented duplicates of the `metadata` object,
-                    // which the typed surface still exposes in full.
-                    if (props is Map<*, *> && props.isNotEmpty() && m.containsKey("additionalProperties")) {
-                        m.remove("additionalProperties")
-                    }
-                    for ((k, v) in m.toList()) {
-                        // Direct anyOf/oneOf/allOf branches are compositions: a `{type:"null"}` branch
-                        // there is the standard 3.1 nullable idiom, which the generator handles natively
-                        // (typed field + JsonNullable) — those must NOT be collapsed.
-                        val comp = v is List<*> && (k == "anyOf" || k == "oneOf" || k == "allOf")
-                        if (comp) (v as List<*>).forEach { relax(it, true) } else relax(v, false)
-                    }
-                    // 3.1 quirks the Java generator mishandles, collapsed to free-form (→ Object, keeping
-                    // the description) on property-less schemas:
-                    //  • a container multi-type (free-form event `payload`, type:["object","array","null"])
-                    //    → the generator emits a Map with an EMPTY value type (`Map<String, >`);
-                    //  • a bare `type:"null"` OUTSIDE a composition (PassportListItem.manufacturingFacility,
-                    //    always null in the list view) → an un-generated `ModelNull` class reference.
-                    val t = m["type"]
-                    val containerMulti = t is List<*> && (t.contains("object") || t.contains("array"))
-                    val bareNull = t == "null" && !inComposition
-                    if ((containerMulti || bareNull) && !m.containsKey("properties")) {
-                        val desc = m["description"]
-                        m.clear()
-                        if (desc != null) m["description"] = desc
-                    }
-                }
-                is List<*> -> node.forEach { relax(it, inComposition) }
-            }
-        }
-        relax(doc, false)
-        // The public resolvers are content-negotiated (RFC 7231): their responses offer JSON-LD, AAS,
-        // VC-JWT, SD-JWT, and HTML alongside application/json. The generator turns that into an
-        // equal-q multi-representation Accept header, so the server may legitimately answer with a
-        // representation the typed return model does NOT match — which deserializes as an all-null
-        // object (unknown properties are ignored). A typed JSON client can only consume the JSON
-        // document, so wherever a response offers application/json among alternates keep ONLY
-        // application/json (binary-only responses — QR images, ZIP export — are left untouched).
-        // The alternate representations stay reachable by plain URL fetch.
-        // NOTE the two generator behaviors this must defeat:
-        //  • the Accept header is the UNION of content types across ALL of an operation's responses
-        //    (errors and redirects included), so every inline response must be pruned, not just the 2xx;
-        //  • the negotiated resolvers' 200 offers NO plain application/json — their JSON document
-        //    representation is application/ld+json (the errors are what carry application/json).
-        val jsonTypes = listOf("application/json", "application/ld+json")
-        val httpMethods = setOf("get", "put", "post", "delete", "options", "head", "patch", "trace")
-        val paths = doc["paths"] as? Map<*, *> ?: emptyMap<Any?, Any?>()
-        for (pathItem in paths.values) {
-            if (pathItem !is Map<*, *>) continue
-            for ((method, op) in pathItem) {
-                if (method !in httpMethods || op !is Map<*, *>) continue
-                val responses = op["responses"] as? Map<*, *> ?: continue
-                // Only operations whose SUCCESS representation has a JSON variant — binary-only ops
-                // (QR images, ZIP export) and AAS/VC-typed exports keep their declarations untouched.
-                val jsonSuccess = responses.any { (code, resp) ->
-                    code.toString().startsWith("2") &&
-                        (((resp as? Map<*, *>)?.get("content") as? Map<*, *>)?.keys?.any { it in jsonTypes } == true)
-                }
-                if (!jsonSuccess) continue
-                for (resp in responses.values) {
-                    if (resp !is MutableMap<*, *>) continue
-                    @Suppress("UNCHECKED_CAST")
-                    val r = resp as MutableMap<String, Any?>
-                    val content = r["content"]
-                    if (content !is MutableMap<*, *>) continue
-                    @Suppress("UNCHECKED_CAST")
-                    val c = content as MutableMap<String, Any?>
-                    val pick = jsonTypes.firstOrNull { c.containsKey(it) }
-                    // A response with no JSON variant at all (e.g. an HTML-only redirect body) is
-                    // dropped from the declaration so it can't pollute the Accept union.
-                    if (pick != null) c.keys.retainAll(setOf(pick)) else r.remove("content")
-                }
-            }
-        }
-        val out = generatorSpec.get().asFile
-        out.parentFile.mkdirs()
-        out.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(doc)))
-    }
+    commandLine("node", normalizerScript.absolutePath, specFile.absolutePath, generatorSpec.get().asFile.absolutePath)
 }
 
 // ─── Code generation (committed output; drift-checked in CI) ─────────────────

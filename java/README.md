@@ -83,9 +83,11 @@ guard: regenerating must produce no diff). Use the SDK major that matches the `/
 
 Mechanically generated from [`openapi.json`](https://opendpp-node.eu/openapi.json) with
 [OpenAPI Generator](https://openapi-generator.tech) (`java` / `native` library) via a pinned Gradle
-plugin — `./gradlew openApiGenerate`. The published contract is OpenAPI 3.1; a small, reproducible
-pre-generation step in `build.gradle.kts` normalizes the generation input (the committed spec stays
-pristine):
+plugin — `./gradlew openApiGenerate` (needs a JDK 17 toolchain and `node` on PATH). The published
+contract is OpenAPI 3.1; the generation input is first rewritten by the SHARED normalizer
+[`../scripts/normalize-spec.mjs`](../scripts/normalize-spec.mjs) — one tested rewrite for every
+openapi-generator lane (Java here, Python in [`../python`](../python)), authored and unit-tested in
+the OpenDPP node repository and synced here. The committed spec stays pristine; the normalizer:
 
 - drops the inbound `webhooks:` callbacks — a client never *calls* those, and they collide with the
   webhook-management operations (the `WebhookEnvelope` payload model is still generated);
@@ -95,7 +97,10 @@ pristine):
   JSON-LD root keys are documented duplicates of `metadata`, so no data is lost);
 - pins the content-negotiated resolvers to their JSON representation, so the server can never answer a
   typed call with AAS / VC-JWT / HTML (those representations, like the QR/label binaries, are fetched
-  by plain URL — the SDK models the JSON surface).
+  by plain URL — the SDK models the JSON surface);
+- strips boolean single-value constraints (`const: true` / `enum: [false]`) — the generator renders
+  them as one-value enum wrappers around what is just a `Boolean` (and, in Python, as validators that
+  reject the boolean the server actually sends).
 
 Nothing here re-implements a server-side capability. Only the ergonomic `OpenDpp` factory
 (`src/handwritten/java`) is hand-written. `OPENDPP_LIVE_TEST=1 ./gradlew test` additionally runs a live

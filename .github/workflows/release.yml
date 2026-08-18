@@ -1,15 +1,15 @@
 name: Release published versions
 
-# Publishes a GitHub Release for every `sdk-ts-<semver>` / `sdk-java-<semver>` version that is ACTUALLY
+# Publishes a GitHub Release for every `sdk-ts-<semver>` / `sdk-java-<semver>` / `sdk-py-<semver>` version that is ACTUALLY
 # LIVE in its registry, with notes from the matching CHANGELOG.md section. Closes the gap where a tag
 # triggers a registry publish but no Release is ever created — leaving this repo's history readable only
 # as bare tags (OpenDPP #690/C09).
 #
 # IT DOES NOT CREATE TAGS. Tagging is the deliberate human act that triggers publishing (see
-# publish-sdk-ts.yml / publish-sdk-java.yml, both gated by the `release` environment's required
-# reviewers). This only gives an already-published version its Release. That differs from the sibling
-# opendpp-interop, whose single artifact lets it auto-tag on a version bump; here two artifacts version
-# independently, so the tag stays the author's call.
+# publish-sdk-ts.yml / publish-sdk-java.yml / publish-sdk-py.yml, all gated by the `release`
+# environment's required reviewers). This only gives an already-published version its Release. That
+# differs from the sibling opendpp-interop, whose single artifact lets it auto-tag on a version bump;
+# here the artifacts version independently, so the tag stays the author's call.
 #
 # WHY THE REGISTRY IS THE EVIDENCE, not the tag and not the publish job's exit code:
 #   - A tag exists the moment it is pushed, BEFORE the publish is approved. Releasing on the tag push
@@ -28,7 +28,7 @@ on:
   workflow_run:
     # Matched by workflow NAME (GitHub offers no path form here) — rename either publish workflow and
     # this silently stops firing. The schedule below is what keeps that from being a silent failure.
-    workflows: ["Publish @opendpp/sdk (TypeScript)", "Publish opendpp-sdk (Java)"]
+    workflows: ["Publish @opendpp/sdk (TypeScript)", "Publish opendpp-sdk (Java)", "Publish opendpp-sdk (Python)"]
     types: [completed]
   # The backstop: Maven Central's validate-then-release is async, so a version can go live minutes after
   # its publish run ends and miss the check above. This sweeps it up without anyone remembering to.
@@ -79,6 +79,12 @@ jobs:
                 label: "opendpp-sdk (Java/Kotlin)",
                 registry: "Maven Central — `eu.opendpp-node:opendpp-sdk`",
                 isLive: async (v) => (await fetch(`https://repo1.maven.org/maven2/eu/opendpp-node/opendpp-sdk/${v}/`)).status === 200,
+              },
+              {
+                prefix: "sdk-py-",
+                label: "opendpp-sdk (Python)",
+                registry: "PyPI — https://pypi.org/project/opendpp-sdk/",
+                isLive: async (v) => (await fetch(`https://pypi.org/pypi/opendpp-sdk/${v}/json`)).status === 200,
               },
             ];
 

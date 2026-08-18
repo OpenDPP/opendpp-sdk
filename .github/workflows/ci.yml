@@ -1,9 +1,10 @@
 name: CI
 
-# Builds + verifies the generated SDKs. The TypeScript client under typescript/src/generated and the
-# Java client under java/src/main/java are both COMMITTED and generated from the version-locked OpenDPP
-# API contract (openapi.json); each language's drift guard regenerates and fails on any diff, so the
-# committed clients always match the spec.
+# Builds + verifies the generated SDKs. The TypeScript client under typescript/src/generated, the
+# Java client under java/src/main/java and the Python client under python/opendpp_sdk are all
+# COMMITTED and generated from the version-locked OpenDPP API contract (openapi.json); each
+# language's drift guard regenerates and fails on any diff, so the committed clients always match
+# the spec.
 
 on:
   push:
@@ -84,3 +85,45 @@ jobs:
           echo "version lock OK: $V"
 
       - run: ./gradlew build
+
+  python:
+    name: Python SDK — generate-drift, version-lock, build, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      # openapi-generator needs a JRE; node (the shared normalizer + the npx generator wrapper) and
+      # python3 (>=3.9; ubuntu-latest ships 3.12) are preinstalled on the runner — same convention
+      # as the java job's version-lock step using the preinstalled node.
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Drift guard — regenerated client must match the committed opendpp_sdk
+        # The wipe lives INSIDE regenerate.sh (excluding the two hand-authored files): openapi-
+        # generator never deletes, so a schema/operation REMOVED from the contract would otherwise
+        # leave its stale module committed and undetected.
+        run: |
+          ./scripts/regenerate.sh
+          if [ -n "$(git status --porcelain -- opendpp_sdk)" ]; then
+            echo "::error::python/opendpp_sdk drifted from openapi.json — run \`./scripts/regenerate.sh\` and commit (catches new, changed, and removed files)."
+            git --no-pager status --porcelain -- opendpp_sdk
+            exit 1
+          fi
+
+      - name: Version lock — package version == contract version
+        run: python3 scripts/check_version_lock.py
+
+      - name: Build (wheel + sdist)
+        run: |
+          python3 -m pip install --upgrade build
+          python3 -m build
+
+      - name: Test
+        run: |
+          python3 -m pip install -e . pytest
+          python3 -m pytest tests/

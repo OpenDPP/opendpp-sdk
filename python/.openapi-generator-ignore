@@ -1,0 +1,26 @@
+# OpenAPI Generator Ignore — the hand-authored files of this lane, protected from the generator.
+#
+# Root-anchored ON PURPOSE (the Java lane learned this the hard way: an unanchored pattern let a
+# stub gradle-wrapper.jar clobber ours, which is what broke ./gradlew). The generator runs with
+# generateSourceCodeOnly=true, so it writes only the opendpp_sdk package — everything else here is
+# belt-and-braces against a future flag change.
+/pyproject.toml
+/README.md
+/LICENSE
+/NOTICE
+/openapi.json
+/openapitools.json
+/scripts/**
+/tests/**
+
+# The only hand-written module inside the generated package (Accept-negotiation ergonomics) and the
+# PEP 561 typing marker. scripts/regenerate.sh's wipe step excludes these two by name — keep the
+# three lists (this file, the wipe exclusions, pyproject's wheel includes) in sync.
+/opendpp_sdk/ergonomics.py
+/opendpp_sdk/py.typed
+
+# Generated docs/tests are not committed in any lane (the Java lane disables them at config level;
+# the python generator has no such switch, so they are ignored here instead).
+/opendpp_sdk_README.md
+/opendpp_sdk/docs/**
+/opendpp_sdk/test/**

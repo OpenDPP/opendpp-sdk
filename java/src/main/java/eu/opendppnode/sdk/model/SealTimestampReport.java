@@ -41,44 +41,9 @@ import eu.opendppnode.sdk.invoker.ApiClient;
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SealTimestampReport {
-  /**
-   * Gets or Sets present
-   */
-  public enum PresentEnum {
-    TRUE(Boolean.valueOf("true")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
-
-    private Boolean value;
-
-    PresentEnum(Boolean value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public Boolean getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static PresentEnum fromValue(Boolean value) {
-      for (PresentEnum b : PresentEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
   public static final String JSON_PROPERTY_PRESENT = "present";
   @jakarta.annotation.Nonnull
-  private PresentEnum present;
+  private Boolean present;
 
   public static final String JSON_PROPERTY_GEN_TIME = "genTime";
   @jakarta.annotation.Nullable
@@ -130,7 +95,7 @@ public class SealTimestampReport {
   public SealTimestampReport() { 
   }
 
-  public SealTimestampReport present(@jakarta.annotation.Nonnull PresentEnum present) {
+  public SealTimestampReport present(@jakarta.annotation.Nonnull Boolean present) {
     this.present = present;
     return this;
   }
@@ -142,14 +107,14 @@ public class SealTimestampReport {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_PRESENT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public PresentEnum getPresent() {
+  public Boolean getPresent() {
     return present;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PRESENT)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setPresent(@jakarta.annotation.Nonnull PresentEnum present) {
+  public void setPresent(@jakarta.annotation.Nonnull Boolean present) {
     this.present = present;
   }
 

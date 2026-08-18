@@ -82,44 +82,9 @@ public class TraceEventRegistered {
   @jakarta.annotation.Nonnull
   private String eventId;
 
-  /**
-   * Gets or Sets untpVerified
-   */
-  public enum UntpVerifiedEnum {
-    TRUE(Boolean.valueOf("true")),
-    
-    UNKNOWN_DEFAULT_OPEN_API(Boolean.valueOf("11184809"));
-
-    private Boolean value;
-
-    UntpVerifiedEnum(Boolean value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public Boolean getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static UntpVerifiedEnum fromValue(Boolean value) {
-      for (UntpVerifiedEnum b : UntpVerifiedEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      return UNKNOWN_DEFAULT_OPEN_API;
-    }
-  }
-
   public static final String JSON_PROPERTY_UNTP_VERIFIED = "untpVerified";
   @jakarta.annotation.Nonnull
-  private UntpVerifiedEnum untpVerified;
+  private Boolean untpVerified;
 
   public TraceEventRegistered() { 
   }
@@ -172,7 +137,7 @@ public class TraceEventRegistered {
   }
 
 
-  public TraceEventRegistered untpVerified(@jakarta.annotation.Nonnull UntpVerifiedEnum untpVerified) {
+  public TraceEventRegistered untpVerified(@jakarta.annotation.Nonnull Boolean untpVerified) {
     this.untpVerified = untpVerified;
     return this;
   }
@@ -184,14 +149,14 @@ public class TraceEventRegistered {
   @jakarta.annotation.Nonnull
   @JsonProperty(JSON_PROPERTY_UNTP_VERIFIED)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public UntpVerifiedEnum getUntpVerified() {
+  public Boolean getUntpVerified() {
     return untpVerified;
   }
 
 
   @JsonProperty(JSON_PROPERTY_UNTP_VERIFIED)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setUntpVerified(@jakarta.annotation.Nonnull UntpVerifiedEnum untpVerified) {
+  public void setUntpVerified(@jakarta.annotation.Nonnull Boolean untpVerified) {
     this.untpVerified = untpVerified;
   }
 

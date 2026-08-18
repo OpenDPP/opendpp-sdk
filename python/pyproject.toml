@@ -1,0 +1,51 @@
+# opendpp-sdk — Official Python SDK for the OpenDPP Digital Product Passport API.
+#
+# The `version` below is the LANE's version: its MAJOR.MINOR is locked to the vendored openapi.json's
+# info.version (scripts/check_version_lock.py enforces it; the PATCH digit is the SDK's own fix lane).
+# scripts/regenerate.sh reads it and stamps it into the generated code (__version__, User-Agent), so
+# this file is the single place the version lives. The upstream regen (opendpp-node's
+# sdk-regen-verify.ts) rewrites it when the contract moves.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opendpp-sdk"
+version = "1.13.0"
+description = "Official Python SDK for the OpenDPP Digital Product Passport API — a fully-typed client (pydantic v2) generated from the public OpenAPI contract and version-locked to it."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Giovanni Savastano", email = "giovanni.savastano@opendpp-node.eu" }]
+keywords = ["opendpp", "dpp", "digital-product-passport", "espr", "sdk", "openapi", "api-client"]
+requires-python = ">=3.9"
+# The generator's own dependency floors for the `python` generator (pydantic v2 + urllib3, sync).
+dependencies = [
+  "urllib3 >= 1.25.3, < 3.0.0",
+  "python-dateutil >= 2.8.2",
+  "pydantic >= 2",
+  "typing-extensions >= 4.7.1",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/OpenDPP/opendpp-sdk"
+Repository = "https://github.com/OpenDPP/opendpp-sdk"
+Issues = "https://github.com/OpenDPP/opendpp-sdk/issues"
+Changelog = "https://github.com/OpenDPP/opendpp-sdk/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["opendpp_sdk"]
+
+[tool.hatch.build.targets.sdist]
+include = ["opendpp_sdk", "README.md", "LICENSE", "NOTICE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

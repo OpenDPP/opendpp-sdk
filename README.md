@@ -16,7 +16,7 @@ Official client SDKs for the [OpenDPP](https://opendpp-node.eu) Digital Product 
 | **TypeScript** | [`@opendpp/sdk`](https://www.npmjs.com/package/@opendpp/sdk) (npm) | [`typescript/`](./typescript) |
 | **Java** | [`eu.opendpp-node:opendpp-sdk`](https://central.sonatype.com/artifact/eu.opendpp-node/opendpp-sdk) (Maven Central) | [`java/`](./java) |
 | **Kotlin** | via the Java artifact — same coordinates, idiomatic from Kotlin | [`java/`](./java) |
-| **Python** | `opendpp` (PyPI) — *planned* | — |
+| **Python** | [`opendpp-sdk`](https://pypi.org/project/opendpp-sdk/) (PyPI) | [`python/`](./python) |
 
 > Part of the OpenDPP **open client** surface (Apache-2.0). The SDKs are **ergonomics only** — they
 > embed no tier/masking logic and no restricted-key knowledge; every privileged operation is a typed
@@ -64,7 +64,24 @@ val health = ServiceApi(client).health
 
 ## Python
 
-Coming next — the same generation pipeline, published to PyPI as `opendpp`.
+```bash
+pip install opendpp-sdk
+```
+
+A fully-typed client (pydantic v2 + urllib3, synchronous) for Python ≥ 3.9, generated with the same
+openapi-generator toolchain as the Java lane. Response models never reject unknown fields (a future
+MINOR server release must not crash deployed clients); the hand-written
+[`opendpp_sdk.ergonomics`](./python/opendpp_sdk/ergonomics.py) module carries the configured-client
+factory and the `resolve_*_as` helpers for the content-negotiated public resolvers.
+
+```python
+from opendpp_sdk.api.service_api import ServiceApi
+from opendpp_sdk.ergonomics import create_opendpp_client, resolve_public_passport_as
+
+client = create_opendpp_client(api_key=os.environ["OPENDPP_API_KEY"])
+health = ServiceApi(client).get_health()
+doc = resolve_public_passport_as(client, passport_id, "application/ld+json")
+```
 
 ## How it's built
 
@@ -72,8 +89,12 @@ Each SDK is mechanically generated from [`openapi.json`](https://opendpp-node.eu
 curated public API contract) and **version-locked to `OPENAPI_VERSION`** — the SDK's **major.minor is
 the contract version** (`@opendpp/sdk@1.11.x` targets contract `1.11`), while the **patch digit is the
 SDK's own lane** for client-only fixes against the same contract. CI regenerates and fails on any
-drift, so the committed client always matches the spec. Releases are keyless where the registry supports it (npm OIDC trusted publishing for TypeScript); the Java artifacts are GPG-signed and published to Maven Central. Nothing here re-implements a server-side
-capability.
+drift, so the committed client always matches the spec. The two openapi-generator lanes (Java,
+Python) read the contract through one shared normalizer ([`scripts/normalize-spec.mjs`](./scripts/normalize-spec.mjs),
+authored and unit-tested in the OpenDPP node repository and synced here) rather than per-lane
+private rewrites. Releases are keyless where the registry supports it (OIDC trusted publishing: npm
+for TypeScript, PyPI for Python); the Java artifacts are GPG-signed and published to Maven Central.
+Nothing here re-implements a server-side capability.
 
 ## Related OpenDPP repositories
 
