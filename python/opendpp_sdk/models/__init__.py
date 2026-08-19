@@ -6,7 +6,7 @@
 
     OpenDPP is a B2B platform for EU Digital Product Passports (DPPs), aligned with the ESPR data requirements and the EU Battery Regulation. This specification documents the **public integration surface**: everything an external system needs to create, validate, seal, publish, resolve and verify passports.  ## Authentication Authenticate with a tenant **API key** sent as a Bearer token: `Authorization: Bearer op_dpp_token_…`. Keys are created in the Client Console (Developers → API keys), are shown **once** at creation, carry a role plus optional narrowed permissions and optional expiry, and can be revoked at any time. API-key clients are exempt from CSRF requirements. Public endpoints (tagged **Public Resolution**, plus the public validators and the audit verifier) need no credentials.  ## Tenancy Tenant identity is **token-bound** — it is derived from your API key, never from the request host. The same paths work on the apex host and on tenant workspace hosts (`https://<workspace>.opendpp-node.eu`); when a workspace host is used, it must match the key's tenant (requests across workspaces are rejected with `403`).  ## Versioning & compatibility This contract carries a SemVer version, readable at runtime from `GET /api/v1/version`. **Pin the MAJOR.** It equals the `/api/v1` URL major, so a breaking change ships as a new path major (`/api/v2`) that you adopt deliberately — not as an edit to the contract you already integrated against.  Within a major line:  - **MINOR** is additive — a new endpoint, a new optional parameter, a new field on a response. A client that ignores what it does not recognise keeps working. Do not treat unknown response fields as errors. - **PATCH** is documentation only: wording, examples, descriptions. Nothing observable in the contract changes.  The tier is not asserted by hand. Every change is diffed structurally against the previous contract in CI, and a version bump lower than the diff requires fails the build — so the number you pin to is derived from the contract itself.  **One exception, disclosed rather than hidden.** While this contract is pre-GA, a breaking change may exceptionally ship on the existing major line under a recorded waiver instead of forcing a new path major. It is not a standing option: it requires a maintainer to enable it for a single merge, and every use is recorded with its justification. It has been used during the pre-GA period. Once this line reaches GA the waiver is retired, and the MAJOR promise above becomes unconditional. If you need a contract that cannot move under you before then, pin the exact version you generated your client from and upgrade deliberately.  ## Errors Authenticated endpoints return `{ success: false, error, message }` (some omit `success`). Across the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) the body also carries a **machine-stable `code`** you can branch on instead of parsing `message` — see the `code` enum on the shared **Error** schema for the full set. ESPR metadata validation failures return the richer shape documented as **ValidationFailed** with per-field `errors[]`/`warnings[]` (localizable via `?lang=` or `Accept-Language`; 28 languages). Bulk endpoints report row-level problems as `errors: string[]`. Malformed JSON and query-string violations are rejected before the handler runs and return a `{ statusCode, code, error, message }` body.  Every response — success or error — carries an **`X-Request-Id`** header; generic (server-error / framework) bodies also include it as `requestId`. Quote it to support to correlate with server logs. Send your own well-formed `X-Request-Id` and it is adopted for end-to-end tracing.  ## Advisories: `warnings[]` & `notices[]` Success responses may carry two non-blocking advisory channels of **coded** items (`AdvisoryItem`: `{ code, path?, message, friendlyMessage }`). **`warnings[]`** are heads-ups the request still succeeded on (`NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`, `UNIT_NO_SCANNABLE_LINK`, `DRAFT_DEMOTED`, `EORI_NOT_FOUND`); **`notices[]`** are informational — helpful things the API did (`OPERATOR_AUTO_ATTRIBUTED`, `GTIN_AUTO_COPIED`). Branch on the STABLE `code`; treat `message` (developer English) and `friendlyMessage` (end-user, localized via `?lang=`/`Accept-Language` across 28 languages) as display text that may be reworded. Interfaces may also map a `code` to their own localized string.  ## Rate limits Two limits apply, and the one that bites first depends on how you call us.  **Per API key (authenticated calls).** Each key gets a per-minute budget set by the plan: **Growth 120**, **Scale 600**, **Enterprise unlimited**. A second ceiling of **3x that rate** applies across all of a workspace's keys together, so issuing more keys divides throughput fairly between your own systems rather than multiplying it. Plans below Growth do not include API access. Exceeding either budget returns `429` with a `Retry-After` header giving the seconds to wait.  **Per IP (all traffic).** A ceiling of **100 requests/min per IP** applies to anonymous traffic. Authenticated calls sit on a higher ceiling, so that several integrations behind one egress address are not held to the anonymous budget. `x-ratelimit-*` response headers report the applicable ceiling. Every plan that can reach the API sits at or above the anonymous figure, so an authenticated caller never meets a stricter limit than the number above.  Public passport resolution is additionally limited to **30 requests/min per IP** (no headers). The public validator is limited to **10 requests/min per IP**.  Stay under these limits with client-side queueing; on `429`, back off and retry after the indicated window. A `429` never indicates a credential problem — an invalid or revoked key returns `401`, so do not rotate a key in response to rate limiting.  ## Sealing & verification Passport seals are **advanced electronic seals** — ECDSA P-256 over a Merkle root of the passport content, with an optional RFC 3161 timestamp. (Advanced, not qualified: a qualified seal would require a QTSP.) Anyone can verify a seal — no account required. `POST /api/v1/audit/verify` recomputes every Merkle leaf from the submitted values, so it requires the unredacted document (caller-supplied redacted-leaf hashes are deliberately not trusted). Redacted documents remain verifiable **offline**: masked fields keep their true leaf hashes in `proof.redactedLeaves`, letting any verifier rebuild the sealed root without the privileged values.  ## Public access tiers Public resolution endpoints serve **tiered** views of the same URL: the public tier for anonymous callers; a restricted tier for holders of legitimate-interest (`dpp_li_…`) or authority (`dpp_auth_…`) capability tokens (presented as a Bearer token or `?grant=` query parameter); and the owner tier for the issuing tenant's own credentials.  ## Webhooks Subscribe to passport lifecycle events (`passport.ingested`, `passport.sealed`, `passport.recalled`, or `*`). Deliveries are HMAC-SHA256-signed; see the **webhooks** section of this document for the exact signature scheme, retry schedule, and payloads.  This document is also served machine-readably at [`/openapi.json`](https://opendpp-node.eu/openapi.json) and [`/openapi.yaml`](https://opendpp-node.eu/openapi.yaml).  ## Open interoperability kit The interoperability boundary — the official AAS + UNTP/W3C-VC schemas, live-reproducible samples, an offline conformance validator, and the field mappings — is **open source** at [github.com/OpenDPP/opendpp-interop](https://github.com/OpenDPP/opendpp-interop) (Apache-2.0). It lets any integrator validate and verify OpenDPP's standards-conformant output without access to the product source.
 
-    The version of the OpenAPI document: 1.13.0
+    The version of the OpenAPI document: 1.14.0
     Contact: support@opendpp-node.eu
     Generated by OpenAPI Generator (https://openapi-generator.tech)
 
@@ -15,15 +15,17 @@
 
 
 # import models into model package
-from opendpp_sdk.models.aasespr_validation_failure import AASESPRValidationFailure
 from opendpp_sdk.models.aas_environment_input import AasEnvironmentInput
+from opendpp_sdk.models.aas_ingest_bad_request import AasIngestBadRequest
 from opendpp_sdk.models.aas_ingest_created import AasIngestCreated
+from opendpp_sdk.models.aas_ingest_validation_error import AasIngestValidationError
 from opendpp_sdk.models.advisory_item import AdvisoryItem
 from opendpp_sdk.models.approve_grant_request import ApproveGrantRequest
 from opendpp_sdk.models.battery_unit_create_item import BatteryUnitCreateItem
 from opendpp_sdk.models.battery_unit_create_item_manufactured_at import BatteryUnitCreateItemManufacturedAt
 from opendpp_sdk.models.battery_unit_current_state import BatteryUnitCurrentState
 from opendpp_sdk.models.battery_unit_dynamic_data_event import BatteryUnitDynamicDataEvent
+from opendpp_sdk.models.battery_unit_event_bad_request import BatteryUnitEventBadRequest
 from opendpp_sdk.models.battery_unit_event_list_response import BatteryUnitEventListResponse
 from opendpp_sdk.models.battery_unit_event_node import BatteryUnitEventNode
 from opendpp_sdk.models.battery_unit_event_row import BatteryUnitEventRow
@@ -34,32 +36,27 @@ from opendpp_sdk.models.battery_unit_list_response import BatteryUnitListRespons
 from opendpp_sdk.models.battery_unit_restricted_data_notice import BatteryUnitRestrictedDataNotice
 from opendpp_sdk.models.battery_unit_row import BatteryUnitRow
 from opendpp_sdk.models.battery_unit_serialisation_failed_error import BatteryUnitSerialisationFailedError
+from opendpp_sdk.models.battery_unit_serialise_bad_request import BatteryUnitSerialiseBadRequest
 from opendpp_sdk.models.battery_unit_status import BatteryUnitStatus
 from opendpp_sdk.models.battery_unit_tombstone_json_ld import BatteryUnitTombstoneJsonLd
 from opendpp_sdk.models.bulk_battery_unit_events_request import BulkBatteryUnitEventsRequest
 from opendpp_sdk.models.bulk_battery_unit_events_request_events_inner import BulkBatteryUnitEventsRequestEventsInner
 from opendpp_sdk.models.bulk_battery_unit_events_response import BulkBatteryUnitEventsResponse
 from opendpp_sdk.models.bulk_export_passport_labels_request import BulkExportPassportLabelsRequest
-from opendpp_sdk.models.bulk_ingest_passports400_response import BulkIngestPassports400Response
 from opendpp_sdk.models.create_grant_request import CreateGrantRequest
-from opendpp_sdk.models.create_passport400_response import CreatePassport400Response
 from opendpp_sdk.models.create_passport413_response import CreatePassport413Response
 from opendpp_sdk.models.decode_gs1200_response import DecodeGs1200Response
 from opendpp_sdk.models.decode_gs1_batch200_response import DecodeGs1Batch200Response
-from opendpp_sdk.models.decode_gs1_batch200_response_results_inner import DecodeGs1Batch200ResponseResultsInner
-from opendpp_sdk.models.decode_gs1_batch200_response_results_inner_one_of import DecodeGs1Batch200ResponseResultsInnerOneOf
-from opendpp_sdk.models.decode_gs1_batch200_response_results_inner_one_of1 import DecodeGs1Batch200ResponseResultsInnerOneOf1
 from opendpp_sdk.models.decode_gs1_batch_request import DecodeGs1BatchRequest
 from opendpp_sdk.models.decode_gs1_batch_request_items_inner import DecodeGs1BatchRequestItemsInner
 from opendpp_sdk.models.decode_gs1_request import DecodeGs1Request
-from opendpp_sdk.models.default_request_rejection_error_body import DefaultRequestRejectionErrorBody
+from opendpp_sdk.models.default_request_rejection_error import DefaultRequestRejectionError
 from opendpp_sdk.models.delete_draft_passport200_response import DeleteDraftPassport200Response
 from opendpp_sdk.models.delete_operator_response import DeleteOperatorResponse
 from opendpp_sdk.models.did_web_document import DidWebDocument
 from opendpp_sdk.models.did_web_document_verification_method_inner import DidWebDocumentVerificationMethodInner
 from opendpp_sdk.models.dpp_json_ld_context_document import DppJsonLdContextDocument
 from opendpp_sdk.models.dpp_vocab_context_document import DppVocabContextDocument
-from opendpp_sdk.models.espr_validation_failure import ESPRValidationFailure
 from opendpp_sdk.models.economic_operator_node import EconomicOperatorNode
 from opendpp_sdk.models.epcis_capture_response import EpcisCaptureResponse
 from opendpp_sdk.models.epcis_capture_response_errors_inner import EpcisCaptureResponseErrorsInner
@@ -74,20 +71,20 @@ from opendpp_sdk.models.facility_envelope import FacilityEnvelope
 from opendpp_sdk.models.facility_list_envelope import FacilityListEnvelope
 from opendpp_sdk.models.facility_row import FacilityRow
 from opendpp_sdk.models.facility_update_request import FacilityUpdateRequest
-from opendpp_sdk.models.fastify_default_bad_request import FastifyDefaultBadRequest
-from opendpp_sdk.models.get_passport404_response import GetPassport404Response
-from opendpp_sdk.models.get_passport404_response_any_of import GetPassport404ResponseAnyOf
-from opendpp_sdk.models.get_passport429_response import GetPassport429Response
-from opendpp_sdk.models.get_passport429_response_any_of import GetPassport429ResponseAnyOf
-from opendpp_sdk.models.get_passport429_response_any_of1 import GetPassport429ResponseAnyOf1
+from opendpp_sdk.models.forwarded_resolver_error import ForwardedResolverError
+from opendpp_sdk.models.forwarded_resolver_rate_limit_error import ForwardedResolverRateLimitError
 from opendpp_sdk.models.get_seal_ca_certificate429_response import GetSealCaCertificate429Response
+from opendpp_sdk.models.global_rate_limit_error import GlobalRateLimitError
 from opendpp_sdk.models.grant_decision_response import GrantDecisionResponse
 from opendpp_sdk.models.grant_issued_response import GrantIssuedResponse
 from opendpp_sdk.models.grant_list_response import GrantListResponse
+from opendpp_sdk.models.grant_revoke_forbidden import GrantRevokeForbidden
 from opendpp_sdk.models.grant_route_error import GrantRouteError
 from opendpp_sdk.models.grant_row import GrantRow
+from opendpp_sdk.models.gs1_batch_decode_error import Gs1BatchDecodeError
+from opendpp_sdk.models.gs1_batch_decode_ok import Gs1BatchDecodeOk
+from opendpp_sdk.models.gs1_batch_decode_result import Gs1BatchDecodeResult
 from opendpp_sdk.models.health_status import HealthStatus
-from opendpp_sdk.models.ingest_passport_from_aas400_response import IngestPassportFromAas400Response
 from opendpp_sdk.models.inline_object import InlineObject
 from opendpp_sdk.models.list_passports400_response import ListPassports400Response
 from opendpp_sdk.models.material_vocabulary_list_response import MaterialVocabularyListResponse
@@ -100,17 +97,23 @@ from opendpp_sdk.models.mint_gtin_check_digit_request import MintGtinCheckDigitR
 from opendpp_sdk.models.operator_get_response import OperatorGetResponse
 from opendpp_sdk.models.operator_list_response import OperatorListResponse
 from opendpp_sdk.models.operator_minimal_error import OperatorMinimalError
+from opendpp_sdk.models.operator_minimal_error_response import OperatorMinimalErrorResponse
 from opendpp_sdk.models.operator_row import OperatorRow
 from opendpp_sdk.models.passport_aas_environment import PassportAasEnvironment
+from opendpp_sdk.models.passport_bulk_bad_request import PassportBulkBadRequest
 from opendpp_sdk.models.passport_bulk_failure import PassportBulkFailure
 from opendpp_sdk.models.passport_bulk_request import PassportBulkRequest
 from opendpp_sdk.models.passport_bulk_result import PassportBulkResult
 from opendpp_sdk.models.passport_bulk_result_results_inner import PassportBulkResultResultsInner
 from opendpp_sdk.models.passport_bulk_row import PassportBulkRow
+from opendpp_sdk.models.passport_create_bad_request import PassportCreateBadRequest
 from opendpp_sdk.models.passport_create_request import PassportCreateRequest
+from opendpp_sdk.models.passport_create_validation_error import PassportCreateValidationError
 from opendpp_sdk.models.passport_enrichment_input import PassportEnrichmentInput
 from opendpp_sdk.models.passport_enrichment_input_images_inner import PassportEnrichmentInputImagesInner
 from opendpp_sdk.models.passport_enrichment_input_links_inner import PassportEnrichmentInputLinksInner
+from opendpp_sdk.models.passport_get_not_found import PassportGetNotFound
+from opendpp_sdk.models.passport_get_too_many_requests import PassportGetTooManyRequests
 from opendpp_sdk.models.passport_ingest_created import PassportIngestCreated
 from opendpp_sdk.models.passport_list_item import PassportListItem
 from opendpp_sdk.models.passport_list_response import PassportListResponse
@@ -120,6 +123,7 @@ from opendpp_sdk.models.passport_quota_error_quota import PassportQuotaErrorQuot
 from opendpp_sdk.models.passport_seal_response import PassportSealResponse
 from opendpp_sdk.models.passport_status_update_request import PassportStatusUpdateRequest
 from opendpp_sdk.models.passport_status_update_response import PassportStatusUpdateResponse
+from opendpp_sdk.models.passport_update_bad_request import PassportUpdateBadRequest
 from opendpp_sdk.models.passport_update_request import PassportUpdateRequest
 from opendpp_sdk.models.passport_update_response import PassportUpdateResponse
 from opendpp_sdk.models.passport_update_validation_error import PassportUpdateValidationError
@@ -131,15 +135,12 @@ from opendpp_sdk.models.passport_vc_readiness_report200_response_results_inner i
 from opendpp_sdk.models.public_battery_unit_json_ld import PublicBatteryUnitJsonLd
 from opendpp_sdk.models.public_facility_node import PublicFacilityNode
 from opendpp_sdk.models.public_passport_json_ld import PublicPassportJsonLd
-from opendpp_sdk.models.record_battery_unit_event400_response import RecordBatteryUnitEvent400Response
 from opendpp_sdk.models.record_battery_unit_event_request import RecordBatteryUnitEventRequest
 from opendpp_sdk.models.record_battery_unit_event_request_recorded_at import RecordBatteryUnitEventRequestRecordedAt
 from opendpp_sdk.models.record_battery_unit_event_response import RecordBatteryUnitEventResponse
-from opendpp_sdk.models.register_operator400_response import RegisterOperator400Response
 from opendpp_sdk.models.register_operator_request import RegisterOperatorRequest
 from opendpp_sdk.models.register_operator_response import RegisterOperatorResponse
 from opendpp_sdk.models.restore_operator_response import RestoreOperatorResponse
-from opendpp_sdk.models.revoke_grant403_response import RevokeGrant403Response
 from opendpp_sdk.models.rotate_tenant_keys_response import RotateTenantKeysResponse
 from opendpp_sdk.models.seal_certificate_report import SealCertificateReport
 from opendpp_sdk.models.seal_timestamp_report import SealTimestampReport
@@ -152,7 +153,6 @@ from opendpp_sdk.models.seal_verify_request_payload_proof_rfc3161 import SealVer
 from opendpp_sdk.models.seal_verify_response import SealVerifyResponse
 from opendpp_sdk.models.sector_json_schema_document import SectorJsonSchemaDocument
 from opendpp_sdk.models.sector_vocabulary_context import SectorVocabularyContext
-from opendpp_sdk.models.serialize_battery_units400_response import SerializeBatteryUnits400Response
 from opendpp_sdk.models.serialize_battery_units_request import SerializeBatteryUnitsRequest
 from opendpp_sdk.models.serialize_battery_units_request_any_of import SerializeBatteryUnitsRequestAnyOf
 from opendpp_sdk.models.serialize_battery_units_response import SerializeBatteryUnitsResponse
@@ -168,7 +168,6 @@ from opendpp_sdk.models.untp_event_proof_verification_method import UntpEventPro
 from opendpp_sdk.models.untp_verification_method import UntpVerificationMethod
 from opendpp_sdk.models.update_operator_request import UpdateOperatorRequest
 from opendpp_sdk.models.update_operator_response import UpdateOperatorResponse
-from opendpp_sdk.models.update_passport400_response import UpdatePassport400Response
 from opendpp_sdk.models.update_passport_status500_response import UpdatePassportStatus500Response
 from opendpp_sdk.models.validate_battery_units200_response import ValidateBatteryUnits200Response
 from opendpp_sdk.models.validate_battery_units200_response_results_inner import ValidateBatteryUnits200ResponseResultsInner

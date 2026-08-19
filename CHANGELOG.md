@@ -7,12 +7,13 @@ artifacts may sit at different patch levels (1.11.1 and 1.11.0 both target contr
 enforced by `typescript/scripts/check-version-lock.mjs`, and drift from the LIVE contract by the weekly
 `drift-check` workflow.
 
-The two artifacts are tagged and released independently:
+The three artifacts are tagged and released independently:
 
 | Artifact | Tag | Registry |
 | --- | --- | --- |
 | TypeScript | `sdk-ts-<semver>` | npm — [`@opendpp/sdk`](https://www.npmjs.com/package/@opendpp/sdk) |
 | Java / Kotlin | `sdk-java-<semver>` | Maven Central — `eu.opendpp-node:opendpp-sdk` |
+| Python | `sdk-py-<semver>` | PyPI — [`opendpp-sdk`](https://pypi.org/project/opendpp-sdk/) |
 
 Both clients are **generated from the contract**, so a `X.Y.0` entry below is a regeneration: what
 changed is whatever the contract changed. Those contract-level notes are published per version in the
@@ -25,6 +26,43 @@ carries the same `openapi.json`; this file records what changed **in the SDKs**.
 by the next sync — send it upstream instead. A section is authored when a version is generated —
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
+
+## [1.14.0] — TypeScript · Java/Kotlin · Python
+
+Targets API contract **1.14.0** (contract hygiene for the SDK lanes) and debuts the **Python lane**:
+[`opendpp-sdk` on PyPI](https://pypi.org/project/opendpp-sdk/), generated with the same
+openapi-generator toolchain as the Java lane (pydantic v2 + urllib3, sync), with an `ergonomics`
+module at parity with the TypeScript lane (the `Accept: application/ld+json` pin on the four
+content-negotiated resolvers plus the four `resolve_*_as` helpers).
+
+All three lanes now generate from ONE shared spec normalizer (`scripts/normalize-spec.mjs`,
+authored and tested upstream) instead of per-lane private rewrites. The retrofit itself is inert —
+the Java lane regenerates byte-identical under the ported transforms against contract 1.13.0 — and
+the normalizer then adds one new transform with a deliberate effect in both openapi-generator
+lanes: **boolean single-value constraints are stripped from the generation input**, because the
+generator stringifies the allowed value into its validators (python's `set(['true'])` rejected
+every real `ok: true` / `success: false` payload; Java rendered one-value `SuccessEnum`/`OkEnum`
+wrappers around what is just a `Boolean`). Java fields typed by those wrappers become plain
+`Boolean` — same wire format, simpler surface.
+
+- **Model renames (pre-adoption break, all lanes).** The contract names its error/result unions, so
+  the per-operation synthesized model names disappear in favour of the contract's own:
+  `PassportCreateBadRequest`, `PassportBulkBadRequest`, `AasIngestBadRequest`,
+  `PassportGetNotFound`, `PassportGetTooManyRequests`, `PassportUpdateBadRequest`,
+  `BatteryUnitSerialiseBadRequest`, `BatteryUnitEventBadRequest`, `GrantRevokeForbidden`,
+  `OperatorMinimalErrorResponse`, and `Gs1BatchDecodeResult`/`Gs1BatchDecodeOk`/`Gs1BatchDecodeError`.
+  `FastifyDefaultBadRequest` is renamed too — a server implementation detail had leaked into a public
+  type name — consolidating into the shape-identical `DefaultRequestRejectionError`.
+- **Deserialization is tolerant of additive server changes.** Response models stop enforcing
+  closed-world shapes (`additionalProperties: false` left every response schema), so a future MINOR
+  server release adding a response field no longer breaks deployed clients — the same policy the
+  Java enums already follow (`UNKNOWN_DEFAULT_OPEN_API`).
+- The gs1-batch result union's `ok` discriminant is now a `const`, so the ok/error variants resolve
+  deterministically in every lane.
+- **Corrected terminal-unit description (#1080).** The recycled-unit refusal on
+  `POST /api/v1/units/{id}/events` no longer advises a remedy the API refuses; the corrected wording
+  reaches the generated types' doc comments and the READMEs. No method signature or model field change
+  from this item.
 
 ## [1.13.0] — TypeScript · Java/Kotlin
 

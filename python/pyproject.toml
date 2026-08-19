@@ -11,7 +11,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opendpp-sdk"
-version = "1.13.0"
+version = "1.14.0"
 description = "Official Python SDK for the OpenDPP Digital Product Passport API — a fully-typed client (pydantic v2) generated from the public OpenAPI contract and version-locked to it."
 readme = "README.md"
 license = "Apache-2.0"

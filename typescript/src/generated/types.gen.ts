@@ -173,6 +173,16 @@ export type WhoamiResponse = {
 };
 
 /**
+ * The three 400 bodies of unit serialisation: the standard error triple, the all-items-failed `Serialisation Failed` report, and the framework's default request-rejection body.
+ */
+export type BatteryUnitSerialiseBadRequest = Error | BatteryUnitSerialisationFailedError | DefaultRequestRejectionError;
+
+/**
+ * The two 400 bodies of event recording: the standard error triple from handler validation, and the framework's default request-rejection body for malformed JSON.
+ */
+export type BatteryUnitEventBadRequest = Error | DefaultRequestRejectionError;
+
+/**
  * Annex XIII battery-status vocabulary (EU Battery Regulation). `RECYCLED` means the passport has ceased to exist: the public unit view answers 410 Gone whenever `status` is `RECYCLED` **or** `ceasedAt` is set. `RECYCLED` is terminal however it is reached: a unit *created* with initial status `RECYCLED` has `ceasedAt` stamped at creation, exactly like one transitioned there via the events route (the stamp is never cleared). A terminal unit is refused as a `predecessorUnitId`, and the events endpoint refuses every further event (400 `Terminal Unit Status`), so neither `status` nor telemetry can change again.
  */
 export type BatteryUnitStatus = 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | 'REPURPOSED' | 'REMANUFACTURED' | 'REUSED' | 'WASTE' | 'RECYCLED';
@@ -181,19 +191,6 @@ export type BatteryUnitStatus = 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | '
  * Per-unit dynamic-data event category (Annex XIII / Art. 77 telemetry).
  */
 export type BatteryUnitEventType = 'SOH_MEASUREMENT' | 'CHARGE_CYCLE' | 'STATUS_CHANGE' | 'NEGATIVE_EVENT' | 'OTHER';
-
-/**
- * The framework's default 400 error body, returned when a syntactically malformed JSON request body is rejected by the framework **before the handler runs** (so none of the handler-built `{success:false, ...}` shapes apply).
- */
-export type FastifyDefaultBadRequest = {
-    statusCode: 400;
-    /**
-     * Framework error code, e.g. `FST_ERR_CTP_INVALID_JSON_BODY`. May be absent.
-     */
-    code?: string;
-    error: 'Bad Request';
-    message: string;
-};
 
 /**
  * One physical serialised battery — the reads return exactly the fields documented here. A `BatteryUnit` is an individual instance of a SKU/type-level passport, carrying its real serial in GS1 AI-21.
@@ -730,6 +727,11 @@ export type FacilityDeletedEnvelope = {
 };
 
 /**
+ * The two 403 bodies of grant revocation: the route-level `{error, message}` body (an `AUTHORITY` grant cannot be revoked by the workspace; no `success` field) and the standard middleware envelope.
+ */
+export type GrantRevokeForbidden = GrantRouteError | Error;
+
+/**
  * Tenant-facing projection of an access grant. The token hash, issuer user id, revoking actor and request IP are never exposed; raw capability tokens appear only in the one-time issuance/approval responses. All fields are always present (nullable ones serialize as `null`).
  */
 export type GrantRow = {
@@ -911,6 +913,11 @@ export type ApproveGrantRequest = {
 };
 
 /**
+ * An operator-endpoint error: either the route's minimal `{error, message}` body (no `success` field) or the standard middleware envelope.
+ */
+export type OperatorMinimalErrorResponse = OperatorMinimalError | Error;
+
+/**
  * An economic-operator record (`EconomicOperator`). Operators are scoped to your workspace (each workspace keeps its own row for a given `regId`). Returned verbatim from the database (no field stripping); nullable fields are serialized as `null`.
  */
 export type OperatorRow = {
@@ -1068,6 +1075,67 @@ export type OperatorListResponse = {
 export type OperatorGetResponse = {
     success: true;
     operator: OperatorRow;
+};
+
+/**
+ * The 400 bodies of passport creation: an ESPR validation failure with per-field `errors[]`, or the standard error triple / pre-handler rejection.
+ */
+export type PassportCreateBadRequest = PassportCreateValidationError | Error;
+
+/**
+ * ESPR validation failure
+ */
+export type PassportCreateValidationError = {
+    success: false;
+    error: 'Validation Failed';
+    message: string;
+    /**
+     * Blocking findings. Items produced by the category-validity check (`metadata.category` missing/unknown) carry no `friendlyMessage`.
+     */
+    errors: Array<ValidationErrorItem>;
+    /**
+     * Omitted entirely when there are no warnings.
+     */
+    warnings?: Array<ValidationErrorItem>;
+};
+
+/**
+ * The 400 bodies of bulk ingestion: every row failed (`Bulk Ingestion Failed`), or the request never reached row processing and returns the default request-rejection body.
+ */
+export type PassportBulkBadRequest = PassportBulkFailure | DefaultRequestRejectionError;
+
+/**
+ * Default request-rejection error body
+ *
+ * The default 400 body of a request rejected **before the handler runs** — a syntactically malformed JSON body, or an envelope (schema) violation — so none of the handler-built `{success:false, ...}` shapes apply.
+ */
+export type DefaultRequestRejectionError = {
+    statusCode: 400;
+    /**
+     * Machine-readable error code, e.g. `FST_ERR_VALIDATION` (an envelope/schema violation) or `FST_ERR_CTP_INVALID_JSON_BODY` (a syntactically malformed JSON body); may be absent.
+     */
+    code?: string;
+    error: 'Bad Request';
+    message: string;
+};
+
+/**
+ * The 400 bodies of AAS ingestion: the standard error triple (bad request / signature verification / ingestion failure), or an ESPR validation failure with per-field `errors[]`.
+ */
+export type AasIngestBadRequest = Error | AasIngestValidationError;
+
+/**
+ * AAS ESPR validation failure
+ */
+export type AasIngestValidationError = {
+    success: false;
+    error: 'Validation Failed';
+    message: string;
+    errors: Array<ValidationErrorItem>;
+    /**
+     * Omitted entirely when there are no warnings.
+     */
+    warnings?: Array<ValidationErrorItem>;
 };
 
 /**
@@ -1379,6 +1447,46 @@ export type AasIngestCreated = {
 };
 
 /**
+ * The two 404 bodies of an authenticated passport read: the standard workspace-scoped envelope, or the body forwarded from the public resolver (no `success` field).
+ */
+export type PassportGetNotFound = Error | ForwardedResolverError;
+
+/**
+ * Forwarded public-resolver body (no `success` field).
+ */
+export type ForwardedResolverError = {
+    error: string;
+    message: string;
+};
+
+/**
+ * The two 429 bodies of an authenticated passport read: the global limiter's default body (with `x-ratelimit-*` headers), or the body forwarded from the inner public resolver's limiter (no headers).
+ */
+export type PassportGetTooManyRequests = GlobalRateLimitError | ForwardedResolverRateLimitError;
+
+/**
+ * Global rate-limit plugin default body (with x-ratelimit-* headers).
+ */
+export type GlobalRateLimitError = {
+    statusCode: number;
+    error: string;
+    message: string;
+};
+
+/**
+ * Forwarded public-resolver limiter body (no `success` field, no headers).
+ */
+export type ForwardedResolverRateLimitError = {
+    error: string;
+    message: string;
+};
+
+/**
+ * The two 400 bodies of a passport update: the standard error triple, or an ESPR validation failure (which, unlike creation, carries NO `warnings` array).
+ */
+export type PassportUpdateBadRequest = Error | PassportUpdateValidationError;
+
+/**
  * Envelope of GET /api/v1/passports. The response is serialized against a declared response schema: top-level keys other than these four are stripped. There is NO total count.
  */
 export type PassportListResponse = {
@@ -1603,6 +1711,34 @@ export type PassportListItem = {
         [key: string]: unknown;
     };
     [key: string]: unknown;
+};
+
+/**
+ * One batch-decode result, aligned to its input item: a decoded scan (`ok: true`) or a per-item error (`ok: false` + `error`). `ok` is the discriminant.
+ */
+export type Gs1BatchDecodeResult = Gs1BatchDecodeOk | Gs1BatchDecodeError;
+
+/**
+ * A successfully decoded item — the same fields as the single-scan 200 minus `success`.
+ */
+export type Gs1BatchDecodeOk = {
+    ok: true;
+    input: string;
+    elementString: string | null;
+    hri: Array<string>;
+    canonicalUpi: string | null;
+    digitalLinkUri: string | null;
+    ai: {
+        [key: string]: string;
+    };
+};
+
+/**
+ * A per-item decode failure — the batch itself still returns 200 (partial-success).
+ */
+export type Gs1BatchDecodeError = {
+    ok: false;
+    error: string;
 };
 
 /**
@@ -2903,7 +3039,7 @@ export type SerializeBatteryUnitsErrors = {
     /**
      * Three shapes: (1) standard `Bad Request` triple when the body is not a JSON object, the `units` array is empty, or more than 200 units are sent; (2) `Serialisation Failed` (`{success:false, error:"Serialisation Failed", errors: string[]}` — **no `message` field**) when *every* item in the batch failed per-item validation/creation; (3) a syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
      */
-    400: Error | BatteryUnitSerialisationFailedError | FastifyDefaultBadRequest;
+    400: BatteryUnitSerialiseBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -3133,7 +3269,7 @@ export type RecordBatteryUnitEventErrors = {
     /**
      * Two shapes: (1) the standard error triple from handler validation — messages: `Request body must be a valid JSON object`; `eventType must be one of: SOH_MEASUREMENT, CHARGE_CYCLE, STATUS_CHANGE, NEGATIVE_EVENT, OTHER`; `<field> must be a number between <lo> and <hi>` (stateOfHealth/cycleCount/remainingCapacityAh/temperatureC); `status must be one of: IN_SERVICE, DECOMMISSIONED, RECALLED, REPURPOSED, REMANUFACTURED, REUSED, WASTE, RECYCLED`; `recordedAt is not a valid date`. (2) A syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
      */
-    400: Error | FastifyDefaultBadRequest;
+    400: BatteryUnitEventBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -3762,7 +3898,7 @@ export type RevokeGrantErrors = {
     /**
      * Two distinct bodies share this status: (1) **route-level** — the grant is an `AUTHORITY` grant and cannot be revoked by the workspace; body is `{error, message}` **without** a `success` field (see example); (2) **middleware** — insufficient permission, missing/invalid CSRF token, cross-tenant access, or MFA required; standard envelope `{success: false, error, message}`.
      */
-    403: GrantRouteError | Error;
+    403: GrantRevokeForbidden;
     /**
      * No grant with this id exists in this workspace. Body omits the `success` field.
      */
@@ -3851,7 +3987,7 @@ export type RegisterOperatorErrors = {
     /**
      * Two distinct bodies. Missing `name`/`regId` returns the minimal envelope **without** an `error` key. A `regId`/`regIdScheme` validation failure (whitespace-only `regId`, fabricated `EORI-MOCK…` id, unknown scheme, or invalid EORI syntax) returns the standard envelope with `error: "Bad Request"`.
      */
-    400: OperatorMinimalError | Error;
+    400: OperatorMinimalErrorResponse;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -3876,7 +4012,7 @@ export type RegisterOperatorErrors = {
     /**
      * Database/handler failure. Returns the standard envelope with the generic message "An unexpected error occurred."; the underlying error is logged server-side and never returned.
      */
-    500: OperatorMinimalError | Error;
+    500: OperatorMinimalErrorResponse;
 };
 
 export type RegisterOperatorError = RegisterOperatorErrors[keyof RegisterOperatorErrors];
@@ -4142,7 +4278,7 @@ export type RotateTenantKeysErrors = {
     /**
      * Key generation, vault encryption, or database failure. The route handler emits the minimal envelope (`{success: false, message}`, **no** `error` key, message taken from the underlying error); a failure inside the authentication layer instead emits the standard three-field envelope.
      */
-    500: OperatorMinimalError | Error;
+    500: OperatorMinimalErrorResponse;
 };
 
 export type RotateTenantKeysError = RotateTenantKeysErrors[keyof RotateTenantKeysErrors];
@@ -4246,19 +4382,7 @@ export type CreatePassportErrors = {
     /**
      * Three variants share this status: (1) **Validation Failed** — the metadata failed ESPR category / cross-field validation; carries per-field `errors[]` (and `warnings[]` only when at least one warning exists). (2) **Bad Request** triple — whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), no economic operator bound to the workspace, or unknown `facilityId`; `{success, error, message}` with no `errors`/`warnings`. (3) Pre-handler rejections — request-body schema violations (e.g. missing `productId`) and malformed JSON return only `{error, message}`.
      */
-    400: {
-        success: false;
-        error: 'Validation Failed';
-        message: string;
-        /**
-         * Blocking findings. Items produced by the category-validity check (`metadata.category` missing/unknown) carry no `friendlyMessage`.
-         */
-        errors: Array<ValidationErrorItem>;
-        /**
-         * Omitted entirely when there are no warnings.
-         */
-        warnings?: Array<ValidationErrorItem>;
-    } | Error;
+    400: PassportCreateBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -4452,15 +4576,7 @@ export type BulkIngestPassportsErrors = {
     /**
      * Either every row failed (`Bulk Ingestion Failed`, with string `errors[]` and no `message` field), or the request never reached row processing: envelope violations of the `passports` array bounds and malformed JSON both return the full default error body (`{statusCode, code?, error, message}` — nothing is stripped on this operation).
      */
-    400: PassportBulkFailure | {
-        statusCode: 400;
-        /**
-         * Machine-readable error code; present for envelope (schema) violations (`FST_ERR_VALIDATION`), may be absent for malformed JSON.
-         */
-        code?: string;
-        error: 'Bad Request';
-        message: string;
-    };
+    400: PassportBulkBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -4524,16 +4640,7 @@ export type IngestPassportFromAasErrors = {
     /**
      * Four variants share this status: `Bad Request` (non-object body, unresolvable productId, no bound operator), `Signature Verification Failed` (embedded seal invalid/altered or no matching tenant key), `Validation Failed` (ESPR — carries `errors[]`, and `warnings[]` when present), and `Ingestion Failed` (catch-all parse/processing error with the underlying message).
      */
-    400: Error | {
-        success: false;
-        error: 'Validation Failed';
-        message: string;
-        errors: Array<ValidationErrorItem>;
-        /**
-         * Omitted entirely when there are no warnings.
-         */
-        warnings?: Array<ValidationErrorItem>;
-    };
+    400: AasIngestBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -4721,10 +4828,7 @@ export type GetPassportErrors = {
     /**
      * Two distinct bodies. (1) Standard: the id/productId matched nothing under your workspace — `{success:false, error:"Not Found", message:"Passport with ID or Product ID <id> not found under your Tenant workspace"}`. (2) Forwarded from the public resolver (note: **no `success` field**): the passport is a DRAFT and the forwarded credential was not recognized as owner (e.g. JWT session); with `Accept: text/html` this case returns an HTML not-found page instead.
      */
-    404: Error | {
-        error: string;
-        message: string;
-    };
+    404: PassportGetNotFound;
     /**
      * The requested representation cannot be produced for this resource. Returned when a Verifiable Credential media type (`application/vc+jwt`, `application/vc+ld+json`, or `application/dc+sd-jwt`) is requested for a passport that has no manufacturing facility with a country of production — a conformant UNTP credential cannot be issued without it. Request the default JSON-LD (or another supported representation) instead.
      */
@@ -4732,14 +4836,7 @@ export type GetPassportErrors = {
     /**
      * Two possible sources. (1) Global limiter (100/min/IP): default rate-limit body (`statusCode`/`error`/`message` — no `code` field) with `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` + `retry-after` headers. (2) Forwarded from the inner public resolver's limiter (30/min/IP): two-field body, **no rate-limit headers**.
      */
-    429: {
-        statusCode: number;
-        error: string;
-        message: string;
-    } | {
-        error: string;
-        message: string;
-    };
+    429: PassportGetTooManyRequests;
     /**
      * Unexpected failure. A failure inside the scoped lookup is not wrapped by the route and returns the framework's **default** error body (`statusCode`/`error`/`message`, no `success` field); an authentication-layer failure returns the standard envelope with `message: "Authentication verification failed"`.
      */
@@ -4778,7 +4875,7 @@ export type UpdatePassportErrors = {
     /**
      * Either a plain Bad Request — body is not a JSON object; `metadata` missing/not an object; `facilityId` not found in your workspace (`Facility <facilityId> not found in your Tenant workspace`) — or an ESPR validation failure. **Divergence:** unlike `POST /api/v1/passports`, the validation body has NO `warnings` array.
      */
-    400: Error | PassportUpdateValidationError;
+    400: PassportUpdateBadRequest;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -5574,20 +5671,7 @@ export type DecodeGs1BatchResponses = {
         /**
          * One entry per input item, in order.
          */
-        results: Array<{
-            ok: true;
-            input: string;
-            elementString: string | null;
-            hri: Array<string>;
-            canonicalUpi: string | null;
-            digitalLinkUri: string | null;
-            ai: {
-                [key: string]: string;
-            };
-        } | {
-            ok: false;
-            error: string;
-        }>;
+        results: Array<Gs1BatchDecodeResult>;
     };
 };
 
