@@ -1,3 +1,5 @@
+<!-- Copyright (c) Opendpp UAB. SPDX-License-Identifier: LicenseRef-OpenDPP-Proprietary -->
+
 # Changelog
 
 The SDK's version **tracks the OpenDPP API contract it speaks**, at **major.minor** — so "which SDK is

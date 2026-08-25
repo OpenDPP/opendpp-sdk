@@ -1,25 +1,30 @@
-// Shared SDK codegen spec normalizer — the ONE place the published OpenAPI 3.1 contract is rewritten
-// into a generation input openapi-generator (7.12.0, `java` + `python` lanes) can consume correctly.
-//
-// HISTORY: these five transforms began life as a private Groovy `prepareSpec` task inside
-// opendpp-sdk/java/build.gradle.kts. The Python lane hits the same constructs and fails DIFFERENTLY
-// (e.g. `additionalProperties: false` → pydantic `extra="forbid"` → runtime rejection of real
-// payloads), so rather than a second private rewriter per lane, the normalization lives here — beside
-// the contract that makes it necessary — and is EXECUTED in the mirror: `sdk-regen-verify.ts` copies
-// this file to `scripts/normalize-spec.mjs` in the OpenDPP/opendpp-sdk checkout (the same mechanism
-// that carries sdk-notes/CHANGELOG.md), where the Java Gradle build and the Python regen script invoke
-// it. One commit carries the normalizer and the sources it regenerated.
-//
-// Plain dependency-free ESM JavaScript, NOT TypeScript: the mirror runs it with a bare `node` (no tsx,
-// no install). The sibling `spec-codegen-normalize.d.mts` types the import for node-repo consumers
-// (same pattern as the vendored gs1encoder glue). Unit-pinned by
-// tests/functional/spec-codegen-normalize.test.ts against both synthetic fixtures and the live
-// openapi.json.
-//
-// SCOPE: generation input ONLY. Each lane's vendored openapi.json stays the pristine published
-// contract — it drives the version locks and the drift checks and must never be normalized.
-// The TypeScript lane (@hey-api/openapi-ts) handles these 3.1 constructs natively and keeps
-// generating from the pristine spec.
+/**
+ * Shared SDK codegen spec normalizer — the ONE place the published OpenAPI 3.1 contract is rewritten
+ * into a generation input openapi-generator (7.12.0, `java` + `python` lanes) can consume correctly.
+ *
+ * HISTORY: these five transforms began life as a private Groovy `prepareSpec` task inside
+ * opendpp-sdk/java/build.gradle.kts. The Python lane hits the same constructs and fails DIFFERENTLY
+ * (e.g. `additionalProperties: false` → pydantic `extra="forbid"` → runtime rejection of real
+ * payloads), so rather than a second private rewriter per lane, the normalization lives here — beside
+ * the contract that makes it necessary — and is EXECUTED in the mirror: `sdk-regen-verify.ts` copies
+ * this file to `scripts/normalize-spec.mjs` in the OpenDPP/opendpp-sdk checkout (the same mechanism
+ * that carries sdk-notes/CHANGELOG.md), where the Java Gradle build and the Python regen script invoke
+ * it. One commit carries the normalizer and the sources it regenerated.
+ *
+ * Plain dependency-free ESM JavaScript, NOT TypeScript: the mirror runs it with a bare `node` (no tsx,
+ * no install). The sibling `spec-codegen-normalize.d.mts` types the import for node-repo consumers
+ * (same pattern as the vendored gs1encoder glue). Unit-pinned by
+ * tests/functional/spec-codegen-normalize.test.ts against both synthetic fixtures and the live
+ * openapi.json.
+ *
+ * SCOPE: generation input ONLY. Each lane's vendored openapi.json stays the pristine published
+ * contract — it drives the version locks and the drift checks and must never be normalized.
+ * The TypeScript lane (@hey-api/openapi-ts) handles these 3.1 constructs natively and keeps
+ * generating from the pristine spec.
+ *
+ * Copyright (c) Opendpp UAB.
+ * SPDX-License-Identifier: LicenseRef-OpenDPP-Proprietary
+ */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
