@@ -1596,7 +1596,7 @@ export type PassportSealResponse = {
      */
     digitalSeal: string;
     /**
-     * PEM-encoded public key of the tenant's signing key pair; verify the seal offline against `proof.merkleRoot`.
+     * PEM-encoded public key of the tenant's signing key pair; the seal is offline-verifiable against `proof.merkleRoot` with standard ECDSA tooling.
      */
     signingPublicKey: string;
     passport: PublicPassportJsonLd;
@@ -1611,7 +1611,7 @@ export type PassportSealResponse = {
  */
 export type PassportStatusUpdateRequest = {
     /**
-     * Target lifecycle state. DECOMMISSIONED starts the retention clock (retentionUntil = now + the configured retention period, default 15 years); ACTIVE reactivates (clears retentionUntil and archivedAt); RECALLED marks the product recalled. DRAFT is not a valid target — drafts are published via PUT /api/v1/passports/{id}.
+     * Target lifecycle state. DECOMMISSIONED starts the retention clock (retentionUntil = now + the configured retention period, default 10 years); ACTIVE reactivates (clears retentionUntil and archivedAt); RECALLED marks the product recalled. DRAFT is not a valid target — drafts are published via PUT /api/v1/passports/{id}.
      */
     status: 'ACTIVE' | 'RECALLED' | 'DECOMMISSIONED';
     [key: string]: unknown;
@@ -2467,9 +2467,9 @@ export type SealVerifyResponse = {
     success: true;
     verified: boolean;
     /**
-     * Present only on the two policy failures: unregistered public key, or a declared operator not bound to the signing tenant.
+     * Present only on the two policy declines, each prefixed `Verification declined:` — an unregistered public key, or a declared operator not bound to the signing tenant. In both cases the seal was NOT cryptographically evaluated (this node verifies only seals issued by its own tenants). The wording is human-readable prose, not a stable contract value — match on `verified`, never on this string (deliberately no `enum` since 1.15.0).
      */
-    message?: 'Cryptographic verification failed: The public key used to seal this passport is not registered to any authorized economic operator tenant on this node.' | 'Cryptographic verification failed: The economic operator declared in this passport is not a registered operator bound to the signing tenant.';
+    message?: string;
     certificate?: SealCertificateReport;
     timestamp?: SealTimestampReport;
 };
@@ -2772,9 +2772,9 @@ export type WebhookDeliveryRow = {
      */
     event: string;
     /**
-     * Overall delivery state. FAILED after 5 exhausted attempts (dead-lettered).
+     * Overall delivery state. DELIVERED means the event reached every matching endpoint. NO_SUBSCRIBERS means no active subscription filtered for this event, so nothing was sent. FAILED after six exhausted attempts (dead-lettered), or when the last matching subscription was removed while the event was still failing.
      */
-    status: 'PENDING' | 'DELIVERED' | 'FAILED';
+    status: 'PENDING' | 'DELIVERED' | 'FAILED' | 'NO_SUBSCRIBERS';
     /**
      * Failed attempts so far (0–5).
      */
@@ -5325,7 +5325,7 @@ export type GetSectorSchemaData = {
     body?: never;
     path: {
         /**
-         * ESPR product category (case-insensitive). Only `textiles`, `batteries`, `electronics`, `chemicals` and `construction` have published JSON Schemas; `cosmetics`, `toys`, `iron-steel` and `aluminium` return 404 here (their validation rules are built into the server).
+         * ESPR product category (case-insensitive). Every value in the enum has a published JSON Schema, including `cosmetics`, `toys`, `iron-steel` and `aluminium`; a category outside the enum returns 404.
          */
         category: 'textiles' | 'batteries' | 'electronics' | 'chemicals' | 'construction' | 'cosmetics' | 'toys' | 'iron-steel' | 'aluminium';
     };
@@ -6468,7 +6468,7 @@ export type ListWebhookDeliveriesData = {
         /**
          * Filter by delivery state. Unrecognized values are ignored (no filter applied).
          */
-        status?: 'PENDING' | 'DELIVERED' | 'FAILED';
+        status?: 'PENDING' | 'DELIVERED' | 'FAILED' | 'NO_SUBSCRIBERS';
         /**
          * Max records to return.
          */

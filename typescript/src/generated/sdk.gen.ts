@@ -447,7 +447,7 @@ export const registerOperator = <ThrowOnError extends boolean = false>(options: 
  *
  * Removes an operator, choosing automatically between two outcomes (ESPR passport-persistence compliance — an operator that still has passports must never be hard-deleted):
  *
- * - **Archive (soft delete)** — if the operator has one or more passports, it is archived instead of deleted: `archivedAt` is set on the operator and every active passport of the operator is archived with a `retentionUntil` deadline set to a platform-configured retention period from now (default 15 years). Archived passports remain **publicly resolvable** (the persistence duty) but are excluded from active management lists. Response: `{success: true, archived: true, archivedPassports: <n>}`. Fully reversible via `POST /api/v1/operators/{id}/restore`.
+ * - **Archive (soft delete)** — if the operator has one or more passports, it is archived instead of deleted: `archivedAt` is set on the operator and every active passport of the operator is archived with a `retentionUntil` deadline set to a platform-configured retention period from now (default 10 years). Archived passports remain **publicly resolvable** (the persistence duty) but are excluded from active management lists. Response: `{success: true, archived: true, archivedPassports: <n>}`. Fully reversible via `POST /api/v1/operators/{id}/restore`.
  * - **Hard delete** — if the operator has no passports it is permanently deleted (tenant bindings cascade-delete; user/facility/API-key references are set to null). Response: `{success: true, archived: false}` — no `archivedPassports` field.
  * - **Fallback** — if the hard delete fails on a residual foreign-key reference, the operator is archived instead and the response is `{success: true, archived: true}` **without** `archivedPassports`. If even the fallback archive fails, `409` is returned.
  *
@@ -838,7 +838,7 @@ export const sealPassport = <ThrowOnError extends boolean = false>(options: Opti
  * **Lookup:** passport **UUID or `productId`** (UUID tried first), scoped to operators bound to your workspace.
  *
  * **Effects:**
- * - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 15 years), starting the minimum-availability retention clock. The passport stays publicly resolvable.
+ * - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 10 years), starting the minimum-availability retention clock. The passport stays publicly resolvable.
  * - `ACTIVE` (reactivation) — clears `retentionUntil` **and** `archivedAt`.
  * - `RECALLED` — marks the product recalled.
  * - The status change, the version-history entry (who/when/what) and the webhook enqueue are **transactional**; an in-app notification is created **best-effort after the transaction commits** (a notification failure never affects the response).
@@ -1295,7 +1295,7 @@ export const listWebhookSubscriptions = <ThrowOnError extends boolean = false>(o
  *
  * **Event filters:** `events` must be a non-empty array drawn from `passport.ingested`, `passport.updated`, `passport.sealed`, `passport.recalled`, `passport.status_updated`, `*`. The `*` wildcard matches every emitted event.
  *
- * **Signing secret — shown once:** the `201` response contains the full subscription row **including** the HMAC-SHA256 signing secret (`whsec_` + 32 lowercase hex chars, server-generated, never client-supplied). This is the only time the secret is ever returned: the list endpoint strips it and there is no rotation or update endpoint — delete and re-create to rotate.
+ * **Signing secret — shown once:** the `201` response contains the full subscription row **including** the HMAC-SHA256 signing secret (`whsec_` + 32 lowercase hex chars, server-generated, never client-supplied). This is the only time the secret is ever returned: the list endpoint strips it. To change the `url`, `events` or `isActive` in place use `PATCH /api/v1/webhooks/subscriptions/{id}` — the secret is kept, so the receiver keeps validating. To replace the secret use `POST /api/v1/webhooks/subscriptions/{id}/rotate-secret`, which returns the new one once. Neither needs the subscription deleted and re-created.
  *
  * **Limits:** maximum **25 subscriptions per workspace** (`409 Conflict`). Global rate limit 100 requests/min/IP (`429` with `x-ratelimit-*` headers). Unknown request-body fields are ignored.
  */
@@ -1316,7 +1316,7 @@ export const createWebhookSubscription = <ThrowOnError extends boolean = false>(
  *
  * **Permission:** `webhook:write` (cookie sessions must send `X-CSRF-Token`; write permissions are subscription-gated, `402`).
  *
- * The lookup is tenant-scoped: an `id` that exists but belongs to another workspace returns the same `404` with message `"Webhook subscription not found under your tenant"`. Deleting and re-creating is the only way to rotate a signing secret. Global rate limit 100 requests/min/IP.
+ * The lookup is tenant-scoped: an `id` that exists but belongs to another workspace returns the same `404` with message `"Webhook subscription not found under your tenant"`. Deleting is not how a signing secret is rotated — `POST /api/v1/webhooks/subscriptions/{id}/rotate-secret` does that in place, and `PATCH /api/v1/webhooks/subscriptions/{id}` changes the address without minting a new secret. Global rate limit 100 requests/min/IP.
  */
 export const deleteWebhookSubscription = <ThrowOnError extends boolean = false>(options: Options<DeleteWebhookSubscriptionData, ThrowOnError>): RequestResult<DeleteWebhookSubscriptionResponses, DeleteWebhookSubscriptionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteWebhookSubscriptionResponses, DeleteWebhookSubscriptionErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

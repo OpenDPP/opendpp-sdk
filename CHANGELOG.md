@@ -29,6 +29,28 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.15.0] — TypeScript · Java/Kotlin · Python
+
+Targets API contract **1.15.0** (the verifier says what it declines; delivery records state what
+happened). A regeneration with two model changes and one docstring correction:
+
+- `SealVerifyResponse.message` loses its two-member string `enum`, so every lane's model widens from
+  an enumerated type to a plain string — code that matched the exact decline messages must switch on
+  `verified` instead (the messages also reworded from `Cryptographic verification failed: …` to
+  `Verification declined: …, so the seal was not evaluated`).
+- The docstring of `getSectorSchema` (`GET /api/v1/schemas/{category}`) no longer says only five
+  categories have a published schema and the other four return 404 — all nine do. No model change.
+- The generated webhook delivery model gains the `NO_SUBSCRIBERS` status value, so a client
+  switching on the status handles the case where an event had no endpoint to reach instead of
+  reading it as a successful delivery.
+- The generated docstrings for `createWebhookSubscription` and `deleteWebhookSubscription` no longer tell
+  the caller to delete and re-create a subscription to change its address or rotate its secret; they point
+  at `updateWebhookSubscription` and `rotateWebhookSecret`, which every lane already exposes. No model
+  change.
+
+No ergonomics module or lane-specific behaviour changed; no lane-local (patch-level) changes ride
+along.
+
 ## [1.14.0] — TypeScript · Java/Kotlin · Python
 
 Targets API contract **1.14.0** (contract hygiene for the SDK lanes) and debuts the **Python lane**:
@@ -47,7 +69,7 @@ every real `ok: true` / `success: false` payload; Java rendered one-value `Succe
 wrappers around what is just a `Boolean`). Java fields typed by those wrappers become plain
 `Boolean` — same wire format, simpler surface.
 
-- **Model renames (pre-adoption break, all lanes).** The contract names its error/result unions, so
+- **Model renames (breaking, under the recorded pre-GA waiver — all lanes).** The contract names its error/result unions, so
   the per-operation synthesized model names disappear in favour of the contract's own:
   `PassportCreateBadRequest`, `PassportBulkBadRequest`, `AasIngestBadRequest`,
   `PassportGetNotFound`, `PassportGetTooManyRequests`, `PassportUpdateBadRequest`,
@@ -82,7 +104,7 @@ rewrite ships here). Both clients regenerate with real surface changes:
   only real outcome, the `409` refusal, so its generated success type is gone.
 
 A client compiled against 1.12.x that referenced the removed operation or types will not compile
-against 1.13.0 — pre-adoption break, shipped under the recorded contract waiver.
+against 1.13.0 — a breaking regeneration, shipped under the recorded pre-GA waiver.
 
 ## [1.12.2] — TypeScript · Java/Kotlin
 
