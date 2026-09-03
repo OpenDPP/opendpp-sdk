@@ -3,6 +3,7 @@
 # the typed model doesn't match, and the ergonomics `*_as` helpers are the supported way to choose
 # one explicitly. Both halves are pinned here by mocking at the module boundary (ApiClient.call_api).
 import json
+from pathlib import Path
 from typing import Any, Dict, Optional
 from unittest import mock
 
@@ -17,25 +18,29 @@ from opendpp_sdk.ergonomics import (
 )
 from opendpp_sdk.models.public_passport_json_ld import PublicPassportJsonLd
 
-PASSPORT_DOC: Dict[str, Any] = {
-    "@context": ["https://opendpp-node.eu/contexts/dpp/v1", {"DigitalProductPassport": "https://opendpp-node.eu/contexts/dpp/v1#DigitalProductPassport"}],
-    "@type": "DigitalProductPassport",
-    "@id": "https://opendpp-node.eu/passport/9b2fa884-3f1e-4c2a-9d4b-5e6f7a8b9c0d",
-    "id": "9b2fa884-3f1e-4c2a-9d4b-5e6f7a8b9c0d",
-    "productId": "09501101530003",
-    "digitalLinkUri": "https://opendpp-node.eu/01/09501101530003/21/9b2fa884-3f1e-4c2a-9d4b-5e6f7a8b9c0d",
-    "digitalSeal": None,
-    "signingPublicKey": None,
-    "status": "DRAFT",
-    "archivedAt": None,
-    "retentionUntil": None,
-    "proof": None,
-    "createdAt": "2026-08-17T00:00:00.000Z",
-    "updatedAt": "2026-08-17T00:00:00.000Z",
-    "economicOperator": None,
-    "manufacturingFacility": None,
-    "metadata": {"category": "batteries"},
-}
+
+def _passport_example() -> Dict[str, Any]:
+    """The passport document the CONTRACT publishes for this operation, read from the vendored spec.
+
+    This was a frozen literal, and a frozen literal falls behind the contract silently: when the node
+    added the EN 18223 header attributes as required properties of `PublicPassportJsonLd`, this fixture
+    still omitted them, and the generated pydantic model rejected it — the negotiation tests failed for
+    a reason that had nothing to do with negotiation, and the literal had also kept a Digital Link shape
+    the resolver stopped emitting. `openapi.json` here is the same file the client is generated from, so
+    reading the example out of it makes fixture and model regenerate together and disagree never.
+    """
+    spec_path = Path(__file__).resolve().parents[1] / "openapi.json"
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    try:
+        return spec["paths"]["/passport/{id}"]["get"]["responses"]["200"]["content"]["application/ld+json"]["example"]
+    except KeyError as exc:  # a moved path/representation must name itself, not KeyError deep in a test
+        raise AssertionError(
+            f"{spec_path} has no 200 application/ld+json example for GET /passport/{{id}} (missing key {exc}); "
+            "the contract moved it — point this fixture at the operation's new example."
+        ) from exc
+
+
+PASSPORT_DOC: Dict[str, Any] = _passport_example()
 
 
 class FakeRestResponse:
