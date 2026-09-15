@@ -29,7 +29,7 @@ export type Error = {
     /**
      * Optional MACHINE-STABLE error code for the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) — branch on this instead of parsing `message`. Present on the errors it covers — the `code` enum below is the full set — and omitted otherwise.
      */
-    code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
+    code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'UNSUPPORTED_KEY_QUALIFIER' | 'UNSUPPORTED_REPRESENTATION' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'DRAFT_DEMOTION_REFUSED' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
 };
 
 /**
@@ -55,9 +55,9 @@ export type ValidationErrorItem = {
  */
 export type AdvisoryItem = {
     /**
-     * Stable advisory code. WARNINGS: `NON_GS1_PRODUCT_ID` (the productId is not a GS1 GTIN/GRAI → no scannable GS1 link), `PII_SHAPE_DETECTED` (metadata looks like personal data), `UNIT_NO_SCANNABLE_LINK` (units under a non-GTIN passport have no scannable unit link), `DRAFT_DEMOTED` (draft:true took an already-published passport offline), `EORI_NOT_FOUND` (a declared EORI was not in the EU EOS register). NOTICES: `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's first bound operator was used), `GTIN_AUTO_COPIED` (a valid GTIN-14/GRAI productId was copied into metadata.gtin/metadata.grai).
+     * Stable advisory code. WARNINGS: `NON_GS1_PRODUCT_ID` (the productId is not a GS1 GTIN/GRAI → issued as an Identification Link, not a GS1 Digital Link), `PII_SHAPE_DETECTED` (metadata looks like personal data), `UNIT_NO_SCANNABLE_LINK` (units under a non-GTIN passport carry an Identification Link, not a GS1 unit Digital Link), `EORI_NOT_FOUND` (a declared EORI was not in the EU EOS register), `CARRIER_SYMBOLOGY_NOT_RENDERED` (the declared EN 18220 Clause 6 carrier is a symbology this node does not encode, so the symbol served is a QR Code), `CATEGORY_GRANULARITY_UNEXPECTED` (the passport's identification granularity differs from the level the product group's own instrument requires; EN 18220 §4.2 leaves that level to sector legislation). NOTICES: `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's first bound operator was used), `GTIN_AUTO_COPIED` (a valid GTIN-14/GRAI productId was copied into metadata.gtin/metadata.grai).
      */
-    code: 'NON_GS1_PRODUCT_ID' | 'PII_SHAPE_DETECTED' | 'UNIT_NO_SCANNABLE_LINK' | 'DRAFT_DEMOTED' | 'EORI_NOT_FOUND' | 'OPERATOR_AUTO_ATTRIBUTED' | 'GTIN_AUTO_COPIED';
+    code: 'NON_GS1_PRODUCT_ID' | 'PII_SHAPE_DETECTED' | 'UNIT_NO_SCANNABLE_LINK' | 'EORI_NOT_FOUND' | 'CARRIER_SYMBOLOGY_NOT_RENDERED' | 'CATEGORY_GRANULARITY_UNEXPECTED' | 'OPERATOR_AUTO_ATTRIBUTED' | 'GTIN_AUTO_COPIED';
     /**
      * The field the advisory is about (e.g. `productId`, `draft`, `regId`), when applicable.
      */
@@ -202,7 +202,7 @@ export type BatteryUnitRow = {
      */
     serialNumber: string;
     /**
-     * Per-unit GS1 Digital Link: `{origin}/{01|8003}/{productId}/21/{serialNumber}` — AI `01` for GTIN (and non-GS1 SKUs), `8003` for GRAI. Unique platform-wide.
+     * The unit's identifier URI. Under a GTIN-keyed passport, the GS1 Digital Link `{origin}/01/{gtin}/21/{serialNumber}` (AI 21 = the physical serial). Under any other passport — a GRAI, whose key admits no AI 21 qualifier, or a non-GS1 `productId` — an EN IEC 61406 Identification Link on the unit's own route, `{origin}/unit/{id}?.P={productId}&.S={serialNumber}` (EN 18219 Scheme 2, item level). Unique platform-wide.
      */
     digitalLinkUri: string;
     /**
@@ -322,7 +322,7 @@ export type SerializeBatteryUnitsResponse = {
      */
     errors?: Array<string>;
     /**
-     * Non-blocking advisories. Carries a single note when the passport's `productId` is NOT a GS1 GTIN — the created units then have no scannable GS1 unit Digital Link (`/01/{gtin}/21/{serial}`) and resolve only via `/unit/{id}`. Empty `[]` for a GTIN-keyed passport.
+     * Non-blocking advisories. Carries a single note when the passport's `productId` is NOT a GS1 GTIN — the created units then have no GS1 unit Digital Link (`/01/{gtin}/21/{serial}`); each is identified by an EN IEC 61406 Identification Link `/unit/{id}?.P={productId}&.S={serial}`, scannable but not through GS1 resolvers. Empty `[]` for a GTIN-keyed passport.
      */
     warnings: Array<AdvisoryItem>;
 };
@@ -408,6 +408,42 @@ export type BatteryUnitJsonLd = {
     id: string;
     serialNumber: string;
     digitalLinkUri: string;
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/unit/{id}` URL for the individual serialised unit. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the individual serialised unit, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier (EN 18223 4.1.2.2): an individually serialised unit is always `item`.
+     */
+    granularity: 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
     status: BatteryUnitStatus;
     manufacturedAt: string | null;
     /**
@@ -930,13 +966,17 @@ export type OperatorRow = {
      */
     name: string;
     /**
-     * Official registration id (EORI number, VAT id, DUNS, or national business-registry id). Unique within your workspace and immutable after registration.
+     * The identifier issued under `regIdScheme` — an EU VAT identification number, a D-U-N-S number, an LEI or a GS1 GLN. Unique within your workspace and immutable once declared.
      */
     regId: string;
     /**
-     * Which kind of registration id `regId` is. `null` = unspecified national/business id. When `EORI`, `regId` is guaranteed to satisfy the EORI syntax `^[A-Z]{2}[A-Za-z0-9]{1,15}$`.
+     * The EN 18219 clause 6 scheme `regId` is issued under. Each has an ISO/IEC 6523 ICD — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — which is how the EN 18223 `economicOperatorId` is written. `UNDECLARED` appears only on an operator that predates the declaration and whose identifier the migration could not classify: it cannot be sent, and such an operator is declared once via `PATCH`.
      */
-    regIdScheme: 'EORI' | 'VAT' | 'DUNS' | 'NATIONAL' | 'OTHER' | null;
+    regIdScheme: 'VAT' | 'DUNS' | 'LEI' | 'GLN' | 'UNDECLARED';
+    /**
+     * The operator's EU EORI (customs identifier), normalised, or `null`. Carried beside `regId`: it has no ISO/IEC 6523 ICD and is not what the EN 18223 header names.
+     */
+    eori: string | null;
     /**
      * Supply-chain role, free text — e.g. `"MANUFACTURER"`, `"IMPORTER"`, `"RETAILER"`. Defaults to `"MANUFACTURER"` at registration.
      */
@@ -949,7 +989,7 @@ export type OperatorRow = {
 };
 
 /**
- * An economic operator to register: its legal name and registration identifier, with an optional identifier scheme and supply-chain role.
+ * An economic operator to register: its legal name, its identifier under an EN 18219 clause 6 scheme, optionally its EORI and supply-chain role.
  */
 export type RegisterOperatorRequest = {
     /**
@@ -957,13 +997,17 @@ export type RegisterOperatorRequest = {
      */
     name: string;
     /**
-     * Official registration id (EORI, VAT, DUNS, or national registry id). Unique within your workspace; immutable after registration. Fabricated `EORI-MOCK…` ids are rejected. When `regIdScheme` is `EORI`, must match `^[A-Z]{2}[A-Za-z0-9]{1,15}$` (e.g. `DE1234567890`).
+     * The identifier issued under `regIdScheme`: an EU VAT identification number (e.g. `DE811907980`), a D-U-N-S number (`150483782`), an LEI (`529900T8BM49AURSDO55`) or a GS1 GLN (`4012345000009`). Checked against the scheme's shape; fabricated `EORI-MOCK…` ids are rejected. Unique within your workspace; immutable once declared.
      */
     regId: string;
     /**
-     * Optional declaration of what kind of id `regId` is. Allowed values: `EORI`, `VAT`, `DUNS`, `NATIONAL`, `OTHER` — matched case-insensitively (uppercased server-side). Any other value is rejected with `400`. Omit or send `null` for an unspecified national/business id. Ignored when binding to an existing operator.
+     * Required: the EN 18219 clause 6 scheme `regId` is issued under, matched case-insensitively (uppercased server-side). Any other value — an EORI included — is rejected with `400`. Ignored when binding to an existing operator.
      */
-    regIdScheme?: string | null;
+    regIdScheme: 'VAT' | 'DUNS' | 'LEI' | 'GLN';
+    /**
+     * Optional EU EORI (customs identifier), `^[A-Z]{2}[A-Za-z0-9]{1,15}$` after whitespace is stripped and letters upper-cased. Not the EN 18219 identifier — it has no ISO/IEC 6523 ICD — but what customs and the EU registry know the operator by. Omit or `null` for none.
+     */
+    eori?: string | null;
     /**
      * Supply-chain role, free text — e.g. `MANUFACTURER`, `IMPORTER`, `RETAILER`. Defaults to `MANUFACTURER`. Ignored when binding to an existing operator.
      */
@@ -981,13 +1025,13 @@ export type RegisterOperatorResponse = {
     message: string;
     operator: OperatorRow;
     /**
-     * Non-blocking advisories. Carries a single EORI-not-found note when the OPT-IN EORI existence check is enabled and a declared EORI is not found in the EU EOS register. Empty `[]` otherwise. Never blocks registration.
+     * Non-blocking advisories. Carries a single EORI-not-found note when the OPT-IN EORI existence check is enabled and the supplied `eori` is not found in the EU EOS register. Empty `[]` otherwise. Never blocks registration.
      */
     warnings: Array<AdvisoryItem>;
 };
 
 /**
- * Both fields are optional. Values must be non-empty strings after trimming; anything else (missing, non-string, whitespace-only) is silently ignored. `regId` and `regIdScheme` cannot be changed. An omitted body or an empty object `{}` is accepted and returns the unchanged row.
+ * Every field is optional. `name` and `role` must be non-empty strings after trimming; anything else (missing, non-string, whitespace-only) is silently ignored. `eori` may be set, changed or cleared with `null` (syntax-checked, `400` if malformed). `regId` and `regIdScheme` are immutable once declared (EN 18219 §4.2.2) — the one exception is an operator whose `regIdScheme` is `UNDECLARED`, which is declared exactly once by sending both, against the same clause 6 rules as a registration; any later change is `400`. An omitted body or an empty object `{}` is accepted and returns the unchanged row.
  */
 export type UpdateOperatorRequest = {
     /**
@@ -998,6 +1042,18 @@ export type UpdateOperatorRequest = {
      * New supply-chain role, free text (trimmed) — e.g. `MANUFACTURER`, `IMPORTER`, `RETAILER`.
      */
     role?: string;
+    /**
+     * The EU EORI to set, or `null` to clear it.
+     */
+    eori?: string | null;
+    /**
+     * Only for an `UNDECLARED` operator: the clause 6 scheme being declared, together with `regId`.
+     */
+    regIdScheme?: 'VAT' | 'DUNS' | 'LEI' | 'GLN';
+    /**
+     * Only for an `UNDECLARED` operator: the identifier under the scheme being declared.
+     */
+    regId?: string;
 };
 
 /**
@@ -1075,6 +1131,123 @@ export type OperatorListResponse = {
 export type OperatorGetResponse = {
     success: true;
     operator: OperatorRow;
+};
+
+export type PassportHistoryError = {
+    success: false;
+    /**
+     * Short error category.
+     */
+    error: string;
+    /**
+     * Human-readable detail.
+     */
+    message: string;
+};
+
+export type PassportHistoryVersionSummary = {
+    /**
+     * Archived version number; 1 is the state the first change replaced.
+     */
+    version: number;
+    /**
+     * The instant this version stopped being current — when the change that replaced it was recorded.
+     */
+    validUntil: string;
+    /**
+     * When the snapshot was archived (the same instant as `validUntil`).
+     */
+    recordedAt: string;
+    /**
+     * Who recorded the change that replaced this version — an API-key or user label.
+     */
+    changedBy: string;
+    /**
+     * The caller's `changeReason` on the write, or the lifecycle transition (`Status changed: ACTIVE → RECALLED`).
+     */
+    changeReason: string | null;
+};
+
+export type PassportHistoryList = {
+    success: true;
+    /**
+     * The passport UUID.
+     */
+    passportId: string;
+    /**
+     * The caller-supplied product identifier.
+     */
+    productId: string;
+    /**
+     * The live passport's version number: one more than the number of archived versions.
+     */
+    currentVersion: number;
+    page: number;
+    limit: number;
+    /**
+     * Number of archived versions.
+     */
+    total: number;
+    totalPages: number;
+    /**
+     * Archived versions, newest first.
+     */
+    versions: Array<PassportHistoryVersionSummary>;
+};
+
+export type PassportHistoryVersion = {
+    success: true;
+    passportId: string;
+    productId: string;
+    /**
+     * Only on the by-date read: the instant that was asked for, normalised.
+     */
+    date?: string;
+    /**
+     * The version number; on the by-date read this is the live version number when `current` is true.
+     */
+    version: number;
+    /**
+     * `true` when the answer is the live passport (nothing changed since `date`), `false` for an archived version.
+     */
+    current: boolean;
+    /**
+     * The instant this version became current — the previous version's `validUntil`, or the passport's creation.
+     */
+    validFrom: string | null;
+    /**
+     * The instant it stopped being current; `null` for the live passport.
+     */
+    validUntil: string | null;
+    /**
+     * When the snapshot was archived; `null` for the live passport.
+     */
+    recordedAt: string | null;
+    /**
+     * Who recorded the change that replaced this version; `null` for the live passport.
+     */
+    changedBy: string | null;
+    changeReason: string | null;
+    /**
+     * `true` when this version is served as a document in `passport`. `false` only for a version archived before whole-row snapshots existed, where nothing can reconstruct the document — then `metadata` carries the regulated data instead and `passport` is `null`.
+     */
+    documentAvailable: boolean;
+    /**
+     * SHA-256 over the RFC 8785 canonical form of this version's record, chained on the previous version's hash — the integrity evidence EN 18221:2026 §4.2 asks for, so a retrieved version can be VERIFIED and not merely read. `null` on a version archived before the column existed, and on the live version (which is the passport itself).
+     */
+    contentHash: string | null;
+    /**
+     * **The version as an EN 18223 Digital Product Passport document** — the same shape `GET /api/v1/passports/{id}` returns, at the owner tier: the Table 1 header, the body's data elements at the root (clause 5.2), the seal material the version held and its `proof`. This is what EN 18221:2026 §4.2's point-in-time read and EN 18222's `ReadDPPVersionByIdAndDate` are about; until contract 1.16.0 these operations returned only the bare `metadata` member, which made a version a metadata fragment rather than a passport. The operator and facility relations are projected from the live row — a snapshot holds scalar columns only, and their identity is immutable (`regId`/`regIdScheme` cannot change, a facility keeps its GLN), so the relation is the same entity the version was written under. `null` only when `documentAvailable` is `false`.
+     */
+    passport?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * The regulated metadata as it stood in this version. **`null` whenever `passport` is present** — read the document instead; this member survives only for a version archived before whole-row snapshots existed.
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -1158,6 +1331,40 @@ export type PassportMetadataInput = {
 };
 
 /**
+ * EN 18220 data-carrier declaration — what the economic operator states about the PHYSICAL carrier that links the product to this passport: the symbology (Clause 6), where it is placed (§5.4.2–5.4.6), the X dimension it is printed at (§5.5.2), the print-quality grade and method (§5.6.2) and, for a label or a reused product, the durability assessment (§5.4.4, §4.3.1). Optional: absent means undeclared. Stored on the passport and versioned with it; NOT regulated metadata and outside the Merkle seal. Two cross-field rules: a radio-frequency carrier carries no X dimension, error-correction level or quality grade; `errorCorrection` applies to `QR_CODE` only, because ECC 200 is fixed by the other 2D symbology.
+ */
+export type CarrierDeclaration = {
+    /**
+     * EN 18220 Clause 6 carrier technology.
+     */
+    symbology: 'QR_CODE' | 'DATA_MATRIX' | 'NFC' | 'HF_RFID' | 'RAIN_RFID';
+    /**
+     * EN 18220 §5.4.2–5.4.6 marking or embedding method: on the product, on its packaging, as a label, in the accompanying document, or embedded in the product.
+     */
+    placement: 'PRODUCT' | 'PACKAGING' | 'LABEL' | 'DOCUMENT' | 'EMBEDDED';
+    /**
+     * Module width in millimetres the symbol is printed at (§5.5.2; printed 2D symbols only). The same bounds `GET /api/v1/passports/{id}/qr?xDimensionMm=` accepts.
+     */
+    xDimensionMm?: number;
+    /**
+     * ISO/IEC 18004 error-correction level; QR Code only. All four levels are accepted because this records what the operator printed, not what this node draws: the QR endpoint's `ecl` parameter offers M, Q and H, so an `L` declaration describes a carrier the node would not have rendered.
+     */
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    /**
+     * The scanning environment the carrier was sized and graded for (§5.5.2, §5.6.1).
+     */
+    targetEnvironment?: string;
+    /**
+     * Print-quality grade and the method it was assessed by (§5.6.2). Free text, because the clause admits two methods whose grades take incompatible forms: a printed 2D symbol is graded under ISO/IEC 15415:2024 as overall grade / measuring aperture as a percentage of the X dimension / peak illumination wavelength in nm (e.g. `1.5/08/660`), while a direct part mark is graded under ISO/IEC 29158 as a letter (e.g. `DPM grade B`). State the method alongside the grade.
+     */
+    printQualityGrade?: string;
+    /**
+     * The operator's durability assessment for a label or a reused product (§5.4.4, §4.3.1).
+     */
+    durabilityAssessment?: string;
+};
+
+/**
  * Optional presentational (non-regulatory) marketing enrichment, stored OUTSIDE the ESPR-validated metadata and the Merkle seal; it never appears in the JSON-LD passport document. Server-side it is whitelist-sanitized rather than rejected: unknown keys are dropped; `tagline` is trimmed and capped at 200 chars, `description` at 4000, image `caption` at 200, link `label` at 120; at most 24 `images` and 24 `links` are kept; URLs must be http, https, or mailto (any other scheme, e.g. `javascript:` or `data:`, is silently dropped). An enrichment that sanitizes down to nothing is stored as null.
  */
 export type PassportEnrichmentInput = {
@@ -1203,7 +1410,7 @@ export type PassportEnrichmentInput = {
  */
 export type PassportCreateRequest = {
     /**
-     * Product identifier: a GTIN-14 (exactly 14 digits with a valid GS1 mod-10 check digit — auto-copied to `metadata.gtin`), a GRAI (14-digit numeric asset id with valid check digit + optional up to 16 alphanumeric serial chars, total 14–30 — auto-copied to `metadata.grai`), or a free-form SKU. Determines the GS1 Application Identifier (`01` vs `8003`) in the generated Digital Link URI. Whitespace-only values are rejected 400. Unique per economic operator (409 on duplicate).
+     * Product identifier: a GTIN-14 (exactly 14 digits with a valid GS1 mod-10 check digit — auto-copied to `metadata.gtin`), a GRAI (14-digit numeric asset id with valid check digit + optional up to 16 alphanumeric serial chars, total 14–30 — auto-copied to `metadata.grai`), or a free-form SKU. Determines the identifier URI: the GS1 Application Identifier (`01` vs `8003`) of the Digital Link, or an Identification Link for a non-GS1 SKU. Characters must be ISO/IEC 646 (7-bit ASCII; EN 18219 §4.3.2) — anything else, and whitespace-only values, are rejected 400. Unique per economic operator (409 on duplicate).
      */
     productId: string;
     /**
@@ -1220,6 +1427,7 @@ export type PassportCreateRequest = {
      */
     draft?: boolean;
     enrichment?: PassportEnrichmentInput;
+    carrier?: CarrierDeclaration;
 };
 
 /**
@@ -1266,6 +1474,10 @@ export type PassportValidateOnlyRequest = {
      */
     operatorId?: string;
     metadata: PassportMetadataInput;
+    /**
+     * Optional. Checked against the EN 18220 vocabulary exactly as on create — an invalid declaration is a 400 here too, so a pre-flight check cannot pass a payload the save would refuse — and, when valid, advised on in `warnings` (a symbology this node does not draw, a granularity the product group's instrument does not expect). Nothing is persisted.
+     */
+    carrier?: CarrierDeclaration;
 };
 
 /**
@@ -1311,7 +1523,7 @@ export type PassportValidateOnlyError = {
  */
 export type PassportBulkRow = {
     /**
-     * GTIN-14 / GRAI / free-form SKU (required in practice; rows without it are skipped with an error string).
+     * GTIN-14 / GRAI / free-form SKU in ISO/IEC 646 characters (required in practice; a row without it, or with characters outside 7-bit ASCII, is skipped with an error string).
      */
     productId?: string;
     /**
@@ -1323,6 +1535,7 @@ export type PassportBulkRow = {
      */
     facilityId?: string;
     metadata?: PassportMetadataInput;
+    carrier?: CarrierDeclaration;
     [key: string]: unknown;
 };
 
@@ -1372,12 +1585,12 @@ export type PassportBulkResult = {
          */
         vcReadyReason?: string | null;
         /**
-         * Per-row non-blocking advisories — the non-GS1 "no scannable QR" note and the PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
+         * Per-row non-blocking advisories — the non-GS1 "Identification Link, not a GS1 Digital Link" note and the PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
          */
         warnings?: Array<AdvisoryItem>;
     }>;
     /**
-     * Human-readable per-row failure strings, prefixed `[SKU: <productId>]` (or "Missing or invalid productId in spreadsheet row"). Present ONLY when at least one row failed — omitted otherwise.
+     * Human-readable per-row failure strings, prefixed `[SKU: <productId>]` (or "Missing or invalid productId in spreadsheet row"). Present ONLY when at least one row failed — omitted otherwise. A row whose identifier this economic operator already issued to a since-purged passport is reported here too: an issued identifier is never reassigned to a different product (EN 18219 §4.1.2).
      */
     errors?: Array<string>;
 };
@@ -1532,7 +1745,7 @@ export type PassportUpdateRequest = {
         [key: string]: unknown;
     };
     /**
-     * true = save as draft: skips ESPR validation and forces status DRAFT (this also demotes an already-published passport back to DRAFT). false/absent = validated save; a DRAFT passport is published (status ACTIVE, emits the passport.ingested webhook).
+     * true = save as draft: skips ESPR validation and keeps status DRAFT; refused with 409 `DRAFT_DEMOTION_REFUSED` on an already-published passport (publishing is one-way). false/absent = validated save; a DRAFT passport is published (status ACTIVE, emits the passport.ingested webhook).
      */
     draft?: boolean;
     /**
@@ -1547,6 +1760,10 @@ export type PassportUpdateRequest = {
      * Presentational marketing block stored OUTSIDE the ESPR-validated metadata and the Merkle seal. Include the key (even null/{}) to overwrite; omit to leave unchanged. An empty result after sanitation clears the block.
      */
     enrichment?: PassportEnrichmentInput | null;
+    /**
+     * EN 18220 data-carrier declaration. Include the key to overwrite (null clears it); omit to leave unchanged. An invalid declaration is a 400.
+     */
+    carrier?: CarrierDeclaration | null;
     [key: string]: unknown;
 };
 
@@ -1564,7 +1781,7 @@ export type PassportUpdateResponse = {
     message: 'Draft published' | 'Digital Product Passport successfully updated and history versioned';
     passport: PublicPassportJsonLd;
     /**
-     * Non-blocking advisories. Carries a single note when saving with `"draft": true` DEMOTED an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport to DRAFT — it is then no longer publicly resolvable. Empty `[]` otherwise.
+     * Non-blocking advisories on a validated save: the data-carrier declaration checks (a symbology that does not fit the declared print attributes, a category whose carrier granularity does not match). Always `[]` when `draft: true`.
      */
     warnings: Array<AdvisoryItem>;
 };
@@ -1601,7 +1818,7 @@ export type PassportSealResponse = {
     signingPublicKey: string;
     passport: PublicPassportJsonLd;
     /**
-     * Publish-time re-warning: a single non-GS1 advisory when the sealed passport's `productId` is not a GS1 GTIN/GRAI (it has no scannable Digital Link — mint a GTIN you own via `POST /api/v1/gs1/gtin`). Empty `[]` when the productId is GS1-keyed. Non-blocking.
+     * Publish-time re-warning: a single non-GS1 advisory when the sealed passport's `productId` is not a GS1 GTIN/GRAI (its identifier is an EN IEC 61406 Identification Link, not a GS1 Digital Link — mint a GTIN you own via `POST /api/v1/gs1/gtin`). Empty `[]` when the productId is GS1-keyed. Non-blocking.
      */
     warnings: Array<AdvisoryItem>;
 };
@@ -1637,11 +1854,11 @@ export type PassportStatusUpdateResponse = {
 };
 
 /**
- * One JSON-LD passport document as it appears in `GET /api/v1/passports` list responses. Same shape as `PublicPassportJsonLd` with list-specific divergences imposed by the route's declared response serialization: `economicOperator` never carries `role`; `manufacturingFacility` is always `null`; the `@context` term map (second array element) is emptied to `{}`; and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — fetch the single passport for the verifiable proof block.
+ * One JSON-LD passport document as it appears in `GET /api/v1/passports` list responses. Same shape as `PublicPassportJsonLd` with list-specific divergences imposed by the route's declared response serialization: `economicOperator` never carries `role`; `manufacturingFacility` is always `null`; and the `@context` term map (second array element) is emptied to `{}`. **`proof` is not a member of a list item.** It was previously emitted as `{}` on a sealed passport, which stated that the passport carried a proof with no contents while the resource carried a full one; the member is gone rather than filled, because the proof runs to roughly 2 KB per passport including its certificate chain. Read the single passport for the verifiable `MerkleTreeAttestationProof`. `digitalSeal` stays on the list item and is non-null exactly when the passport is sealed.
  */
 export type PassportListItem = {
     /**
-     * Exactly two entries: the context URL `https://opendpp-node.eu/contexts/dpp/v1` and an inline term map covering the 9 fixed DPP terms (`DigitalProductPassport`, `economicOperator`, `manufacturingFacility`, `metadata`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`) plus one generated term per metadata key (`https://opendpp-node.eu/contexts/dpp/v1#<key>`).
+     * Exactly two entries: the context URL `https://opendpp-node.eu/contexts/dpp/v1` and an inline term map covering the eighteen fixed document terms — `DigitalProductPassport`, `economicOperator`, `manufacturingFacility`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `productIdScheme` and the nine EN 18223 header attributes — plus one generated term per data element at the root (`https://opendpp-node.eu/ns/dpp#<elementId>`): one vocabulary, and it resolves at `GET /ns/dpp`.
      */
     '@context': [
         string | {
@@ -1665,9 +1882,49 @@ export type PassportListItem = {
      */
     productId: string;
     /**
-     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
+     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` — the bare primary key. Individual units carry their physical serial under AI 21 (`…/21/{serialNumber}`).
      */
     digitalLinkUri: string;
+    /**
+     * The EN 18219 clause 5 scheme `productId` was declared under at issue: `GS1_DIGITAL_LINK` (scheme 1 — a GS1 key carried as a GS1 Digital Link) or `IDENTIFICATION_LINK` (scheme 2 — an EN IEC 61406-1 Identification Link under this node's domain for a non-GS1 identifier). Stated beside the identifier so a registry can keep it unique across identifier domains (EN 18219 4.1.2). Immutable once issued.
+     */
+    productIdScheme: 'GS1_DIGITAL_LINK' | 'IDENTIFICATION_LINK';
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/passport/{id}` URL for the SKU/type passport. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the SKU/type passport, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier — EN 18223 4.1.2.2's closed enumeration — as the passport declared it at issue: `model` for a GTIN-keyed or Identification-Link passport, `item` for a serialised GRAI. `batch` is in the enumeration and never issued by this node.
+     */
+    granularity: 'model' | 'batch' | 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
     /**
      * ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
      */
@@ -1688,12 +1945,6 @@ export type PassportListItem = {
      * Minimum-availability deadline; the passport is never purged before this instant.
      */
     retentionUntil: string | null;
-    /**
-     * `{}` when sealed, `null` when unsealed. The full `MerkleTreeAttestationProof` is only available on single-passport reads.
-     */
-    proof: {
-        [key: string]: never;
-    } | null;
     createdAt: string;
     updatedAt: string;
     /**
@@ -1701,15 +1952,9 @@ export type PassportListItem = {
      */
     economicOperator: EconomicOperatorNode | null;
     /**
-     * Always `null` in list responses (facility nodes are only embedded on single-passport reads).
+     * GLN-backed Unique Facility Identifier node (EN 18219), or `null` when no facility is linked. GLN, name, activity and country are public; street-address fields appear only in owner-tier responses.
      */
-    manufacturingFacility: null;
-    /**
-     * The ESPR category metadata, tier-masked: keys above the caller's tier hold the literal string `[REDACTED - Privileged Access Required]` instead of their value.
-     */
-    metadata: {
-        [key: string]: unknown;
-    };
+    manufacturingFacility: PublicFacilityNode | null;
     [key: string]: unknown;
 };
 
@@ -1742,11 +1987,11 @@ export type Gs1BatchDecodeError = {
 };
 
 /**
- * The public, redacted JSON-LD Digital Product Passport document (`application/ld+json`). All listed top-level keys are ALWAYS present (`null` where not applicable). Additionally, every key of the (masked) `metadata` object — except the reserved document keys (`@context`, `@type`, `@id`, `id`, `productId`, `digitalLinkUri`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `proof`, `createdAt`, `updatedAt`, `economicOperator`, `manufacturingFacility`, `metadata`) — is ALSO flattened onto the document root for direct semantic-graph querying (hence `additionalProperties: true`); flattened values are identical to the corresponding `metadata` values, including redaction placeholders. Tier-masked metadata keys are replaced (in both places) with the literal string `[REDACTED - Privileged Access Required]`. Masking by tier: anonymous public callers lose the per-category restricted keys (category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when actually present) AND the owner-only key `facilityDetails`; legitimate-interest/authority grant holders lose only `facilityDetails`; owner-tier responses are unmasked and additionally include the facility street address fields. Note: `facilityDetails` is placeholder-masked in EVERY non-owner response, even when the underlying metadata never contained the key — in that case it has no entry in `proof.redactedLeaves`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the seal stays verifiable offline after redaction (see `MerkleTreeAttestationProof` for the reconstruction rule).
+ * The public, redacted JSON-LD Digital Product Passport document (`application/ld+json`), serialised as EN 18223:2026 clause 5.2 prescribes: the nine Table 1 header attributes and the server-owned document keys listed here, then EVERY data element of the passport body at the document root, once, under its elementId as the JSON key (hence `additionalProperties: true`). There is no wrapping object and no second copy — a consumer reads `category`, `chemistry`, `carbonFootprint` and the rest directly, and each such key expands under the one vocabulary through the inline `@context` term map. A key spelled like a reserved document key (`@context`, `@type`, `@id`, `id`, `productId`, `digitalLinkUri`, `productIdScheme`, the header attributes, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `proof`, `createdAt`, `updatedAt`, `economicOperator`, `manufacturingFacility`) is never published as an element; its leaf still travels in `proof.redactedLeaves`. Tier-masked elements hold the literal string `[REDACTED - Privileged Access Required]`. Masking by tier: anonymous public callers lose the per-category restricted keys (category `batteries`: `detailedPerformance`, `lifecycleAndInUse`, `circularityAndDisassembly` — masked only when actually present) AND the owner-only key `facilityDetails`; legitimate-interest/authority grant holders lose only `facilityDetails`; owner-tier responses are unmasked and additionally include the facility street address fields. Note: `facilityDetails` is placeholder-masked in EVERY non-owner response, even when the underlying metadata never contained the key — in that case it has no entry in `proof.redactedLeaves`. Each masked key that exists in the sealed metadata keeps its true Merkle leaf hash in `proof.redactedLeaves`, so the seal stays verifiable offline after redaction (see `MerkleTreeAttestationProof` for the reconstruction rule).
  */
 export type PublicPassportJsonLd = {
     /**
-     * Exactly two entries: the context URL `https://opendpp-node.eu/contexts/dpp/v1` and an inline term map covering the 9 fixed DPP terms (`DigitalProductPassport`, `economicOperator`, `manufacturingFacility`, `metadata`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`) plus one generated term per metadata key (`https://opendpp-node.eu/contexts/dpp/v1#<key>`).
+     * Exactly two entries: the context URL `https://opendpp-node.eu/contexts/dpp/v1` and an inline term map covering the eighteen fixed document terms — `DigitalProductPassport`, `economicOperator`, `manufacturingFacility`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `productIdScheme` and the nine EN 18223 header attributes — plus one generated term per data element at the root (`https://opendpp-node.eu/ns/dpp#<elementId>`): one vocabulary, and it resolves at `GET /ns/dpp`.
      */
     '@context': [
         string | {
@@ -1770,9 +2015,49 @@ export type PublicPassportJsonLd = {
      */
     productId: string;
     /**
-     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` (AI-21 carries the passport UUID at SKU level; individual units carry their physical serial instead).
+     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` — the bare primary key. Individual units carry their physical serial under AI 21 (`…/21/{serialNumber}`).
      */
     digitalLinkUri: string;
+    /**
+     * The EN 18219 clause 5 scheme `productId` was declared under at issue: `GS1_DIGITAL_LINK` (scheme 1 — a GS1 key carried as a GS1 Digital Link) or `IDENTIFICATION_LINK` (scheme 2 — an EN IEC 61406-1 Identification Link under this node's domain for a non-GS1 identifier). Stated beside the identifier so a registry can keep it unique across identifier domains (EN 18219 4.1.2). Immutable once issued.
+     */
+    productIdScheme: 'GS1_DIGITAL_LINK' | 'IDENTIFICATION_LINK';
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/passport/{id}` URL for the SKU/type passport. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the SKU/type passport, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier — EN 18223 4.1.2.2's closed enumeration — as the passport declared it at issue: `model` for a GTIN-keyed or Identification-Link passport, `item` for a serialised GRAI. `batch` is in the enumeration and never issued by this node.
+     */
+    granularity: 'model' | 'batch' | 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
     /**
      * ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
      */
@@ -1807,17 +2092,140 @@ export type PublicPassportJsonLd = {
      * GLN-backed Unique Facility Identifier node (EN 18219), or `null` when no facility is linked. GLN, name, activity and country are public; street-address fields appear only in owner-tier responses.
      */
     manufacturingFacility: PublicFacilityNode | null;
-    /**
-     * The ESPR category metadata, tier-masked: keys above the caller's tier hold the literal string `[REDACTED - Privileged Access Required]` instead of their value.
-     */
-    metadata: {
-        [key: string]: unknown;
-    };
     [key: string]: unknown;
 };
 
 /**
- * OpenDPP's own proof type — an ADVANCED electronic seal: an ECDSA prime256v1 signature over a SHA-256 Merkle root of the key-sorted metadata (one leaf per top-level metadata key). Deliberately NOT a W3C DataIntegrityProof / `ecdsa-jcs-2019` Verifiable Credential (no RFC 8785 JCS canonicalization). Verifiable offline: rebuild the Merkle root from `metadata` — substituting each `redactedLeaves` hash for its placeholder-masked key, and EXCLUDING any placeholder-masked key that has no `redactedLeaves` entry (such a key was never present in the sealed metadata; the serializer injects the owner-only placeholder unconditionally) — then verify `signatureValue` with `publicKeyPem`; the `x5c` chain validates against the platform seal CA (`GET /.well-known/opendpp-seal-ca.pem`) and the `rfc3161` token via `openssl ts -verify`.
+ * One data element of the EN 18223:2026 Annex A expanded form: its relative identifier, its clause 4 subclass, the identifier of its definition in the dictionary served at `GET /ns/dpp`, and — for a single-valued element — the Table 7 `valueDataType` and the `value`; a collection carries its members under `elements`, an ordered list its items under `value`, each item named by its position.
+ */
+export type En18223DataElement = {
+    /**
+     * The relative identifier of the element within its location (Table 2) — the key the compressed form uses.
+     */
+    elementId: string;
+    /**
+     * The concrete DataElement subclass (4.1.2.3).
+     */
+    objectType: 'DataElementCollection' | 'SingleValuedDataElement' | 'MultiValuedDataElement' | 'RelatedResource' | 'MultiLanguageDataElement';
+    /**
+     * The unique identifier of the element's definition — `https://opendpp-node.eu/ns/dpp#<path>`, resolvable at `GET /ns/dpp` (4.3).
+     */
+    dictionaryReference: string;
+    /**
+     * The XSD data type of the value (Table 7, e.g. `xsd:decimal`); present on single-valued elements and on lists whose items share one native type.
+     */
+    valueDataType?: string;
+    /**
+     * A single-valued element's value, or an ordered list's items — each an `En18223DataElement` named by its position.
+     */
+    value?: unknown;
+    /**
+     * A collection's members.
+     */
+    elements?: Array<En18223DataElement>;
+};
+
+/**
+ * The EN 18223:2026 Annex A expanded form of `PublicPassportJsonLd`, returned for `?representation=full` (or its `expanded` alias) on `application/ld+json`. **`elements` is the whole body**: every data element sits there, expanded recursively with its `dictionaryReference` and `valueDataType` — including `economicOperator` and `manufacturingFacility`, which are data elements under 4.1.2.1 and are therefore NOT root members here (they are, in the compressed form). What stays at the root is only what is not a data element: the `@context`/`@type`/`@id` framing, the node's own identifier spellings, the nine header attributes, the seal material (`digitalSeal`, `signingPublicKey`, `proof`) and the lifecycle fields. A data element the caller's tier may not read is declared, not disguised: it keeps the `objectType` its `dictionaryReference` defines, carries `redacted: true` (an OpenDPP extension — the standard models no access tiers) and carries no `value`, so the redaction placeholder never appears in the expanded body. Values are otherwise unchanged, and the seal verifies on the compressed form the expansion was made from — not on this one, whose body has moved.
+ */
+export type PublicPassportJsonLdExpanded = {
+    /**
+     * Exactly two entries: the context URL `https://opendpp-node.eu/contexts/dpp/v1` and an inline term map covering the eighteen fixed document terms — `DigitalProductPassport`, `economicOperator`, `manufacturingFacility`, `digitalSeal`, `signingPublicKey`, `status`, `archivedAt`, `retentionUntil`, `productIdScheme` and the nine EN 18223 header attributes — plus one generated term per data element at the root (`https://opendpp-node.eu/ns/dpp#<elementId>`): one vocabulary, and it resolves at `GET /ns/dpp`.
+     */
+    '@context': [
+        string | {
+            [key: string]: string;
+        },
+        string | {
+            [key: string]: string;
+        }
+    ];
+    '@type': 'DigitalProductPassport';
+    /**
+     * The passport's canonical GS1 Digital Link URI (same value as `digitalLinkUri`).
+     */
+    '@id': string;
+    /**
+     * Server-assigned passport UUID.
+     */
+    id: string;
+    /**
+     * Caller-supplied product identifier: a GTIN-14 (`^[0-9]{14}$` with valid GS1 modulo-10 check digit), a GRAI (`^[0-9]{14}[A-Za-z0-9]{0,16}$`), or a free-form SKU.
+     */
+    productId: string;
+    /**
+     * SKU/type-level GS1 Digital Link URI: `{origin}/{01|8003}/{productId}` — the bare primary key. Individual units carry their physical serial under AI 21 (`…/21/{serialNumber}`).
+     */
+    digitalLinkUri: string;
+    /**
+     * The EN 18219 clause 5 scheme `productId` was declared under at issue: `GS1_DIGITAL_LINK` (scheme 1 — a GS1 key carried as a GS1 Digital Link) or `IDENTIFICATION_LINK` (scheme 2 — an EN IEC 61406-1 Identification Link under this node's domain for a non-GS1 identifier). Stated beside the identifier so a registry can keep it unique across identifier domains (EN 18219 4.1.2). Immutable once issued.
+     */
+    productIdScheme: 'GS1_DIGITAL_LINK' | 'IDENTIFICATION_LINK';
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/passport/{id}` URL for the SKU/type passport. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the SKU/type passport, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier — EN 18223 4.1.2.2's closed enumeration — as the passport declared it at issue: `model` for a GTIN-keyed or Identification-Link passport, `item` for a serialised GRAI. `batch` is in the enumeration and never issued by this node.
+     */
+    granularity: 'model' | 'batch' | 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
+    /**
+     * ADVANCED electronic seal: base64 ECDSA prime256v1 (P-256) signature over the Merkle root of the key-sorted metadata. `null` when the passport has not been sealed.
+     */
+    digitalSeal: string | null;
+    /**
+     * PEM public key that verifies `digitalSeal`. `null` when unsealed.
+     */
+    signingPublicKey: string | null;
+    /**
+     * Passport lifecycle status (serialized as `ACTIVE` when unset). `DRAFT` is only ever visible to owner-tier callers — public/grant resolution of a draft returns 404.
+     */
+    status: 'DRAFT' | 'ACTIVE' | 'RECALLED' | 'DECOMMISSIONED';
+    /**
+     * Soft-delete marker (owner off-boarded / decommissioned). Archived passports remain publicly resolvable (ESPR persistence duty).
+     */
+    archivedAt: string | null;
+    /**
+     * Minimum-availability deadline; the passport is never purged before this instant.
+     */
+    retentionUntil: string | null;
+    proof: MerkleTreeAttestationProof | null;
+    /**
+     * The body's data elements, expanded (Annex A).
+     */
+    elements: Array<En18223DataElement>;
+};
+
+/**
+ * OpenDPP's own proof type — an ADVANCED electronic seal: an ECDSA prime256v1 signature over a SHA-256 Merkle root of the passport's data elements (one leaf per element, key-sorted). Deliberately NOT a W3C DataIntegrityProof / `ecdsa-jcs-2019` Verifiable Credential (no RFC 8785 JCS canonicalization). Verifiable offline from the served document: `sealedKeys` names the root keys whose values are sealed leaves — pick exactly those off the root, substitute each `redactedLeaves` hash for its placeholder-masked key, fold in every `redactedLeaves` entry for a key the document does not carry (a dropped element), rebuild the root, then verify `signatureValue` with `publicKeyPem`; the `x5c` chain validates against the platform seal CA (`GET /.well-known/opendpp-seal-ca.pem`) and the `rfc3161` token via `openssl ts -verify`.
  */
 export type MerkleTreeAttestationProof = {
     /**
@@ -1865,6 +2273,10 @@ export type MerkleTreeAttestationProof = {
      */
     merkleRoot: string;
     /**
+     * The root keys whose values are the leaves of the sealed tree, sorted by code unit: every data element the document carries whose value — or whose `redactedLeaves` hash, when masked — entered the seal. Pick these off the document root to rebuild `merkleRoot`. A placeholder the serialiser injected for a key the sealed elements never had is not listed, so nothing has to be excluded by hand.
+     */
+    sealedKeys: Array<string>;
+    /**
      * OPTIONAL — present only when at least one masked key actually exists in the underlying sealed metadata. Maps each such metadata key to its TRUE hex leaf hash, so the Merkle root can be reconstructed from the redacted document. A masked key that was never present in the metadata (the owner-only key is placeholder-injected unconditionally for non-owner tiers) yields NO entry here — verifiers must exclude placeholder-valued keys without an entry when rebuilding the tree.
      */
     redactedLeaves?: {
@@ -1880,9 +2292,13 @@ export type EconomicOperatorNode = {
     id: string;
     name: string;
     /**
-     * EORI number or official business-registry identifier (unique platform-wide), e.g. `EU-DEFAULT-001`.
+     * The identifier issued under `regIdScheme` — e.g. `LT000000000001`, an EU VAT identification number. Unique within the operator's workspace.
      */
     regId: string;
+    /**
+     * The EN 18219 clause 6 scheme `regId` is issued under — `VAT`, `DUNS`, `LEI` or `GLN`, each with an ISO/IEC 6523 ICD — so the header's `economicOperatorId` reads as `ICD:identifier`. `UNDECLARED` only on an operator that predates the declaration; its `economicOperatorId` is then the identifier as registered.
+     */
+    regIdScheme: 'VAT' | 'DUNS' | 'LEI' | 'GLN' | 'UNDECLARED';
     /**
      * Operator role in the supply chain, e.g. `MANUFACTURER`, `IMPORTER`, `RETAILER`. Always present in detail/resolution responses; absent from `GET /api/v1/passports` list items.
      */
@@ -1955,6 +2371,42 @@ export type PublicBatteryUnitJsonLd = {
      */
     serialNumber: string;
     digitalLinkUri: string;
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/unit/{id}` URL for the individual serialised unit. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the individual serialised unit, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier (EN 18223 4.1.2.2): an individually serialised unit is always `item`.
+     */
+    granularity: 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
     /**
      * Annex XIII battery-status vocabulary. A `RECYCLED` (or ceased) unit is never served as a 200 — its URL answers 410 with the tombstone document instead.
      */
@@ -2069,6 +2521,42 @@ export type BatteryUnitRestrictedDataNotice = {
  * Tombstone (HTTP 410): once a battery is recycled its passport has ceased to exist. This minimal record confirms the unit existed, that it was recycled and when, plus the (still living) model-passport link. Grants and owner credentials do not override the tombstone on the public URL; the underlying data is retained internally for the statutory retention window.
  */
 export type BatteryUnitTombstoneJsonLd = {
+    /**
+     * The identifier of this PASSPORT instance (EN 18223 Table 1 `digitalProductPassportId`): this node's own `/unit/{id}` URL for the individual serialised unit. It identifies the passport, **not** the product — the product's identifier is `uniqueProductIdentifier` below, and the two are never the same value. `@id` and `digitalLinkUri` carry the product's link, so this attribute differs from both.
+     */
+    digitalProductPassportId: string;
+    /**
+     * The identifier of the PRODUCT in its web-linkable form (EN 18219, EN 18223 Table 1 `uniqueProductIdentifier`): the GS1 Digital Link of the individual serialised unit, or an EN IEC 61406 Identification Link where the product carries no GS1 key. Distinct from `digitalProductPassportId` above, which identifies the passport.
+     */
+    uniqueProductIdentifier: string;
+    /**
+     * Granularity level of the unique product identifier (EN 18223 4.1.2.2): an individually serialised unit is always `item`.
+     */
+    granularity: 'item';
+    /**
+     * The reference standard whose schema the instance follows (EN 18223 Table 1): the dated designation of the standard the body's model and serialisation come from, so a consumer picks its parser by it. Not this node's API contract version — that is `GET /api/v1/version`, and it says nothing about the body's model.
+     */
+    dppSchemaVersion: 'EN 18223:2026';
+    /**
+     * Status of the DPP instance AS A DIGITAL RESOURCE (EN 18223 Table 1), not of the product. An OPEN vocabulary — Table 1's values are examples and a legal act may add more — so it is deliberately not an enum here. This node emits `active` for a published passport (`status` ACTIVE or RECALLED — a recalled product's passport is still maintained), `inactive` for a DRAFT, `archived` once DECOMMISSIONED or when the owner was off-boarded (`archivedAt`). A unit is `archived` once tombstoned (RECYCLED).
+     */
+    dppStatus: string;
+    /**
+     * Date and time of the latest update to the instance (ISO 8601, UTC) — the same instant as `updatedAt`. Never null: EN 18223 gives it cardinality 1, and the database maintains the column on every write.
+     */
+    lastUpdated: string;
+    /**
+     * The responsible economic operator's identifier in EN 18219 form (EN 18223 Table 1): ISO/IEC 6523 `ICD:identifier` for the operator's clause 6 scheme — VAT `0223`, DUNS `0060`, LEI `0199`, GLN `0088` — e.g. `0223:LT000000000001`. The scheme is `economicOperator.regIdScheme`; only an operator that predates the scheme declaration (`UNDECLARED`) is carried as registered. Never null: EN 18223 gives it cardinality 1, the operator is a non-null foreign key, and every serialisation venue loads that relation.
+     */
+    economicOperatorId: string;
+    /**
+     * The Unique Facility Identifier of the linked manufacturing facility as a GS1 Digital Link carrying the location GLN under AI 414 (`https://id.gs1.org/414/{gln}`). Optional in EN 18223 (cardinality 0..1): when no facility is linked the attribute is OMITTED — never `null`, never a placeholder — so it is not a `required` key and a reader tests for its presence.
+     */
+    facilityId?: string;
+    /**
+     * The content specification(s) the instance follows: the URL of the ESPR category schema this node validated the metadata against (`GET /api/v1/schemas/{category}`). Empty when the metadata names no category. Optional in EN 18223 (cardinality 0..*), so it is not a `required` key — this node always sends it.
+     */
+    contentSpecificationIds?: Array<string>;
     '@context': [
         string | {
             [key: string]: string;
@@ -2223,7 +2711,7 @@ export type UntpEventCredential = {
     id?: string;
     type?: Array<string>;
     /**
-     * Issuer DID. Unless a trusted x5c chain is embedded, the verification key is resolved by EXACT match of the DID's trailing `:`-segment against registered tenant subdomains/company names — e.g. `did:web:opendpp-node.eu:demo` resolves the workspace with subdomain `demo`. For operator-scoped API keys the issuer DID must ALSO contain the bound operator's registration id somewhere in the string (the issuer is checked in preference to `credentialSubject.responsibleOperatorDid`), e.g. `did:web:opendpp-node.eu:EU-DEFAULT-001:demo`. Stored verbatim as the event's `issuerDid`.
+     * Issuer DID. Unless a trusted x5c chain is embedded, the verification key is resolved by EXACT match of the DID's trailing `:`-segment against registered tenant subdomains/company names — e.g. `did:web:opendpp-node.eu:demo` resolves the workspace with subdomain `demo`. For operator-scoped API keys the issuer DID must ALSO contain the bound operator's registration id somewhere in the string (the issuer is checked in preference to `credentialSubject.responsibleOperatorDid`), e.g. `did:web:opendpp-node.eu:LT000000000001:demo`. Stored verbatim as the event's `issuerDid`.
      */
     issuer?: string;
     /**
@@ -2410,7 +2898,7 @@ export type SealVerifyRequest = {
         operator?: {
             name?: string;
             /**
-             * Operator registration id (e.g. EORI-style `EU-DEFAULT-001`). Must resolve to a registered Economic Operator bound to the signing tenant, or verification fails (`verified: false`).
+             * The operator's identifier as registered under its EN 18219 clause 6 scheme (e.g. the demo operator's VAT number `LT000000000001`). Must resolve to a registered Economic Operator bound to the signing tenant, or verification fails (`verified: false`).
              */
             regId?: string;
         };
@@ -2648,7 +3136,7 @@ export type WebhookEnvelope = {
  */
 export type WebhookSubscriptionCreateRequest = {
     /**
-     * Absolute http(s) endpoint URL of your receiver (e.g. a PLM/ERP integration endpoint). DNS-resolved and SSRF-guarded at registration: malformed URLs, loopback, private (RFC 1918/CGNAT), link-local/cloud-metadata, multicast, and equivalent IPv6 ranges are rejected with 400. Redirects are never followed at delivery time.
+     * Absolute **https** endpoint URL of your receiver (e.g. a PLM/ERP integration endpoint). Cleartext `http://` targets are rejected with 400: the delivered payload is the full passport document, so the transport is encrypted or the subscription is refused. DNS-resolved and SSRF-guarded at registration too: malformed URLs, loopback, private (RFC 1918/CGNAT), link-local/cloud-metadata, multicast, and equivalent IPv6 ranges are rejected with 400. Redirects are never followed at delivery time.
      */
     url: string;
     /**
@@ -3176,7 +3664,7 @@ export type GetBatteryUnitError = GetBatteryUnitErrors[keyof GetBatteryUnitError
 
 export type GetBatteryUnitResponses = {
     /**
-     * The unit's JSON-LD document (privileged view, telemetry included).
+     * The unit (privileged view, telemetry included), in the representation `Accept` selected.
      */
     200: BatteryUnitJsonLd;
 };
@@ -3985,7 +4473,7 @@ export type RegisterOperatorData = {
 
 export type RegisterOperatorErrors = {
     /**
-     * Two distinct bodies. Missing `name`/`regId` returns the minimal envelope **without** an `error` key. A `regId`/`regIdScheme` validation failure (whitespace-only `regId`, fabricated `EORI-MOCK…` id, unknown scheme, or invalid EORI syntax) returns the standard envelope with `error: "Bad Request"`.
+     * Two distinct bodies. Missing `name`/`regId` returns the minimal envelope **without** an `error` key. A `regId`/`regIdScheme`/`eori` validation failure (a whitespace-only `regId`, a fabricated `EORI-MOCK…` id, a missing or unknown `regIdScheme`, a `regId` outside its scheme's shape, or a malformed `eori`) returns the standard envelope with `error: "Bad Request"`.
      */
     400: OperatorMinimalErrorResponse;
     /**
@@ -4292,6 +4780,146 @@ export type RotateTenantKeysResponses = {
 
 export type RotateTenantKeysResponse2 = RotateTenantKeysResponses[keyof RotateTenantKeysResponses];
 
+export type ListPassportHistoryData = {
+    body?: never;
+    path: {
+        /**
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * 1-based page number (digits only; non-numeric falls back to 1).
+         */
+        page?: number;
+        /**
+         * Page size. Clamped to 1–200; non-numeric falls back to the default 100.
+         */
+        limit?: number;
+    };
+    url: '/api/v1/passports/{id}/history';
+};
+
+export type ListPassportHistoryErrors = {
+    /**
+     * No credential was presented at all. An archived version is for authenticated and authorised actors only (EN 18221:2026 §4.2), so the anonymous tier is refused rather than served a masked version. A credential that simply unlocks nothing gets the 404 instead, which discloses no existence.
+     */
+    401: PassportHistoryError;
+    /**
+     * The API key is scoped to another economic operator than the passport's.
+     */
+    403: PassportHistoryError;
+    /**
+     * No passport readable with the presented credential has this id, productId or Digital Link URL. The SAME answer covers another workspace's passport, a grant scoped elsewhere, a revoked or expired grant, and a DRAFT viewed by anyone but its owner — existence is never disclosed to a caller who may not read it.
+     */
+    404: PassportHistoryError;
+};
+
+export type ListPassportHistoryError = ListPassportHistoryErrors[keyof ListPassportHistoryErrors];
+
+export type ListPassportHistoryResponses = {
+    /**
+     * The archived versions, newest first, with the standard pagination envelope. `currentVersion` is the live passport's version number (one more than `total`).
+     */
+    200: PassportHistoryList;
+};
+
+export type ListPassportHistoryResponse = ListPassportHistoryResponses[keyof ListPassportHistoryResponses];
+
+export type GetPassportVersionAtDateData = {
+    body?: never;
+    path: {
+        /**
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.
+         */
+        id: string;
+    };
+    query: {
+        /**
+         * The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at.
+         */
+        date: string;
+    };
+    url: '/api/v1/passports/{id}/history/at';
+};
+
+export type GetPassportVersionAtDateErrors = {
+    /**
+     * `date` is missing or is not an ISO 8601 timestamp.
+     */
+    400: PassportHistoryError;
+    /**
+     * No credential was presented at all. An archived version is for authenticated and authorised actors only (EN 18221:2026 §4.2), so the anonymous tier is refused rather than served a masked version. A credential that simply unlocks nothing gets the 404 instead, which discloses no existence.
+     */
+    401: PassportHistoryError;
+    /**
+     * The API key is scoped to another economic operator than the passport's.
+     */
+    403: PassportHistoryError;
+    /**
+     * No such passport in the caller's workspace, or the passport did not exist yet at `date`.
+     */
+    404: PassportHistoryError;
+};
+
+export type GetPassportVersionAtDateError = GetPassportVersionAtDateErrors[keyof GetPassportVersionAtDateErrors];
+
+export type GetPassportVersionAtDateResponses = {
+    /**
+     * The version current at `date`, as a document.
+     */
+    200: PassportHistoryVersion;
+};
+
+export type GetPassportVersionAtDateResponse = GetPassportVersionAtDateResponses[keyof GetPassportVersionAtDateResponses];
+
+export type GetPassportVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.
+         */
+        id: string;
+        /**
+         * The archived version number (1 = the state the first change replaced).
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/passports/{id}/history/{version}';
+};
+
+export type GetPassportVersionErrors = {
+    /**
+     * `version` is not a positive integer.
+     */
+    400: PassportHistoryError;
+    /**
+     * No credential was presented at all. An archived version is for authenticated and authorised actors only (EN 18221:2026 §4.2), so the anonymous tier is refused rather than served a masked version. A credential that simply unlocks nothing gets the 404 instead, which discloses no existence.
+     */
+    401: PassportHistoryError;
+    /**
+     * The API key is scoped to another economic operator than the passport's.
+     */
+    403: PassportHistoryError;
+    /**
+     * No such passport in the caller's workspace, or no archived version with this number.
+     */
+    404: PassportHistoryError;
+};
+
+export type GetPassportVersionError = GetPassportVersionErrors[keyof GetPassportVersionErrors];
+
+export type GetPassportVersionResponses = {
+    /**
+     * The archived version.
+     */
+    200: PassportHistoryVersion;
+};
+
+export type GetPassportVersionResponse = GetPassportVersionResponses[keyof GetPassportVersionResponses];
+
 export type ListPassportsData = {
     body?: never;
     path?: never;
@@ -4380,7 +5008,7 @@ export type CreatePassportData = {
 
 export type CreatePassportErrors = {
     /**
-     * Three variants share this status: (1) **Validation Failed** — the metadata failed ESPR category / cross-field validation; carries per-field `errors[]` (and `warnings[]` only when at least one warning exists). (2) **Bad Request** triple — whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), no economic operator bound to the workspace, or unknown `facilityId`; `{success, error, message}` with no `errors`/`warnings`. (3) Pre-handler rejections — request-body schema violations (e.g. missing `productId`) and malformed JSON return only `{error, message}`.
+     * Three variants share this status: (1) **Validation Failed** — the metadata failed ESPR category / cross-field validation; carries per-field `errors[]` (and `warnings[]` only when at least one warning exists). (2) **Bad Request** — whitespace-only `productId`, a `productId` with characters outside ISO/IEC 646 (7-bit ASCII; EN 18219 §4.3.2), a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), an invalid `carrier` declaration (EN 18220 vocabulary), no economic operator bound to the workspace, or unknown `facilityId`; `{success, error, message}` with no `errors`/`warnings`. (3) Pre-handler rejections — request-body schema violations (e.g. missing `productId`) and malformed JSON return only `{error, message}`.
      */
     400: PassportCreateBadRequest;
     /**
@@ -4396,7 +5024,7 @@ export type CreatePassportErrors = {
      */
     403: Error;
     /**
-     * A passport already exists for this `(productId, operatorId)` pair.
+     * A passport already exists for this `(productId, operatorId)` pair — or the identifier this create would publish was already issued by this economic operator to a passport that has since been purged, and an issued identifier is never reassigned to a different product (EN 18219 §4.1.2). The message names which; only the first carries `code`.
      */
     409: Error;
     /**
@@ -4448,7 +5076,7 @@ export type ValidatePassportData = {
 
 export type ValidatePassportErrors = {
     /**
-     * Validation failed, or the request body was structurally invalid. Three variants share this status: (1) ESPR validation failure (`error: "Validation Failed"`, with `errors[]` and — only when at least one exists — `warnings[]`); (2) whitespace-only `productId` OR a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) (`error: "Bad Request"`, `category: "unknown"`, `errors: []`); (3) request-body schema rejections and malformed JSON, returned as just `{error, message}`.
+     * Validation failed, or the request body was structurally invalid. Three variants share this status: (1) ESPR validation failure (`error: "Validation Failed"`, with `errors[]` and — only when at least one exists — `warnings[]`); (2) whitespace-only `productId`, a `productId` with characters outside ISO/IEC 646 (7-bit ASCII), a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) OR an invalid `carrier` declaration (`error: "Bad Request"`, `category: "unknown"`, `errors: []`); (3) request-body schema rejections and malformed JSON, returned as just `{error, message}`.
      */
     400: PassportValidateOnlyError;
     /**
@@ -4638,7 +5266,7 @@ export type IngestPassportFromAasData = {
 
 export type IngestPassportFromAasErrors = {
     /**
-     * Four variants share this status: `Bad Request` (non-object body, unresolvable productId, no bound operator), `Signature Verification Failed` (embedded seal invalid/altered or no matching tenant key), `Validation Failed` (ESPR — carries `errors[]`, and `warnings[]` when present), and `Ingestion Failed` (catch-all parse/processing error with the underlying message).
+     * Four variants share this status: `Bad Request` (non-object body, unresolvable or non-ISO/IEC 646 productId, no bound operator), `Signature Verification Failed` (embedded seal invalid/altered or no matching tenant key), `Validation Failed` (ESPR — carries `errors[]`, and `warnings[]` when present), and `Ingestion Failed` (catch-all parse/processing error with the underlying message).
      */
     400: AasIngestBadRequest;
     /**
@@ -4653,6 +5281,10 @@ export type IngestPassportFromAasErrors = {
      * Authenticated but not allowed: the key lacks the required permission, the request crosses workspaces, or an MFA-gated write was attempted without an MFA session.
      */
     403: Error;
+    /**
+     * The identifier this ingest would publish was already issued by this economic operator to a passport that has since been purged. An issued identifier is never reassigned to a different product (EN 18219 §4.1.2); nothing was written.
+     */
+    409: Error;
     /**
      * Body exceeds the 262,144-byte (256 KiB) route body limit.
      */
@@ -4808,7 +5440,7 @@ export type GetPassportData = {
     body?: never;
     path: {
         /**
-         * Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`.
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.
          */
         id: string;
     };
@@ -4834,7 +5466,7 @@ export type GetPassportErrors = {
      */
     406: Error;
     /**
-     * Two possible sources. (1) Global limiter (100/min/IP): default rate-limit body (`statusCode`/`error`/`message` — no `code` field) with `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` + `retry-after` headers. (2) Forwarded from the inner public resolver's limiter (30/min/IP): two-field body, **no rate-limit headers**.
+     * Two possible sources, and both carry `retry-after` and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. (1) Global limiter: default rate-limit body (`statusCode`/`error`/`message` — no `code` field). (2) Forwarded from the inner public resolver's limiter: two-field body. That resolver ceiling is 30/min/IP for an ANONYMOUS caller only — a credentialed call is handed back to its authenticated per-key budget, so it is not the binding limit here.
      */
     429: PassportGetTooManyRequests;
     /**
@@ -4873,7 +5505,7 @@ export type UpdatePassportData = {
 
 export type UpdatePassportErrors = {
     /**
-     * Either a plain Bad Request — body is not a JSON object; `metadata` missing/not an object; `facilityId` not found in your workspace (`Facility <facilityId> not found in your Tenant workspace`) — or an ESPR validation failure. **Divergence:** unlike `POST /api/v1/passports`, the validation body has NO `warnings` array.
+     * Either a plain Bad Request — body is not a JSON object; `metadata` missing/not an object; `facilityId` not found in your workspace (`Facility <facilityId> not found in your Tenant workspace`); an invalid `carrier` declaration (EN 18220 vocabulary) — or an ESPR validation failure. **Divergence:** unlike `POST /api/v1/passports`, the validation body has NO `warnings` array.
      */
     400: PassportUpdateBadRequest;
     /**
@@ -4892,6 +5524,10 @@ export type UpdatePassportErrors = {
      * The resource does not exist or is not visible to the calling workspace.
      */
     404: Error;
+    /**
+     * Publishing is one-way: `draft: true` on a passport that is already published (ACTIVE/RECALLED/DECOMMISSIONED). Body carries `code: DRAFT_DEMOTION_REFUSED`. Take the passport out of public resolution with `PUT /api/v1/passports/{id}/status` instead.
+     */
+    409: Error;
     /**
      * Rate-limiter default body.
      */
@@ -4922,7 +5558,7 @@ export type SealPassportData = {
     body?: never;
     path: {
         /**
-         * Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.
          */
         id: string;
     };
@@ -4981,7 +5617,7 @@ export type UpdatePassportStatusData = {
     body: PassportStatusUpdateRequest;
     path: {
         /**
-         * Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.
+         * Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.
          */
         id: string;
     };
@@ -5057,13 +5693,17 @@ export type ResolvePublicPassportData = {
          * Capability grant token (`dpp_li_…` legitimate-interest, `dpp_auth_…` authority) — the inspection-link path for QR-scanning inspectors who cannot set headers. Equivalent to sending the token as `Authorization: Bearer`. Tokens minted by the platform are the prefix followed by 32 hex characters, but the server matches any prefixed token against its stored hashes (the demo workspace's sample tokens use a different suffix), so the pattern here is deliberately loose. Treat as a secret: responses unlocked this way carry `Cache-Control: private, no-store` + `Referrer-Policy: no-referrer`, and the server log redacts the parameter.
          */
         grant?: string;
+        /**
+         * Which serialisation form of the JSON-LD passport document to return. **EN 18222:2026 clause 8.1** defines this flag and its two values: `compressed` (the default — each data element under its elementId as a key, EN 18223 clause 5.2) and `full` (EN 18223 Annex A — every element as an object carrying `elementId`, `objectType`, `dictionaryReference` into `GET /ns/dpp`, the Table 7 `valueDataType` and its `value` or member `elements`, all under `elements[]`; schema `PublicPassportJsonLdExpanded`). `expanded` is accepted as an alias for `full` — it is the name EN 18223 gives the form itself, and the name this node's published conformance schemas use. Applies to `application/ld+json` only: any other value, or the flag on another representation, is refused with 400 `UNSUPPORTED_REPRESENTATION` rather than ignored.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
     };
     url: '/passport/{id}';
 };
 
 export type ResolvePublicPassportErrors = {
     /**
-     * Passport identifier missing. (Defensive guard — not reachable through normal routing, since the path parameter is required.) Body omits the `success` field.
+     * A malformed Identification Link qualifier: `.P` or `.S` given more than once (EN IEC 61406-2 Data Identifiers are single-valued), which is refused rather than read as absent. (The `Passport identifier must be provided` guard shares this status but is not reachable through normal routing, since the path parameter is required.) Body omits the `success` field.
      */
     400: Error;
     /**
@@ -5075,7 +5715,7 @@ export type ResolvePublicPassportErrors = {
      */
     406: Error;
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
     /**
@@ -5088,7 +5728,7 @@ export type ResolvePublicPassportError = ResolvePublicPassportErrors[keyof Resol
 
 export type ResolvePublicPassportResponses = {
     /**
-     * The passport in the negotiated representation. `Vary: Accept` always set; `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer` added only when a grant token unlocked the response.
+     * The passport in the negotiated representation (for `application/ld+json`, the compressed form by default or the EN 18223 Annex A form with `?representation=full`). `Vary: Accept` always set; `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer` added only when a grant token unlocked the response.
      */
     200: PublicPassportJsonLd;
 };
@@ -5108,13 +5748,17 @@ export type ResolveGs1GtinData = {
          * Capability grant token (`dpp_li_…` / `dpp_auth_…`); equivalent to `Authorization: Bearer`. Minted tokens are the prefix + 32 hex characters, but the server matches any prefixed token against stored hashes, so the pattern is deliberately loose. Treat as a secret — grant-unlocked responses are `private, no-store` and the parameter is redacted from logs.
          */
         grant?: string;
+        /**
+         * Which serialisation form of the JSON-LD passport document to return. **EN 18222:2026 clause 8.1** defines this flag and its two values: `compressed` (the default — each data element under its elementId as a key, EN 18223 clause 5.2) and `full` (EN 18223 Annex A — every element as an object carrying `elementId`, `objectType`, `dictionaryReference` into `GET /ns/dpp`, the Table 7 `valueDataType` and its `value` or member `elements`, all under `elements[]`; schema `PublicPassportJsonLdExpanded`). `expanded` is accepted as an alias for `full` — it is the name EN 18223 gives the form itself, and the name this node's published conformance schemas use. Applies to `application/ld+json` only: any other value, or the flag on another representation, is refused with 400 `UNSUPPORTED_REPRESENTATION` rather than ignored.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
     };
     url: '/01/{gtin14}';
 };
 
 export type ResolveGs1GtinErrors = {
     /**
-     * Invalid GTIN-14 (must be 14 digits with a valid modulo-10 check digit) or — when no tenant scope is in play and no AI-21 serial was given — an ambiguous lookup matching multiple passports. Bodies omit the `success` field.
+     * Invalid GTIN-14 (must be 14 digits with a valid modulo-10 check digit) or — when no tenant scope is in play and no AI-21 serial was given — an ambiguous lookup matching multiple passports, or a GS1 key qualifier this resolver does not answer (`UNSUPPORTED_KEY_QUALIFIER`: batch AI 10, consumer variant AI 22 — resolving one would return the model-level passport and assert `model` granularity for an identifier presented at another). Bodies omit the `success` field.
      */
     400: Error;
     /**
@@ -5126,7 +5770,7 @@ export type ResolveGs1GtinErrors = {
      */
     406: Error;
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
     /**
@@ -5163,6 +5807,10 @@ export type ResolveGs1GtinSerialData = {
          * Capability grant token. Not evaluated by this redirect handler — it is preserved on the `Location` URL and takes effect at the redirect target.
          */
         grant?: string;
+        /**
+         * Which serialisation form of the JSON-LD passport document to return. **EN 18222:2026 clause 8.1** defines this flag and its two values: `compressed` (the default — each data element under its elementId as a key, EN 18223 clause 5.2) and `full` (EN 18223 Annex A — every element as an object carrying `elementId`, `objectType`, `dictionaryReference` into `GET /ns/dpp`, the Table 7 `valueDataType` and its `value` or member `elements`, all under `elements[]`; schema `PublicPassportJsonLdExpanded`). `expanded` is accepted as an alias for `full` — it is the name EN 18223 gives the form itself, and the name this node's published conformance schemas use. Applies to `application/ld+json` only: any other value, or the flag on another representation, is refused with 400 `UNSUPPORTED_REPRESENTATION` rather than ignored.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
     };
     url: '/01/{gtin14}/21/{serial}';
 };
@@ -5177,7 +5825,7 @@ export type ResolveGs1GtinSerialErrors = {
      */
     404: Error;
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
     /**
@@ -5219,7 +5867,7 @@ export type ResolveGs1GraiErrors = {
      */
     406: Error;
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
     /**
@@ -5258,6 +5906,10 @@ export type ResolvePublicBatteryUnitData = {
 
 export type ResolvePublicBatteryUnitErrors = {
     /**
+     * A malformed Identification Link qualifier: `.P` or `.S` given more than once (EN IEC 61406-2 Data Identifiers are single-valued), which is refused rather than read as absent. Body omits the `success` field.
+     */
+    400: Error;
+    /**
      * No unit with that id (a malformed UUID also resolves to this 404). Content-negotiated: HTML page for `Accept: text/html`, JSON otherwise; `Vary: Accept` set. Body omits the `success` field. A request on an unknown tenant workspace host receives the platform-level JSON 404 (`No tenant company found for subdomain: …`) before this handler runs.
      */
     404: Error;
@@ -5270,7 +5922,7 @@ export type ResolvePublicBatteryUnitErrors = {
      */
     410: BatteryUnitTombstoneJsonLd;
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
     /**
@@ -5389,6 +6041,38 @@ export type GetDppJsonLdContextResponses = {
 };
 
 export type GetDppJsonLdContextResponse = GetDppJsonLdContextResponses[keyof GetDppJsonLdContextResponses];
+
+export type GetDppVocabularyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/ns/dpp';
+};
+
+export type GetDppVocabularyErrors = {
+    /**
+     * Rate-limiter default body.
+     */
+    429: {
+        statusCode: number;
+        code?: string;
+        error: string;
+        message: string;
+    };
+};
+
+export type GetDppVocabularyError = GetDppVocabularyErrors[keyof GetDppVocabularyErrors];
+
+export type GetDppVocabularyResponses = {
+    /**
+     * A JSON-LD vocabulary document. `@id` is the namespace itself; `defines` lists the terms.
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetDppVocabularyResponse = GetDppVocabularyResponses[keyof GetDppVocabularyResponses];
 
 export type GetJsonLdContextData = {
     body?: never;
@@ -5699,16 +6383,20 @@ export type GetPassportQrCodeData = {
          */
         ecl?: 'M' | 'Q' | 'H';
         /**
-         * When `1`/`true`, renders the GS1 Human-Readable Interpretation (the bracketed AI string, e.g. `(01) 09501101530003 (21) BAT-2026-000123`) as vector text beneath the QR symbol — the print-grade GS1 label form (machine-readable QR + the human-readable AI string). Requires `format=svg`; combining it with `format=png` returns 400 (`hri (Human-Readable Interpretation) labels require format=svg`).
+         * When `1`/`true`, renders the Human-Readable Interpretation beneath the QR symbol as vector text — EN 18220 5.7.2: the information the carrier encodes, in a clearly legible font. For a GS1 Digital Link that is the GS1 element string (the bracketed AI string, e.g. `(01) 09501101530003 (21) BAT-2026-000123`) — the print-grade GS1 label form (machine-readable QR + the human-readable AI string); for an Identification Link (`productIdScheme: IDENTIFICATION_LINK`) it is the link URL itself, broken into lines that fit the symbol's width. Requires `format=svg`; combining it with `format=png` returns 400 (`hri (Human-Readable Interpretation) labels require format=svg`).
          */
         hri?: boolean;
+        /**
+         * Width of ONE module in millimetres, chosen for the scanning environment the printed carrier will live in (EN 18220 5.5.2). When given, the SVG root is sized in mm — `width`/`height` become `<modules x xDimensionMm>mm`, with the `viewBox` preserving the geometry — and `size` is ignored. Range 0.396–2 mm inclusive. SVG only, and not combinable with `hri` (the HRI label is laid out in pixels, which would discard the millimetre root).
+         */
+        xDimensionMm?: number;
     };
     url: '/api/v1/passports/{id}/qr';
 };
 
 export type GetPassportQrCodeErrors = {
     /**
-     * Invalid query option. Exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`, `hri (Human-Readable Interpretation) labels require format=svg`.
+     * Invalid query option. Exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`, `hri (Human-Readable Interpretation) labels require format=svg`, `xDimensionMm must be a number of millimetres`, `xDimensionMm must be between 0.396 and 2 mm — the width of ONE module, chosen for the scanning environment the carrier will live in (EN 18220 5.5.2)`, `xDimensionMm requires format=svg — a physical module width cannot be expressed in a raster`, `xDimensionMm and hri cannot be combined — the HRI label is laid out in pixels`.
      */
     400: Error;
     /**
@@ -5766,9 +6454,13 @@ export type BulkExportPassportLabelsData = {
          */
         ecl?: 'M' | 'Q' | 'H';
         /**
-         * Overlay the GS1 Human-Readable Interpretation beneath each symbol. Requires `format: "svg"`.
+         * Print the Human-Readable Interpretation beneath each symbol (EN 18220 5.7.2 — what the carrier encodes): the GS1 element string for a GS1 Digital Link, the link URL itself for an Identification Link. Requires `format: "svg"`.
          */
         hri?: boolean;
+        /**
+         * Width of ONE module in millimetres for every symbol in the ZIP (EN 18220 5.5.2), range 0.396–2 mm. Sizes the SVG root in mm instead of pixels; `format: "svg"` only, and not combinable with `hri`.
+         */
+        xDimensionMm?: number;
     };
     path?: never;
     query?: never;
@@ -5777,7 +6469,7 @@ export type BulkExportPassportLabelsData = {
 
 export type BulkExportPassportLabelsErrors = {
     /**
-     * Empty/oversize `ids` (> 200), an invalid `format`/`size`/`ecl`, or `hri: true` without `format: "svg"`.
+     * Empty/oversize `ids` (> 200), an invalid `format`/`size`/`ecl`, `hri: true` without `format: "svg"`, or an `xDimensionMm` outside 0.396–2 mm / combined with a non-SVG format or with `hri`.
      */
     400: Error;
     /**
@@ -5832,16 +6524,20 @@ export type GetBatteryUnitQrCodeData = {
          */
         ecl?: 'M' | 'Q' | 'H';
         /**
-         * When `1`/`true`, renders the GS1 Human-Readable Interpretation (the bracketed AI string, e.g. `(01) 09501101530003 (21) BAT-2026-000123`) as vector text beneath the QR symbol — the print-grade GS1 label form (machine-readable QR + the human-readable AI string). Requires `format=svg`; combining it with `format=png` returns 400 (`hri (Human-Readable Interpretation) labels require format=svg`).
+         * When `1`/`true`, renders the Human-Readable Interpretation beneath the QR symbol as vector text — EN 18220 5.7.2: the information the carrier encodes, in a clearly legible font. For a GS1 Digital Link that is the GS1 element string (the bracketed AI string, e.g. `(01) 09501101530003 (21) BAT-2026-000123`) — the print-grade GS1 label form (machine-readable QR + the human-readable AI string); for an Identification Link (`productIdScheme: IDENTIFICATION_LINK`) it is the link URL itself, broken into lines that fit the symbol's width. Requires `format=svg`; combining it with `format=png` returns 400 (`hri (Human-Readable Interpretation) labels require format=svg`).
          */
         hri?: boolean;
+        /**
+         * Width of ONE module in millimetres, chosen for the scanning environment the printed carrier will live in (EN 18220 5.5.2). When given, the SVG root is sized in mm — `width`/`height` become `<modules x xDimensionMm>mm`, with the `viewBox` preserving the geometry — and `size` is ignored. Range 0.396–2 mm inclusive. SVG only, and not combinable with `hri` (the HRI label is laid out in pixels, which would discard the millimetre root).
+         */
+        xDimensionMm?: number;
     };
     url: '/api/v1/units/{id}/qr';
 };
 
 export type GetBatteryUnitQrCodeErrors = {
     /**
-     * Invalid query option. Exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`, `hri (Human-Readable Interpretation) labels require format=svg`.
+     * Invalid query option. Exact messages: `format must be png or svg`, `size must be a number`, `ecl must be M, Q or H`, `hri (Human-Readable Interpretation) labels require format=svg`, `xDimensionMm must be a number of millimetres`, `xDimensionMm must be between 0.396 and 2 mm — the width of ONE module, chosen for the scanning environment the carrier will live in (EN 18220 5.5.2)`, `xDimensionMm requires format=svg — a physical module width cannot be expressed in a raster`, `xDimensionMm and hri cannot be combined — the HRI label is laid out in pixels`.
      */
     400: Error;
     /**
@@ -6102,7 +6798,7 @@ export type VerifyPassportSealErrors = {
         message: 'Missing cryptographic parameter: payload, signature, and publicKey are required' | 'Signature verification failed.';
     };
     /**
-     * Public-resolution rate limit exceeded (30 requests/min per IP; no rate-limit headers). With `Accept: text/html` an HTML page is returned instead.
+     * Public-resolution rate limit exceeded — 30 requests/min per IP for an ANONYMOUS caller; a credentialed call is handed back to its authenticated budget. Carries `Retry-After` (the wait to the next token) and `x-ratelimit-limit`/`x-ratelimit-remaining`/`x-ratelimit-reset` describing the ceiling that refused. With `Accept: text/html` an HTML page is returned instead.
      */
     429: Error;
 };

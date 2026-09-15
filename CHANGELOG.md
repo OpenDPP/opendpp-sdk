@@ -29,6 +29,99 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.16.0] — TypeScript · Java/Kotlin · Python
+
+Targets API contract **1.16.0** (the passport document, its identifiers and the API's conduct aligned
+with the EN 182xx Digital Product Passport standards). A regeneration with model changes and four new
+operations:
+
+- The JSON-LD passport models (`PublicPassportJsonLd`, `PassportListItem`), the unit documents and the
+  tombstone model gain the nine EN 18223 header fields — `digitalProductPassportId`,
+  `uniqueProductIdentifier`, `granularity`, `dppSchemaVersion`, `dppStatus`, `lastUpdated`,
+  `economicOperatorId`, `facilityId`, `contentSpecificationIds` — seven of them REQUIRED, `facilityId`
+  and `contentSpecificationIds` optional, and the required `productIdScheme` enum
+  (`GS1_DIGITAL_LINK | IDENTIFICATION_LINK`). `granularity` is the enum `model | batch | item` on the
+  passport models and the constant `item` on the unit models; `dppStatus` is a free string.
+- The three passport-resolution operations declare an additional `application/xml` response — the
+  EN 18223 Annex B serialisation of the same document, typed as a string. Generated clients that select
+  a response by media type gain it; one that always sends `Accept: application/json` is unaffected,
+  since the JSON-LD representation is still what an absent or JSON `Accept` returns.
+- `PublicPassportJsonLd` and `PassportListItem` lose the `metadata` member: the passport's data elements
+  are the document's additional root properties (EN 18223 clause 5.2) — `passport.metadata.category`
+  becomes `passport.category`, in the strict lanes through the additional-properties map.
+  `MerkleTreeAttestationProof` gains the required `sealedKeys` string list.
+- `PassportListItem` loses its `proof` member. It was always `{}` when sealed and `null` otherwise, so no
+  client could read anything from it; a client that needs the proof reads the single passport, and
+  `digitalSeal` on the list item still says whether one exists.
+- `PassportListItem.manufacturingFacility` widens from `null` to the same nullable facility node
+  `PublicPassportJsonLd` declares. Only the declared type changes — the listing always carried the node,
+  so a client that validated list responses against the previous document was rejecting every entry.
+- Inside that map, a document reference is an object (`{ contentType, url, language?, resourceTitle? }`
+  under a name such as `declarationOfConformity` or `safetyDatasheet`, replacing the `…Url` strings), and
+  language-dependent text (`productName`, care instructions, e-waste instructions and five prose fields)
+  is an array of `{ value, language }`. No generated model changes; a client that wrote the string forms
+  now receives a 400 it should surface. A `language` tag's two halves are checked against the ISO 639 and
+  ISO 3166-1 code lists, so a well-shaped tag that names no language or no country (`xx-GB`) is a 400 too.
+- The QR exports' `hri` option labels an Identification Link with its URL (the information the carrier
+  encodes, EN 18220 5.7.2) where it returned a symbol with no label; a GS1 Digital Link keeps the element
+  string. No model change.
+- `RegisterOperatorRequest.regIdScheme` becomes REQUIRED, an enum of `VAT | DUNS | LEI | GLN`; the
+  request, `UpdateOperatorRequest` and `OperatorRow` gain the optional `eori` field; `OperatorRow.regIdScheme`
+  and `EconomicOperatorNode.regIdScheme` are non-nullable enums (with `UNDECLARED`). A client that
+  registered operators with `regIdScheme: "EORI"`, or without a scheme, now receives a 400 — the EORI
+  belongs in `eori`.
+- The public passport read, the owner-tier read and the GS1 resolver operations gain the optional
+  `representation` query parameter (`compressed` | `full` | `expanded` — `full` is the value EN 18222
+  clause 8.1 names, `expanded` an accepted alias for the same Annex A form); new models
+  `PublicPassportJsonLdExpanded` and the recursive `En18223DataElement`; `Error.code` gains
+  `UNSUPPORTED_REPRESENTATION`, `UNSUPPORTED_KEY_QUALIFIER` and `DRAFT_DEMOTION_REFUSED`, and is now
+  generated from the service's error catalog. The `DRAFT_DEMOTED` advisory code is removed from the
+  `AdvisoryItem.code` enum along with the behaviour it described.
+- The three passport-history operations no longer declare a required permission: an access grant
+  (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`) now reads an archived version, masked to
+  the grant tier. A client sending no credential gets 401 where it previously got 401 as well, but one
+  sending a credential that unlocks nothing now gets 404 rather than 403. Attribution (`changedBy`,
+  `changeReason`) is `null` for a grant holder.
+- Behaviour a client reading passport HISTORY must handle: `getPassportVersion` and
+  `getPassportVersionAtDate` now return the version as a document in a new `passport` member, and
+  `metadata` is `null` whenever that is present — read `passport.<key>` where you read
+  `metadata.<key>`. `PassportHistoryVersion` also gains `contentHash` (the chained integrity hash) and
+  `documentAvailable` (false only for a version archived before whole-row snapshots existed, where
+  `metadata` still carries the data).
+- Behaviour a client reading the EXPANDED representation must handle: `PublicPassportJsonLdExpanded`
+  moves `economicOperator` and `manufacturingFacility` out of the root and into `elements` (they are data
+  elements; the compressed form is unchanged), and a restricted element now appears with
+  `redacted: true`, its dictionary-defined `objectType` and NO `value` — where it previously appeared as
+  a string element carrying the redaction placeholder. Read the operator and facility from `elements`,
+  and branch on `redacted` rather than string-matching the placeholder.
+- Behaviour a client that saves drafts must handle: `updatePassport` with `draft: true` on a passport
+  that is already published now answers 409 `DRAFT_DEMOTION_REFUSED` instead of taking it offline and
+  returning 200 with a warning. Publishing is one-way; use the status operation (`RECALLED` or
+  `DECOMMISSIONED`) to withdraw a passport, which preserves its archived versions.
+- Four new operations: `listPassportHistory`, `getPassportVersion`, `getPassportVersionAtDate`
+  (models `PassportHistoryList`, `PassportHistoryVersionSummary`, `PassportHistoryVersion`,
+  `PassportHistoryError`) and `getDppVocabulary` (`GET /ns/dpp`).
+- A new `CarrierDeclaration` model (EN 18220: `symbology`, `placement`, and the optional
+  `xDimensionMm`, `errorCorrection`, `targetEnvironment`, `printQualityGrade`, `durabilityAssessment`)
+  reaches five request models as an optional `carrier` — `PassportCreateRequest`,
+  `PassportUpdateRequest`, `PassportBulkRow` and, since this release, `PassportValidateOnlyRequest` on
+  both validate-only operations. It records what the operator applied to the product; nothing is
+  persisted by the dry-run. Two cross-field rules are refusals, not warnings: a radio-frequency
+  symbology carries no print fields, and `errorCorrection` applies to `QR_CODE` only — an invalid
+  declaration is a 400 on every one of the five, the dry-run included, so a pre-flight check cannot
+  bless a payload the save would reject. `AdvisoryItem.code` gains `CARRIER_SYMBOLOGY_NOT_RENDERED`
+  (the declared symbology is not the one this service encodes; the declaration is still kept) and
+  `CATEGORY_GRANULARITY_UNEXPECTED` (the product group's own instrument fixes a granularity this
+  passport does not use). Both are non-blocking, and both now arrive from create, update, bulk and
+  validate-only alike.
+- Optional `xDimensionMm` on the QR export operations and the bulk-label request model (a nullable
+  number; existing calls unaffected). The owner-tier `id` path parameter documents the passport's
+  Digital Link URL as an accepted key; the webhook-subscription `url` documents https. Description
+  changes only.
+- Behaviour a client's error handling sees: a Digital Link with a batch or variant qualifier now
+  receives a 400 where it received the model-level passport; a verb mistake receives 405 with `Allow`
+  where it received 404; an `http://` webhook receiver receives 400.
+
 ## [1.15.0] — TypeScript · Java/Kotlin · Python
 
 Targets API contract **1.15.0** (the verifier says what it declines; delivery records state what

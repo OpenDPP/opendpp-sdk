@@ -3,9 +3,9 @@
 """
     OpenDPP Integration API
 
-    OpenDPP is a B2B platform for EU Digital Product Passports (DPPs), aligned with the ESPR data requirements and the EU Battery Regulation. This specification documents the **public integration surface**: everything an external system needs to create, validate, seal, publish, resolve and verify passports.  ## Authentication Authenticate with a tenant **API key** sent as a Bearer token: `Authorization: Bearer op_dpp_token_…`. Keys are created in the Client Console (Developers → API keys), are shown **once** at creation, carry a role plus optional narrowed permissions and optional expiry, and can be revoked at any time. API-key clients are exempt from CSRF requirements. Public endpoints (tagged **Public Resolution**, plus the public validators and the audit verifier) need no credentials.  ## Tenancy Tenant identity is **token-bound** — it is derived from your API key, never from the request host. The same paths work on the apex host and on tenant workspace hosts (`https://<workspace>.opendpp-node.eu`); when a workspace host is used, it must match the key's tenant (requests across workspaces are rejected with `403`).  ## Versioning & compatibility This contract carries a SemVer version, readable at runtime from `GET /api/v1/version`. **Pin the MAJOR.** It equals the `/api/v1` URL major, so a breaking change ships as a new path major (`/api/v2`) that you adopt deliberately — not as an edit to the contract you already integrated against.  Within a major line:  - **MINOR** is additive — a new endpoint, a new optional parameter, a new field on a response. A client that ignores what it does not recognise keeps working. Do not treat unknown response fields as errors. - **PATCH** is documentation only: wording, examples, descriptions. Nothing observable in the contract changes.  The tier is not asserted by hand. Every change is diffed structurally against the previous contract in CI, and a version bump lower than the diff requires fails the build — so the number you pin to is derived from the contract itself.  **One exception, disclosed rather than hidden.** While this contract is pre-GA, a breaking change may exceptionally ship on the existing major line under a recorded waiver instead of forcing a new path major. It is not a standing option: it requires a maintainer to enable it for a single merge, and every use is recorded with its justification. It has been used during the pre-GA period. Once this line reaches GA the waiver is retired, and the MAJOR promise above becomes unconditional. If you need a contract that cannot move under you before then, pin the exact version you generated your client from and upgrade deliberately.  ## Errors Authenticated endpoints return `{ success: false, error, message }` (some omit `success`). Across the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) the body also carries a **machine-stable `code`** you can branch on instead of parsing `message` — see the `code` enum on the shared **Error** schema for the full set. ESPR metadata validation failures return the richer shape documented as **ValidationFailed** with per-field `errors[]`/`warnings[]` (localizable via `?lang=` or `Accept-Language`; 28 languages). Bulk endpoints report row-level problems as `errors: string[]`. Malformed JSON and query-string violations are rejected before the handler runs and return a `{ statusCode, code, error, message }` body.  Every response — success or error — carries an **`X-Request-Id`** header; generic (server-error / framework) bodies also include it as `requestId`. Quote it to support to correlate with server logs. Send your own well-formed `X-Request-Id` and it is adopted for end-to-end tracing.  ## Advisories: `warnings[]` & `notices[]` Success responses may carry two non-blocking advisory channels of **coded** items (`AdvisoryItem`: `{ code, path?, message, friendlyMessage }`). **`warnings[]`** are heads-ups the request still succeeded on (`NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`, `UNIT_NO_SCANNABLE_LINK`, `DRAFT_DEMOTED`, `EORI_NOT_FOUND`); **`notices[]`** are informational — helpful things the API did (`OPERATOR_AUTO_ATTRIBUTED`, `GTIN_AUTO_COPIED`). Branch on the STABLE `code`; treat `message` (developer English) and `friendlyMessage` (end-user, localized via `?lang=`/`Accept-Language` across 28 languages) as display text that may be reworded. Interfaces may also map a `code` to their own localized string.  ## Rate limits Two limits apply, and the one that bites first depends on how you call us.  **Per API key (authenticated calls).** Each key gets a per-minute budget set by the plan: **Growth 120**, **Scale 600**, **Enterprise unlimited**. A second ceiling of **3x that rate** applies across all of a workspace's keys together, so issuing more keys divides throughput fairly between your own systems rather than multiplying it. Plans below Growth do not include API access. Exceeding either budget returns `429` with a `Retry-After` header giving the seconds to wait.  **Per IP (all traffic).** A ceiling of **100 requests/min per IP** applies to anonymous traffic. Authenticated calls sit on a higher ceiling, so that several integrations behind one egress address are not held to the anonymous budget. `x-ratelimit-*` response headers report the applicable ceiling. Every plan that can reach the API sits at or above the anonymous figure, so an authenticated caller never meets a stricter limit than the number above.  Public passport resolution is additionally limited to **30 requests/min per IP** (no headers). The public validator is limited to **10 requests/min per IP**.  Stay under these limits with client-side queueing; on `429`, back off and retry after the indicated window. A `429` never indicates a credential problem — an invalid or revoked key returns `401`, so do not rotate a key in response to rate limiting.  ## Sealing & verification Passport seals are **advanced electronic seals** — ECDSA P-256 over a Merkle root of the passport content, with an optional RFC 3161 timestamp. (Advanced, not qualified: a qualified seal would require a QTSP.) `POST /api/v1/audit/verify` is public and unauthenticated, and verifies seals issued on this node — the signing key must be registered to a tenant here, so a seal from another node is declined without cryptographic evaluation. It recomputes every Merkle leaf from the submitted values, so it requires the unredacted document (caller-supplied redacted-leaf hashes are deliberately not trusted). Redacted documents remain verifiable **offline**: masked fields keep their true leaf hashes in `proof.redactedLeaves`, letting any verifier rebuild the sealed root without the privileged values.  ## Public access tiers Public resolution endpoints serve **tiered** views of the same URL: the public tier for anonymous callers; a restricted tier for holders of legitimate-interest (`dpp_li_…`) or authority (`dpp_auth_…`) capability tokens (presented as a Bearer token or `?grant=` query parameter); and the owner tier for the issuing tenant's own credentials.  ## Webhooks Subscribe to passport lifecycle events (`passport.ingested`, `passport.sealed`, `passport.recalled`, or `*`). Deliveries are HMAC-SHA256-signed; see the **webhooks** section of this document for the exact signature scheme, retry schedule, and payloads.  This document is also served machine-readably at [`/openapi.json`](https://opendpp-node.eu/openapi.json) and [`/openapi.yaml`](https://opendpp-node.eu/openapi.yaml).  ## Open interoperability kit The interoperability boundary — the official AAS + UNTP/W3C-VC schemas, live-reproducible samples, an offline conformance validator, and the field mappings — is **open source** at [github.com/OpenDPP/opendpp-interop](https://github.com/OpenDPP/opendpp-interop) (Apache-2.0). It lets any integrator validate and verify OpenDPP's standards-conformant output without access to the product source.
+    OpenDPP is a B2B platform for EU Digital Product Passports (DPPs), aligned with the ESPR data requirements and the EU Battery Regulation. This specification documents the **public integration surface**: everything an external system needs to create, validate, seal, publish, resolve and verify passports.  ## Authentication Authenticate with a tenant **API key** sent as a Bearer token: `Authorization: Bearer op_dpp_token_…`. Keys are created in the Client Console (Developers → API keys), are shown **once** at creation, carry a role plus optional narrowed permissions and optional expiry, and can be revoked at any time. API-key clients are exempt from CSRF requirements. Public endpoints (tagged **Public Resolution**, plus the public validators and the audit verifier) need no credentials.  ## Tenancy Tenant identity is **token-bound** — it is derived from your API key, never from the request host. The same paths work on the apex host and on tenant workspace hosts (`https://<workspace>.opendpp-node.eu`); when a workspace host is used, it must match the key's tenant (requests across workspaces are rejected with `403`).  ## Versioning & compatibility This contract carries a SemVer version, readable at runtime from `GET /api/v1/version`. **Pin the MAJOR.** It equals the `/api/v1` URL major, so a breaking change ships as a new path major (`/api/v2`) that you adopt deliberately — not as an edit to the contract you already integrated against.  Within a major line:  - **MINOR** is additive — a new endpoint, a new optional parameter, a new field on a response. A client that ignores what it does not recognise keeps working. Do not treat unknown response fields as errors. - **PATCH** is documentation only: wording, examples, descriptions. Nothing observable in the contract changes.  The tier is not asserted by hand. Every change is diffed structurally against the previous contract in CI, and a version bump lower than the diff requires fails the build — so the number you pin to is derived from the contract itself.  **One exception, disclosed rather than hidden.** While this contract is pre-GA, a breaking change may exceptionally ship on the existing major line under a recorded waiver instead of forcing a new path major. It is not a standing option: it requires a maintainer to enable it for a single merge, and every use is recorded with its justification. It has been used during the pre-GA period. Once this line reaches GA the waiver is retired, and the MAJOR promise above becomes unconditional. If you need a contract that cannot move under you before then, pin the exact version you generated your client from and upgrade deliberately.  ## Errors Authenticated endpoints return `{ success: false, error, message }` (some omit `success`). Across the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) the body also carries a **machine-stable `code`** you can branch on instead of parsing `message` — see the `code` enum on the shared **Error** schema for the full set. ESPR metadata validation failures return the richer shape documented as **ValidationFailed** with per-field `errors[]`/`warnings[]` (localizable via `?lang=` or `Accept-Language`; 28 languages). Bulk endpoints report row-level problems as `errors: string[]`. Malformed JSON and query-string violations are rejected before the handler runs and return a `{ statusCode, code, error, message }` body.  Every response — success or error — carries an **`X-Request-Id`** header; generic (server-error / framework) bodies also include it as `requestId`. Quote it to support to correlate with server logs. Send your own well-formed `X-Request-Id` and it is adopted for end-to-end tracing.  ## Advisories: `warnings[]` & `notices[]` Success responses may carry two non-blocking advisory channels of **coded** items (`AdvisoryItem`: `{ code, path?, message, friendlyMessage }`). **`warnings[]`** are heads-ups the request still succeeded on (`NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`, `UNIT_NO_SCANNABLE_LINK`, `EORI_NOT_FOUND`, `CARRIER_SYMBOLOGY_NOT_RENDERED`, `CATEGORY_GRANULARITY_UNEXPECTED`); **`notices[]`** are informational — helpful things the API did (`OPERATOR_AUTO_ATTRIBUTED`, `GTIN_AUTO_COPIED`). Branch on the STABLE `code`; treat `message` (developer English) and `friendlyMessage` (end-user, localized via `?lang=`/`Accept-Language` across 28 languages) as display text that may be reworded. Interfaces may also map a `code` to their own localized string.  ## Rate limits Two limits apply, and the one that bites first depends on how you call us.  **Per API key (authenticated calls).** Each key gets a per-minute budget set by the plan: **Growth 120**, **Scale 600**, **Enterprise unlimited**. A second ceiling of **3x that rate** applies across all of a workspace's keys together, so issuing more keys divides throughput fairly between your own systems rather than multiplying it. Plans below Growth do not include API access. Exceeding either budget returns `429` with a `Retry-After` header giving the seconds to wait.  **Per IP (all traffic).** A ceiling of **100 requests/min per IP** applies to anonymous traffic. Authenticated calls sit on a higher ceiling, so that several integrations behind one egress address are not held to the anonymous budget. `x-ratelimit-*` response headers report the applicable ceiling. Every plan that can reach the API sits at or above the anonymous figure, so an authenticated caller never meets a stricter limit than the number above.  Public passport resolution is additionally limited to **30 requests/min per IP** (no headers). The public validator is limited to **10 requests/min per IP**.  Stay under these limits with client-side queueing; on `429`, back off and retry after the indicated window. A `429` never indicates a credential problem — an invalid or revoked key returns `401`, so do not rotate a key in response to rate limiting.  ## Methods  A request whose path exists but whose method this API does not serve returns **`405 Method Not Allowed`** with an `Allow` header listing the methods that path does serve (RFC 9110 §15.5.6); `HEAD` is listed wherever `GET` is, and is served. A path no route matches returns `404`, as does a path whose method IS allowed but whose resource does not exist — so a `405` always means the verb, and never the identifier. `405` is not listed per operation below because it is not a property of any operation: it is the answer to a method for which no operation exists.  ## Sealing & verification Passport seals are **advanced electronic seals** — ECDSA P-256 over a Merkle root of the passport content, with an optional RFC 3161 timestamp. (Advanced, not qualified: a qualified seal would require a QTSP.) `POST /api/v1/audit/verify` is public and unauthenticated, and verifies seals issued on this node — the signing key must be registered to a tenant here, so a seal from another node is declined without cryptographic evaluation. It recomputes every Merkle leaf from the submitted values, so it requires the unredacted document (caller-supplied redacted-leaf hashes are deliberately not trusted). Redacted documents remain verifiable **offline**: masked fields keep their true leaf hashes in `proof.redactedLeaves`, letting any verifier rebuild the sealed root without the privileged values.  ## Public access tiers Public resolution endpoints serve **tiered** views of the same URL: the public tier for anonymous callers; a restricted tier for holders of legitimate-interest (`dpp_li_…`) or authority (`dpp_auth_…`) capability tokens (presented as a Bearer token or `?grant=` query parameter); and the owner tier for the issuing tenant's own credentials.  ## Webhooks Subscribe to passport lifecycle events (`passport.ingested`, `passport.sealed`, `passport.recalled`, or `*`). Deliveries are HMAC-SHA256-signed; see the **webhooks** section of this document for the exact signature scheme, retry schedule, and payloads.  This document is also served machine-readably at [`/openapi.json`](https://opendpp-node.eu/openapi.json) and [`/openapi.yaml`](https://opendpp-node.eu/openapi.yaml).  ## Role in the data exchange This node is **not a DPP registry**. It hosts passports on behalf of the economic operators that create them and provides no registration service, so the registry methods of EN 18222:2026 clause 5 (Table 17, `registerDPP`) are outside this API's scope. Which service-provider role the node holds for a given passport is a property of the agreement with that operator rather than of this document, so it is not asserted here.  ## Open interoperability kit The interoperability boundary — the official AAS + UNTP/W3C-VC schemas, live-reproducible samples, an offline conformance validator, and the field mappings — is **open source** at [github.com/OpenDPP/opendpp-interop](https://github.com/OpenDPP/opendpp-interop) (Apache-2.0). It lets any integrator validate and verify OpenDPP's standards-conformant output without access to the product source.
 
-    The version of the OpenAPI document: 1.15.0
+    The version of the OpenAPI document: 1.16.0
     Contact: support@opendpp-node.eu
     Generated by OpenAPI Generator (https://openapi-generator.tech)
 
@@ -17,6 +17,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
+from datetime import datetime
 from pydantic import Field, StrictStr, field_validator
 from typing import Optional
 from typing_extensions import Annotated
@@ -26,6 +27,8 @@ from opendpp_sdk.models.delete_draft_passport200_response import DeleteDraftPass
 from opendpp_sdk.models.passport_bulk_request import PassportBulkRequest
 from opendpp_sdk.models.passport_bulk_result import PassportBulkResult
 from opendpp_sdk.models.passport_create_request import PassportCreateRequest
+from opendpp_sdk.models.passport_history_list import PassportHistoryList
+from opendpp_sdk.models.passport_history_version import PassportHistoryVersion
 from opendpp_sdk.models.passport_ingest_created import PassportIngestCreated
 from opendpp_sdk.models.passport_list_response import PassportListResponse
 from opendpp_sdk.models.passport_seal_response import PassportSealResponse
@@ -404,7 +407,7 @@ class PassportsApi:
     ) -> PassportIngestCreated:
         """Create (ingest) a Digital Product Passport
 
-        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it resolves via `/passport/{id}` with no scannable GS1 QR. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and a GS1 Digital Link URI `https://opendpp-node.eu/{01|8003}/{productId}`.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
+        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it is issued as an EN IEC 61406 Identification Link (`/passport/{id}?.P={productId}`, EN 18219 Scheme 2) rather than a GS1 Digital Link — scannable, but not through GS1 resolvers. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and the identifier URI: a GS1 Digital Link `https://opendpp-node.eu/{01|8003}/{productId}` for a GS1 key, or an EN IEC 61406 Identification Link `https://opendpp-node.eu/passport/{id}?.P={productId}` otherwise.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
 
         :param passport_create_request: (required)
         :type passport_create_request: PassportCreateRequest
@@ -487,7 +490,7 @@ class PassportsApi:
     ) -> ApiResponse[PassportIngestCreated]:
         """Create (ingest) a Digital Product Passport
 
-        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it resolves via `/passport/{id}` with no scannable GS1 QR. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and a GS1 Digital Link URI `https://opendpp-node.eu/{01|8003}/{productId}`.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
+        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it is issued as an EN IEC 61406 Identification Link (`/passport/{id}?.P={productId}`, EN 18219 Scheme 2) rather than a GS1 Digital Link — scannable, but not through GS1 resolvers. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and the identifier URI: a GS1 Digital Link `https://opendpp-node.eu/{01|8003}/{productId}` for a GS1 key, or an EN IEC 61406 Identification Link `https://opendpp-node.eu/passport/{id}?.P={productId}` otherwise.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
 
         :param passport_create_request: (required)
         :type passport_create_request: PassportCreateRequest
@@ -570,7 +573,7 @@ class PassportsApi:
     ) -> RESTResponseType:
         """Create (ingest) a Digital Product Passport
 
-        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it resolves via `/passport/{id}` with no scannable GS1 QR. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and a GS1 Digital Link URI `https://opendpp-node.eu/{01|8003}/{productId}`.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
+        Creates a SKU/type-level Digital Product Passport.  **Permission:** `passport:create` (Bearer `op_dpp_token_…` API key or session JWT; cookie sessions must also send the `X-CSRF-Token` double-submit header). Write operations are subject to subscription gating (**402**) and, where the workspace enforces it, MFA (**403**).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 1 MiB (1,048,576 bytes)** → **413** beyond that.  **Validation.** Unless `draft: true`, `metadata` is validated against the ESPR category rules for `metadata.category` plus cross-field rules (e.g. `materialComposition` percentages must sum to 100 ±0.1, `originCountry` must be a real ISO 3166-1 alpha-2 code). For five categories (textiles, batteries, electronics, chemicals, construction) the authoritative per-category JSON Schema is served live at `GET /api/v1/schemas/{category}`; the other four (cosmetics, toys, iron-steel, aluminium) are validated by built-in server-side rules and `GET /api/v1/schemas/{category}` returns **404** for them. Failure returns the **400 Validation Failed** body with per-field `errors[]` (plus `warnings[]` when any exist — the key is omitted entirely when there are none). A passing payload may still produce non-blocking `warnings[]`, echoed in the 201 — including a **privacy-by-design advisory** when the metadata *looks* like it carries personal data (a clearly-personal field name such as `email`/`firstName`, or an email-shaped value; scanned one level deep, at most one such advisory). A DPP should carry PRODUCT data, not PII (ESPR FAQ Q16); this advisory never blocks the save. `friendlyMessage` texts are localized via `?lang=` or `Accept-Language` (default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`.  **Drafts.** `draft: true` skips ALL validation, stores the passport with `status: \"DRAFT\"` (not publicly resolvable), returns `message: \"Draft passport saved\"` with `warnings: []`, and does **not** emit a webhook.  **Identifier handling.** `productId` may be a GTIN-14 (14 digits, GS1 mod-10 check digit), a GRAI (14-digit numeric asset id + up to 16 alphanumeric serial chars), or a free-form SKU. A 14-digit `productId` whose GS1 mod-10 check digit is invalid is rejected with **400** (a typo'd GTIN is never silently downgraded to a SKU); a non-numeric or non-14-digit `productId` is accepted as a non-GS1 SKU and carries a non-blocking `warnings[]` advisory that it is issued as an EN IEC 61406 Identification Link (`/passport/{id}?.P={productId}`, EN 18219 Scheme 2) rather than a GS1 Digital Link — scannable, but not through GS1 resolvers. A valid GTIN-14 is auto-copied into `metadata.gtin` (a GRAI into `metadata.grai`) before storage. The server mints a UUID passport id and the identifier URI: a GS1 Digital Link `https://opendpp-node.eu/{01|8003}/{productId}` for a GS1 key, or an EN IEC 61406 Identification Link `https://opendpp-node.eu/passport/{id}?.P={productId}` otherwise.  **Operator binding.** With `operatorId` omitted, the passport is attributed to the first economic operator bound to your workspace; if no operator is bound at all the request fails **400** (the API never fabricates an operator identity — register one via `POST /api/v1/operators`). An `operatorId` not bound to your workspace → **403**. Operator-scoped API keys force their own operator and **403** on mismatch. The `(productId, operatorId)` pair is unique → **409** on duplicates. An optional `facilityId` must reference a Facility in your workspace (**400** otherwise).  **Webhook:** non-draft creation transactionally enqueues a `passport.ingested` event whose payload is the public redacted JSON-LD passport document (same masking as the 201 `passport` field). Drafts emit nothing.  **Response caveats:** the 201 `passport` field is the **public, redacted** JSON-LD representation — even for the creator. The owner-only metadata key `facilityDetails` is replaced with the literal placeholder `\"[REDACTED - Privileged Access Required]\"` (it appears as the placeholder even when you did not supply it), and for `category: \"batteries\"` the restricted legitimate-interest keys `detailedPerformance`, `lifecycleAndInUse` and `circularityAndDisassembly` (Battery Reg. Annex XIII parts 2-4) are masked the same way when present. `enrichment` is stored outside the validated metadata and Merkle seal and never appears in the JSON-LD document. The 201 body's top-level fields are `success`, `message`, `passport`, `warnings`, and the `vcReady`/`vcReadyReason` UNTP Verifiable-Credential readiness signal.  **Other 400 bodies:** non-validation failures (whitespace-only `productId`, no bound operator, unknown `facilityId`) reuse status 400 with the plain `{\"success\": false, \"error\": \"Bad Request\", \"message\": …}` triple and **no** `errors`/`warnings` arrays. Requests rejected before the handler runs — request-body schema violations (e.g. missing `productId`) and malformed JSON — come back as just `{\"error\": \"Bad Request\", \"message\": …}`.
 
         :param passport_create_request: (required)
         :type passport_create_request: PassportCreateRequest
@@ -998,7 +1001,7 @@ class PassportsApi:
     @validate_call
     def get_passport(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1016,7 +1019,7 @@ class PassportsApi:
 
         Owner-side alias of the public resolver. Accepts either the passport **UUID** or its caller-supplied **`productId`** (GTIN-14 / GRAI / SKU), scoped to operators bound to your workspace. After the scoped lookup the request is **re-dispatched internally to `GET /passport/{uuid}`**, forwarding all request headers, and the inner response (status, content type, body) is returned as-is.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Content negotiation** (substring match on `Accept`): `application/aas+json` → role-filtered AAS environment; `application/vc+jwt` → enveloping UNTP Verifiable Credential; `application/vc+ld+json` → the same credential with an embedded `ecdsa-jcs-2019` W3C Data Integrity proof; `application/dc+sd-jwt` (legacy `vc+sd-jwt` accepted) → SD-JWT-VC selective disclosure (these three return `406 Not Acceptable` when the passport has no manufacturing facility with a country of production); `text/html` → SSR passport page; anything else (including `application/json`, `*/*`, or no header) → JSON-LD with `Content-Type: application/ld+json` (the default). The VC and SD-JWT representations are forwarded verbatim from `GET /passport/{id}` — see that operation for the full credential semantics.  **Access-tier caveat (privilege is resolved from the *forwarded* headers, not the already-authenticated context):** only **database API keys** (`Authorization: Bearer op_dpp_token_…`) of the owning or operator-bound tenant are recognized as owner by the inner resolver. Those callers get the **owner-tier** document: `facilityDetails` and battery restricted keys unmasked, `manufacturingFacility` includes `streetAddress`/`city`/`postalCode`, and DRAFT passports are visible. Callers authenticated with a **JWT session** (login cookie or bearer JWT) receive the **public-redacted** tier instead, and DRAFT passports answer 404 with the forwarded public body (no `success` field).  Every successful resolution records an anonymized-IP access audit entry.  **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1071,7 +1074,7 @@ class PassportsApi:
     @validate_call
     def get_passport_with_http_info(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1089,7 +1092,7 @@ class PassportsApi:
 
         Owner-side alias of the public resolver. Accepts either the passport **UUID** or its caller-supplied **`productId`** (GTIN-14 / GRAI / SKU), scoped to operators bound to your workspace. After the scoped lookup the request is **re-dispatched internally to `GET /passport/{uuid}`**, forwarding all request headers, and the inner response (status, content type, body) is returned as-is.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Content negotiation** (substring match on `Accept`): `application/aas+json` → role-filtered AAS environment; `application/vc+jwt` → enveloping UNTP Verifiable Credential; `application/vc+ld+json` → the same credential with an embedded `ecdsa-jcs-2019` W3C Data Integrity proof; `application/dc+sd-jwt` (legacy `vc+sd-jwt` accepted) → SD-JWT-VC selective disclosure (these three return `406 Not Acceptable` when the passport has no manufacturing facility with a country of production); `text/html` → SSR passport page; anything else (including `application/json`, `*/*`, or no header) → JSON-LD with `Content-Type: application/ld+json` (the default). The VC and SD-JWT representations are forwarded verbatim from `GET /passport/{id}` — see that operation for the full credential semantics.  **Access-tier caveat (privilege is resolved from the *forwarded* headers, not the already-authenticated context):** only **database API keys** (`Authorization: Bearer op_dpp_token_…`) of the owning or operator-bound tenant are recognized as owner by the inner resolver. Those callers get the **owner-tier** document: `facilityDetails` and battery restricted keys unmasked, `manufacturingFacility` includes `streetAddress`/`city`/`postalCode`, and DRAFT passports are visible. Callers authenticated with a **JWT session** (login cookie or bearer JWT) receive the **public-redacted** tier instead, and DRAFT passports answer 404 with the forwarded public body (no `success` field).  Every successful resolution records an anonymized-IP access audit entry.  **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1144,7 +1147,7 @@ class PassportsApi:
     @validate_call
     def get_passport_without_preload_content(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1162,7 +1165,7 @@ class PassportsApi:
 
         Owner-side alias of the public resolver. Accepts either the passport **UUID** or its caller-supplied **`productId`** (GTIN-14 / GRAI / SKU), scoped to operators bound to your workspace. After the scoped lookup the request is **re-dispatched internally to `GET /passport/{uuid}`**, forwarding all request headers, and the inner response (status, content type, body) is returned as-is.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Content negotiation** (substring match on `Accept`): `application/aas+json` → role-filtered AAS environment; `application/vc+jwt` → enveloping UNTP Verifiable Credential; `application/vc+ld+json` → the same credential with an embedded `ecdsa-jcs-2019` W3C Data Integrity proof; `application/dc+sd-jwt` (legacy `vc+sd-jwt` accepted) → SD-JWT-VC selective disclosure (these three return `406 Not Acceptable` when the passport has no manufacturing facility with a country of production); `text/html` → SSR passport page; anything else (including `application/json`, `*/*`, or no header) → JSON-LD with `Content-Type: application/ld+json` (the default). The VC and SD-JWT representations are forwarded verbatim from `GET /passport/{id}` — see that operation for the full credential semantics.  **Access-tier caveat (privilege is resolved from the *forwarded* headers, not the already-authenticated context):** only **database API keys** (`Authorization: Bearer op_dpp_token_…`) of the owning or operator-bound tenant are recognized as owner by the inner resolver. Those callers get the **owner-tier** document: `facilityDetails` and battery restricted keys unmasked, `manufacturingFacility` includes `streetAddress`/`city`/`postalCode`, and DRAFT passports are visible. Callers authenticated with a **JWT session** (login cookie or bearer JWT) receive the **public-redacted** tier instead, and DRAFT passports answer 404 with the forwarded public body (no `success` field).  Every successful resolution records an anonymized-IP access audit entry.  **Rate limits:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys, under a per-IP ceiling; `x-ratelimit-*` headers and a `Retry-After` on **429**. **Plus** the forwarded public resolver's own limiter (30 req/min/IP, no headers) — both 429 shapes are possible (see 429).
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first, then `productId`. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1276,6 +1279,593 @@ class PassportsApi:
 
 
     @validate_call
+    def get_passport_version(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        version: Annotated[int, Field(strict=True, ge=1, description="The archived version number (1 = the state the first change replaced).")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PassportHistoryVersion:
+        """Read one archived version
+
+        One archived version with the metadata it held, its validity window (`validFrom` … `validUntil`), who recorded the change that replaced it and why. The live passport is not an archived version: `version` equal to `currentVersion` answers 404 and points at `GET /api/v1/passports/{id}`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param version: The archived version number (1 = the state the first change replaced). (required)
+        :type version: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_serialize(
+            id=id,
+            version=version,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_passport_version_with_http_info(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        version: Annotated[int, Field(strict=True, ge=1, description="The archived version number (1 = the state the first change replaced).")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PassportHistoryVersion]:
+        """Read one archived version
+
+        One archived version with the metadata it held, its validity window (`validFrom` … `validUntil`), who recorded the change that replaced it and why. The live passport is not an archived version: `version` equal to `currentVersion` answers 404 and points at `GET /api/v1/passports/{id}`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param version: The archived version number (1 = the state the first change replaced). (required)
+        :type version: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_serialize(
+            id=id,
+            version=version,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_passport_version_without_preload_content(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        version: Annotated[int, Field(strict=True, ge=1, description="The archived version number (1 = the state the first change replaced).")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Read one archived version
+
+        One archived version with the metadata it held, its validity window (`validFrom` … `validUntil`), who recorded the change that replaced it and why. The live passport is not an archived version: `version` equal to `currentVersion` answers 404 and points at `GET /api/v1/passports/{id}`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param version: The archived version number (1 = the state the first change replaced). (required)
+        :type version: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_serialize(
+            id=id,
+            version=version,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_passport_version_serialize(
+        self,
+        id,
+        version,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if id is not None:
+            _path_params['id'] = id
+        if version is not None:
+            _path_params['version'] = version
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'ApiKeyAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/passports/{id}/history/{version}',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def get_passport_version_at_date(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        var_date: Annotated[datetime, Field(description="The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at.")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PassportHistoryVersion:
+        """Read the version that was current at an instant
+
+        The metadata that was current at `date`: the first version archived **after** that instant (an archived version is the state a change replaced), or the live passport when nothing changed since — then `current` is `true`, `version` is the live version number and `validUntil` is `null`. A `date` before the passport existed is a 404.  This is the point-in-time read EN 18221:2026 §4.2 describes; the EN 18222 life-cycle method of the same shape is `ReadDPPVersionByIdAndDate`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param var_date: The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at. (required)
+        :type var_date: datetime
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_at_date_serialize(
+            id=id,
+            var_date=var_date,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_passport_version_at_date_with_http_info(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        var_date: Annotated[datetime, Field(description="The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at.")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PassportHistoryVersion]:
+        """Read the version that was current at an instant
+
+        The metadata that was current at `date`: the first version archived **after** that instant (an archived version is the state a change replaced), or the live passport when nothing changed since — then `current` is `true`, `version` is the live version number and `validUntil` is `null`. A `date` before the passport existed is a 404.  This is the point-in-time read EN 18221:2026 §4.2 describes; the EN 18222 life-cycle method of the same shape is `ReadDPPVersionByIdAndDate`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param var_date: The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at. (required)
+        :type var_date: datetime
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_at_date_serialize(
+            id=id,
+            var_date=var_date,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_passport_version_at_date_without_preload_content(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        var_date: Annotated[datetime, Field(description="The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at.")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Read the version that was current at an instant
+
+        The metadata that was current at `date`: the first version archived **after** that instant (an archived version is the state a change replaced), or the live passport when nothing changed since — then `current` is `true`, `version` is the live version number and `validUntil` is `null`. A `date` before the passport existed is a 404.  This is the point-in-time read EN 18221:2026 §4.2 describes; the EN 18222 life-cycle method of the same shape is `ReadDPPVersionByIdAndDate`. The version is returned **as a document** in `passport`, with its `contentHash` so it can be verified.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param var_date: The instant to read, as an ISO 8601-1 timestamp with a zone designator — `Z` or `±hh:mm` (e.g. `2026-07-15T00:00:00Z`, `2026-07-15T02:00:00+02:00`). A date with no time, a time with no designator, or a calendar-impossible value (`2026-02-30T00:00:00Z`) is refused with 400 rather than guessed at. (required)
+        :type var_date: datetime
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_passport_version_at_date_serialize(
+            id=id,
+            var_date=var_date,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryVersion",
+            '400': "PassportHistoryError",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_passport_version_at_date_serialize(
+        self,
+        id,
+        var_date,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if id is not None:
+            _path_params['id'] = id
+        # process the query parameters
+        if var_date is not None:
+            if isinstance(var_date, datetime):
+                _query_params.append(
+                    (
+                        'date',
+                        var_date.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('date', var_date))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'ApiKeyAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/passports/{id}/history/at',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     def ingest_passport_from_aas(
         self,
         aas_environment_input: AasEnvironmentInput,
@@ -1338,6 +1928,7 @@ class PassportsApi:
             '401': "Error",
             '402': "PassportQuotaError",
             '403': "Error",
+            '409': "Error",
             '413': "CreatePassport413Response",
             '429': "InlineObject",
             '500': "Error",
@@ -1416,6 +2007,7 @@ class PassportsApi:
             '401': "Error",
             '402': "PassportQuotaError",
             '403': "Error",
+            '409': "Error",
             '413': "CreatePassport413Response",
             '429': "InlineObject",
             '500': "Error",
@@ -1494,6 +2086,7 @@ class PassportsApi:
             '401': "Error",
             '402': "PassportQuotaError",
             '403': "Error",
+            '409': "Error",
             '413': "CreatePassport413Response",
             '429': "InlineObject",
             '500': "Error",
@@ -1588,6 +2181,310 @@ class PassportsApi:
 
 
     @validate_call
+    def list_passport_history(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        page: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="1-based page number (digits only; non-numeric falls back to 1).")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Page size. Clamped to 1–200; non-numeric falls back to the default 100.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PassportHistoryList:
+        """List a passport's archived versions
+
+        The archived versions of a passport, newest first. Every metadata write (`PUT /api/v1/passports/{id}`, a bulk upsert, an AAS re-ingest) and every lifecycle change (`PUT …/status`) archives the state it replaced, so version *N* is the metadata that was current **until** `validUntil` (the instant the change was recorded) and from the previous version's `validUntil` — or the passport's creation — before that; the live passport is version `currentVersion` and is read with `GET /api/v1/passports/{id}`. Archiving starts with the first change, so a never-changed passport lists no versions.  This is the retrieval EN 18221:2026 §4.2 describes for archived versions, at the owner tier: the caller's workspace only, under the same visibility as the passport itself. **A version is a DOCUMENT**: the single-version reads below return it as one, with the EN 18223 header, its body at the root and its own proof. This list carries summaries only — read a version to get its document.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param page: 1-based page number (digits only; non-numeric falls back to 1).
+        :type page: int
+        :param limit: Page size. Clamped to 1–200; non-numeric falls back to the default 100.
+        :type limit: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_passport_history_serialize(
+            id=id,
+            page=page,
+            limit=limit,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryList",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def list_passport_history_with_http_info(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        page: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="1-based page number (digits only; non-numeric falls back to 1).")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Page size. Clamped to 1–200; non-numeric falls back to the default 100.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PassportHistoryList]:
+        """List a passport's archived versions
+
+        The archived versions of a passport, newest first. Every metadata write (`PUT /api/v1/passports/{id}`, a bulk upsert, an AAS re-ingest) and every lifecycle change (`PUT …/status`) archives the state it replaced, so version *N* is the metadata that was current **until** `validUntil` (the instant the change was recorded) and from the previous version's `validUntil` — or the passport's creation — before that; the live passport is version `currentVersion` and is read with `GET /api/v1/passports/{id}`. Archiving starts with the first change, so a never-changed passport lists no versions.  This is the retrieval EN 18221:2026 §4.2 describes for archived versions, at the owner tier: the caller's workspace only, under the same visibility as the passport itself. **A version is a DOCUMENT**: the single-version reads below return it as one, with the EN 18223 header, its body at the root and its own proof. This list carries summaries only — read a version to get its document.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param page: 1-based page number (digits only; non-numeric falls back to 1).
+        :type page: int
+        :param limit: Page size. Clamped to 1–200; non-numeric falls back to the default 100.
+        :type limit: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_passport_history_serialize(
+            id=id,
+            page=page,
+            limit=limit,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryList",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def list_passport_history_without_preload_content(
+        self,
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`.")],
+        page: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="1-based page number (digits only; non-numeric falls back to 1).")] = None,
+        limit: Annotated[Optional[Annotated[int, Field(le=200, strict=True, ge=1)]], Field(description="Page size. Clamped to 1–200; non-numeric falls back to the default 100.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """List a passport's archived versions
+
+        The archived versions of a passport, newest first. Every metadata write (`PUT /api/v1/passports/{id}`, a bulk upsert, an AAS re-ingest) and every lifecycle change (`PUT …/status`) archives the state it replaced, so version *N* is the metadata that was current **until** `validUntil` (the instant the change was recorded) and from the previous version's `validUntil` — or the passport's creation — before that; the live passport is version `currentVersion` and is read with `GET /api/v1/passports/{id}`. Archiving starts with the first change, so a never-changed passport lists no versions.  This is the retrieval EN 18221:2026 §4.2 describes for archived versions, at the owner tier: the caller's workspace only, under the same visibility as the passport itself. **A version is a DOCUMENT**: the single-version reads below return it as one, with the EN 18223 header, its body at the root and its own proof. This list carries summaries only — read a version to get its document.  **Who may read this.** Two authorised actors, and the anonymous tier is refused — EN 18221:2026 §4.2 makes an archived version retrievable by authenticated and authorised actors ONLY. (1) The **owning or operator-bound tenant**, via an `op_dpp_token_…` API key: the version is unmasked, exactly as that tenant's live read is. (2) The holder of a **legitimate-interest or authority grant** covering this passport (`dpp_li_…` / `dpp_auth_…` as a Bearer token or `?grant=`): the version is masked to the grant tier — the Battery Reg. Annex XIII(2)-(4) restricted keys are readable, the owner-only keys are not — so a version discloses exactly what the live read discloses to the same caller, and no more. A grant-unlocked response carries `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`. Attribution (`changedBy`, `changeReason`) is owner-only and reads `null` for a grant holder: it names the staff who edited a row, not regulated product data. A DRAFT is never revealed to a grant. Every read is recorded in the passport's access audit log.
+
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link — the same lookup as `GET /api/v1/passports/{id}`. (required)
+        :type id: str
+        :param page: 1-based page number (digits only; non-numeric falls back to 1).
+        :type page: int
+        :param limit: Page size. Clamped to 1–200; non-numeric falls back to the default 100.
+        :type limit: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_passport_history_serialize(
+            id=id,
+            page=page,
+            limit=limit,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PassportHistoryList",
+            '401': "PassportHistoryError",
+            '403': "PassportHistoryError",
+            '404': "PassportHistoryError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _list_passport_history_serialize(
+        self,
+        id,
+        page,
+        limit,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if id is not None:
+            _path_params['id'] = id
+        # process the query parameters
+        if page is not None:
+            
+            _query_params.append(('page', page))
+            
+        if limit is not None:
+            
+            _query_params.append(('limit', limit))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'ApiKeyAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/passports/{id}/history',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     def list_passports(
         self,
         page: Annotated[Optional[Annotated[int, Field(strict=True, ge=1)]], Field(description="1-based page number (digits only).")] = None,
@@ -1609,7 +2506,7 @@ class PassportsApi:
     ) -> PassportListResponse:
         """List passports in your workspace (paginated JSON-LD)
 
-        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items and `manufacturingFacility` is always `null` here — fetch a single passport (`GET /api/v1/passports/{id}`) for the facility node and operator role. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the flattened metadata keys) pass through intact — but two **declared** item keys are mangled by their subschemas: the `@context` term-map object (second array element) is always emptied to `{}`, and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — `signatureValue`, `merkleRoot`, `redactedLeaves`, `x5c` and `rfc3161` are all stripped from list output. Fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable proof block.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items — fetch a single passport (`GET /api/v1/passports/{id}`) for the operator role. `manufacturingFacility` IS carried here, as the same nullable facility node the single read serves; it is declared once for both schemas, because a list item previously documented as always `null` was in fact serving the full node. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the data-element keys at the root) pass through intact — but one **declared** item key is mangled by its subschema: the `@context` term-map object (second array element) is always emptied to `{}`. There is no `proof` member on a list item at all — it is dropped deliberately, because the block runs to roughly 2 KB per passport including its certificate chain. `digitalSeal` is non-null on a list item exactly when the passport carries a proof; fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable block itself.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param page: 1-based page number (digits only).
         :type page: int
@@ -1693,7 +2590,7 @@ class PassportsApi:
     ) -> ApiResponse[PassportListResponse]:
         """List passports in your workspace (paginated JSON-LD)
 
-        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items and `manufacturingFacility` is always `null` here — fetch a single passport (`GET /api/v1/passports/{id}`) for the facility node and operator role. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the flattened metadata keys) pass through intact — but two **declared** item keys are mangled by their subschemas: the `@context` term-map object (second array element) is always emptied to `{}`, and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — `signatureValue`, `merkleRoot`, `redactedLeaves`, `x5c` and `rfc3161` are all stripped from list output. Fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable proof block.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items — fetch a single passport (`GET /api/v1/passports/{id}`) for the operator role. `manufacturingFacility` IS carried here, as the same nullable facility node the single read serves; it is declared once for both schemas, because a list item previously documented as always `null` was in fact serving the full node. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the data-element keys at the root) pass through intact — but one **declared** item key is mangled by its subschema: the `@context` term-map object (second array element) is always emptied to `{}`. There is no `proof` member on a list item at all — it is dropped deliberately, because the block runs to roughly 2 KB per passport including its certificate chain. `digitalSeal` is non-null on a list item exactly when the passport carries a proof; fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable block itself.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param page: 1-based page number (digits only).
         :type page: int
@@ -1777,7 +2674,7 @@ class PassportsApi:
     ) -> RESTResponseType:
         """List passports in your workspace (paginated JSON-LD)
 
-        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items and `manufacturingFacility` is always `null` here — fetch a single passport (`GET /api/v1/passports/{id}`) for the facility node and operator role. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the flattened metadata keys) pass through intact — but two **declared** item keys are mangled by their subschemas: the `@context` term-map object (second array element) is always emptied to `{}`, and `proof` is emptied to `{}` on sealed items (`null` on unsealed) — `signatureValue`, `merkleRoot`, `redactedLeaves`, `x5c` and `rfc3161` are all stripped from list output. Fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable proof block.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Returns the **non-archived** passports of every economic operator bound to your workspace, newest first (`createdAt DESC`). Operator-scoped API keys only see passports of their bound operator.  **Permission:** `passport:read` (read-only — no subscription/402 gate).  **Filtering:** `category` and `originCountry` are exact-match filters on the top-level `metadata` keys of the same name. Known `metadata.category` values: `textiles`, `batteries`, `electronics`, `cosmetics`, `toys`, `iron-steel`, `aluminium`, `chemicals`, `construction`; `originCountry` is ISO 3166-1 alpha-2.  **Pagination:** `page` (default 1) and `limit` (default 10) are numeric strings matching `^[0-9]+$` — any other value is rejected with the framework's default 400 validation body (see 400). Parsed values are clamped server-side to `page >= 1` and `1 <= limit <= 100`. There is **no `total` count**; page until you receive fewer than `limit` items.  **Serialization caveats:** - The redaction tier of each item depends on the credential's **role**: only `BRAND_OPERATOR` credentials receive the unredacted owner-tier document. Every other role — including `TENANT_ADMIN` — receives the public tier: `facilityDetails` (and, for `batteries`, `detailedPerformance` / `lifecycleAndInUse` / `circularityAndDisassembly`) are masked to the literal string `\"[REDACTED - Privileged Access Required]\"`. - `economicOperator.role` is **absent** from list items — fetch a single passport (`GET /api/v1/passports/{id}`) for the operator role. `manufacturingFacility` IS carried here, as the same nullable facility node the single read serves; it is declared once for both schemas, because a list item previously documented as always `null` was in fact serving the full node. - The response passes through a declared response schema: top-level keys other than `success`, `page`, `limit`, `passports` are stripped. Passport items allow additional properties, so undeclared item keys (`status`, `archivedAt`, `retentionUntil`, `manufacturingFacility`, the data-element keys at the root) pass through intact — but one **declared** item key is mangled by its subschema: the `@context` term-map object (second array element) is always emptied to `{}`. There is no `proof` member on a list item at all — it is dropped deliberately, because the block runs to roughly 2 KB per passport including its certificate chain. `digitalSeal` is non-null on a list item exactly when the passport carries a proof; fetch a single passport (`GET /api/v1/passports/{id}`) or the public resolver for the verifiable block itself.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param page: 1-based page number (digits only).
         :type page: int
@@ -2199,7 +3096,7 @@ class PassportsApi:
     @validate_call
     def seal_passport(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2215,9 +3112,9 @@ class PassportsApi:
     ) -> PassportSealResponse:
         """Apply the tenant's advanced electronic seal
 
-        Signs the passport's Merkle root (SHA-256 tree over the key-sorted top-level `metadata` entries) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Signs the passport's Merkle root (SHA-256 tree over the passport's key-sorted data elements, one leaf per element) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2273,7 +3170,7 @@ class PassportsApi:
     @validate_call
     def seal_passport_with_http_info(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2289,9 +3186,9 @@ class PassportsApi:
     ) -> ApiResponse[PassportSealResponse]:
         """Apply the tenant's advanced electronic seal
 
-        Signs the passport's Merkle root (SHA-256 tree over the key-sorted top-level `metadata` entries) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Signs the passport's Merkle root (SHA-256 tree over the passport's key-sorted data elements, one leaf per element) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2347,7 +3244,7 @@ class PassportsApi:
     @validate_call
     def seal_passport_without_preload_content(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2363,9 +3260,9 @@ class PassportsApi:
     ) -> RESTResponseType:
         """Apply the tenant's advanced electronic seal
 
-        Signs the passport's Merkle root (SHA-256 tree over the key-sorted top-level `metadata` entries) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Signs the passport's Merkle root (SHA-256 tree over the passport's key-sorted data elements, one leaf per element) with the tenant's vault-held **ECDSA P-256 (prime256v1)** private key, producing an **advanced** electronic seal (this is a local cryptographic seal — NOT a Commission/EU-registry registration, and NOT a qualified seal). The base64 signature is stored as `digitalSeal` together with the signing public key (PEM), the X.509 chain binding the key to the tenant's legal identity (surfaced as `proof.x5c`, leaf first, base64 DER), and — **best-effort, opt-in** — an RFC 3161 trusted timestamp over SHA-256(merkleRoot) (`proof.rfc3161`; a TSA outage or missing configuration never blocks sealing, the field is simply absent).  A `passport.sealed` webhook is enqueued transactionally with the update (payload: the public-redacted JSON-LD document including the full `proof` block).  **Permission:** `passport:seal` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), restricted to the passport's **owning tenant**.  **Behavioral caveats:** - The route does **not** modify the passport's `status` — despite the success message's \"and published\" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead. - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp. - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`). - Requires the tenant's signing key pair to exist — otherwise 400. - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2499,7 +3396,7 @@ class PassportsApi:
     ) -> PassportUpdateResponse:
         """Update passport metadata (versioned to history)
 
-        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and forces `status: \"DRAFT\"` — note this also demotes an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport back to DRAFT. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and keeps the passport a DRAFT. Publishing is one-way: on an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport it is **refused with 409** (`code: DRAFT_DEMOTION_REFUSED`) — take a live passport out of public resolution with `PUT /api/v1/passports/{id}/status` (RECALLED / DECOMMISSIONED), which preserves the archived versions the persistence duty requires. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param id: Passport UUID. `productId` aliasing is NOT supported here. (required)
         :type id: str
@@ -2546,6 +3443,7 @@ class PassportsApi:
             '402': "PassportQuotaError",
             '403': "Error",
             '404': "Error",
+            '409': "Error",
             '429': "InlineObject",
             '500': "Error",
         }
@@ -2581,7 +3479,7 @@ class PassportsApi:
     ) -> ApiResponse[PassportUpdateResponse]:
         """Update passport metadata (versioned to history)
 
-        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and forces `status: \"DRAFT\"` — note this also demotes an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport back to DRAFT. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and keeps the passport a DRAFT. Publishing is one-way: on an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport it is **refused with 409** (`code: DRAFT_DEMOTION_REFUSED`) — take a live passport out of public resolution with `PUT /api/v1/passports/{id}/status` (RECALLED / DECOMMISSIONED), which preserves the archived versions the persistence duty requires. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param id: Passport UUID. `productId` aliasing is NOT supported here. (required)
         :type id: str
@@ -2628,6 +3526,7 @@ class PassportsApi:
             '402': "PassportQuotaError",
             '403': "Error",
             '404': "Error",
+            '409': "Error",
             '429': "InlineObject",
             '500': "Error",
         }
@@ -2663,7 +3562,7 @@ class PassportsApi:
     ) -> RESTResponseType:
         """Update passport metadata (versioned to history)
 
-        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and forces `status: \"DRAFT\"` — note this also demotes an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport back to DRAFT. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
+        Replaces the passport's `metadata` (the Merkle root and leaf hashes are recomputed) and snapshots the **previous** metadata into the passport's version history (version = count + 1, `changedBy` = user email or `api-key:<id>`, `changeReason` defaults to `\"API Update\"`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token` (double-submit); Bearer/API-key clients are exempt.  **Lookup:** by passport **UUID only** — `productId` aliasing is NOT supported on this endpoint. The passport must belong to an operator bound to your workspace.  **Draft semantics (`draft` flag):** - `draft: true` **skips ESPR validation entirely** and keeps the passport a DRAFT. Publishing is one-way: on an already-published (ACTIVE/RECALLED/DECOMMISSIONED) passport it is **refused with 409** (`code: DRAFT_DEMOTION_REFUSED`) — take a live passport out of public resolution with `PUT /api/v1/passports/{id}/status` (RECALLED / DECOMMISSIONED), which preserves the archived versions the persistence duty requires. - `draft` absent/false: `metadata` is validated against the ESPR category rules (400 on failure — see below). If the passport was a DRAFT it is **published**: status becomes `ACTIVE`, a `passport.ingested` webhook is enqueued transactionally (public-redacted JSON-LD payload) and an in-app notification is created best-effort afterwards. Editing an already-published (live) passport leaves its status untouched and enqueues a `passport.updated` webhook instead (same public-redacted JSON-LD payload).  **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).  **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: \"This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.\").  **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `\"\"` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).  **Enrichment:** include the `enrichment` key (even as `null`/`{}`) to overwrite the presentational marketing block; omit it to leave it unchanged. Values are sanitized server-side (truncated/sliced, http(s) URLs only), never rejected.  **Response caveat:** the returned `passport` document is serialized at the **public** redaction tier — `facilityDetails` (and battery restricted keys) appear as `\"[REDACTED - Privileged Access Required]\"` even though you are the owner.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
         :param id: Passport UUID. `productId` aliasing is NOT supported here. (required)
         :type id: str
@@ -2710,6 +3609,7 @@ class PassportsApi:
             '402': "PassportQuotaError",
             '403': "Error",
             '404': "Error",
+            '409': "Error",
             '429': "InlineObject",
             '500': "Error",
         }
@@ -2808,7 +3708,7 @@ class PassportsApi:
     @validate_call
     def update_passport_status(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         passport_status_update_request: PassportStatusUpdateRequest,
         _request_timeout: Union[
             None,
@@ -2827,7 +3727,7 @@ class PassportsApi:
 
         Transitions a **published** passport between live lifecycle states. The request body carries only `status` (any other keys are ignored — there is no `reason` field; the history entry's change reason is auto-generated as `Status changed: <from> → <to>`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), scoped to operators bound to your workspace.  **Effects:** - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 10 years), starting the minimum-availability retention clock. The passport stays publicly resolvable. - `ACTIVE` (reactivation) — clears `retentionUntil` **and** `archivedAt`. - `RECALLED` — marks the product recalled. - The status change, the version-history entry (who/when/what) and the webhook enqueue are **transactional**; an in-app notification is created **best-effort after the transaction commits** (a notification failure never affects the response).  **Webhooks:** `RECALLED` enqueues `passport.recalled`; any other transition (`DECOMMISSIONED`, reactivate-to-`ACTIVE`) enqueues `passport.status_updated` — note that `passport.status_updated` is **not** an explicitly subscribable event filter, so only wildcard (`\"*\"`) webhook subscriptions receive it. Payloads are the public-redacted JSON-LD document.  **Caveats:** DRAFT passports are refused with 409 (publish first via a validated `PUT /api/v1/passports/{id}`). Sealed passports CAN change status — `status` is stored alongside the document, not inside the sealed metadata Merkle tree. The returned `passport` document is serialized at the **public** redaction tier.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param passport_status_update_request: (required)
         :type passport_status_update_request: PassportStatusUpdateRequest
@@ -2887,7 +3787,7 @@ class PassportsApi:
     @validate_call
     def update_passport_status_with_http_info(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         passport_status_update_request: PassportStatusUpdateRequest,
         _request_timeout: Union[
             None,
@@ -2906,7 +3806,7 @@ class PassportsApi:
 
         Transitions a **published** passport between live lifecycle states. The request body carries only `status` (any other keys are ignored — there is no `reason` field; the history entry's change reason is auto-generated as `Status changed: <from> → <to>`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), scoped to operators bound to your workspace.  **Effects:** - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 10 years), starting the minimum-availability retention clock. The passport stays publicly resolvable. - `ACTIVE` (reactivation) — clears `retentionUntil` **and** `archivedAt`. - `RECALLED` — marks the product recalled. - The status change, the version-history entry (who/when/what) and the webhook enqueue are **transactional**; an in-app notification is created **best-effort after the transaction commits** (a notification failure never affects the response).  **Webhooks:** `RECALLED` enqueues `passport.recalled`; any other transition (`DECOMMISSIONED`, reactivate-to-`ACTIVE`) enqueues `passport.status_updated` — note that `passport.status_updated` is **not** an explicitly subscribable event filter, so only wildcard (`\"*\"`) webhook subscriptions receive it. Payloads are the public-redacted JSON-LD document.  **Caveats:** DRAFT passports are refused with 409 (publish first via a validated `PUT /api/v1/passports/{id}`). Sealed passports CAN change status — `status` is stored alongside the document, not inside the sealed metadata Merkle tree. The returned `passport` document is serialized at the **public** redaction tier.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param passport_status_update_request: (required)
         :type passport_status_update_request: PassportStatusUpdateRequest
@@ -2966,7 +3866,7 @@ class PassportsApi:
     @validate_call
     def update_passport_status_without_preload_content(
         self,
-        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first.")],
+        id: Annotated[str, Field(min_length=1, strict=True, description="Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link.")],
         passport_status_update_request: PassportStatusUpdateRequest,
         _request_timeout: Union[
             None,
@@ -2985,7 +3885,7 @@ class PassportsApi:
 
         Transitions a **published** passport between live lifecycle states. The request body carries only `status` (any other keys are ignored — there is no `reason` field; the history entry's change reason is auto-generated as `Status changed: <from> → <to>`).  **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.  **Lookup:** passport **UUID or `productId`** (UUID tried first), scoped to operators bound to your workspace.  **Effects:** - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 10 years), starting the minimum-availability retention clock. The passport stays publicly resolvable. - `ACTIVE` (reactivation) — clears `retentionUntil` **and** `archivedAt`. - `RECALLED` — marks the product recalled. - The status change, the version-history entry (who/when/what) and the webhook enqueue are **transactional**; an in-app notification is created **best-effort after the transaction commits** (a notification failure never affects the response).  **Webhooks:** `RECALLED` enqueues `passport.recalled`; any other transition (`DECOMMISSIONED`, reactivate-to-`ACTIVE`) enqueues `passport.status_updated` — note that `passport.status_updated` is **not** an explicitly subscribable event filter, so only wildcard (`\"*\"`) webhook subscriptions receive it. Payloads are the public-redacted JSON-LD document.  **Caveats:** DRAFT passports are refused with 409 (publish first via a validated `PUT /api/v1/passports/{id}`). Sealed passports CAN change status — `status` is stored alongside the document, not inside the sealed metadata Merkle tree. The returned `passport` document is serialized at the **public** redaction tier.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
 
-        :param id: Passport UUID **or** caller-supplied `productId` (GTIN-14 / GRAI / SKU). UUID is tried first. (required)
+        :param id: Passport UUID, caller-supplied `productId` (GTIN-14 / GRAI / SKU) **or** the passport's own GS1 Digital Link URL (its `digitalProductPassportId`, percent-encoded as one path segment). UUID is tried first, then `productId`, then the Digital Link. (required)
         :type id: str
         :param passport_status_update_request: (required)
         :type passport_status_update_request: PassportStatusUpdateRequest
@@ -3138,7 +4038,7 @@ class PassportsApi:
     ) -> PassportValidateOnlyResult:
         """Dry-run ESPR validation of passport metadata (nothing is stored)
 
-        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId` and a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), each answered with the fuller `Bad Request` body shown below.
+        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) and a `carrier` that fails the EN 18220 vocabulary, each answered with the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest
@@ -3216,7 +4116,7 @@ class PassportsApi:
     ) -> ApiResponse[PassportValidateOnlyResult]:
         """Dry-run ESPR validation of passport metadata (nothing is stored)
 
-        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId` and a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), each answered with the fuller `Bad Request` body shown below.
+        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) and a `carrier` that fails the EN 18220 vocabulary, each answered with the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest
@@ -3294,7 +4194,7 @@ class PassportsApi:
     ) -> RESTResponseType:
         """Dry-run ESPR validation of passport metadata (nothing is stored)
 
-        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId` and a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check), each answered with the fuller `Bad Request` body shown below.
+        Runs the full ESPR category schema validation on a metadata payload **without persisting anything** — intended for pre-flight checks in integration pipelines.  **Permission:** `passport:create` (Bearer API key or session JWT + CSRF for cookie sessions). Despite being read-only in effect, it is gated as a write permission, so subscription gating (**402**) applies.  **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`. **Body limit: 262,144 bytes (256 KiB)** → **413** beyond that.  **Behavioral caveats:** - `operatorId` is accepted by the body schema but **ignored** by the handler. - The 200 body always carries `errors: []`; `warnings` is **omitted entirely** when there are none (it is not an empty array). The same omission applies to `warnings` on the 400 Validation Failed body. - `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors (`metadata.category` missing or unknown) carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`, non-object `metadata`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; the structurally bad inputs that reach the handler are a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) and a `carrier` that fails the EN 18220 vocabulary, each answered with the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest
@@ -3450,7 +4350,7 @@ class PassportsApi:
     ) -> PassportValidateOnlyResult:
         """Permission-free dry-run ESPR metadata validation (strictly rate-limited)
 
-        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId` or a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) gets the fuller `Bad Request` body shown below.
+        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) or an invalid `carrier` declaration gets the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest
@@ -3526,7 +4426,7 @@ class PassportsApi:
     ) -> ApiResponse[PassportValidateOnlyResult]:
         """Permission-free dry-run ESPR metadata validation (strictly rate-limited)
 
-        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId` or a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) gets the fuller `Bad Request` body shown below.
+        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) or an invalid `carrier` declaration gets the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest
@@ -3602,7 +4502,7 @@ class PassportsApi:
     ) -> RESTResponseType:
         """Permission-free dry-run ESPR metadata validation (strictly rate-limited)
 
-        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId` or a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) gets the fuller `Bad Request` body shown below.
+        Identical validation semantics to `POST /api/v1/passports/validate-only`, but requires **no specific permission** — any valid API key or Console session is accepted, so every plan including the free tier can call it. Nothing is persisted.  **Authentication is required.** Until contract 1.12.0 this endpoint was reachable anonymously; it is not any more, because it runs the full validation engine and was usable as free unauthenticated compute. An anonymous call now returns **401**. The path keeps its `-public` segment for continuity — \"public\" here means *no permission and no tenant scope*, not *unauthenticated*.  **Rate limit: 10 requests/min per IP** — a strict per-route limit that **replaces** the global ceiling for this endpoint (emits `x-ratelimit-limit` / `x-ratelimit-remaining` / `x-ratelimit-reset` headers and `retry-after` on 429). **Body limit: 65,536 bytes (64 KiB)** → **413** beyond that. Both caps remain as defence in depth against authenticated abuse. The credential is checked **before the body is parsed**, so an anonymous oversized body is rejected as **401**, not 413.  **Behavioral caveats:** - No tenant context: `operatorId` is accepted but ignored. - The 200 body always carries `errors: []`; `warnings` is omitted entirely when there are none (same omission on the 400 Validation Failed body). - Error/warning `friendlyMessage` localization via `?lang=` / `Accept-Language` (28 languages, default `en`); category-validity errors carry no `friendlyMessage`. - Structural rejections of the request body (e.g. missing `productId`) and malformed JSON return just `{\"error\": \"Bad Request\", \"message\": …}`; a whitespace-only `productId`, a malformed GTIN-14 `productId` (14 digits failing the GS1 mod-10 check) or an invalid `carrier` declaration gets the fuller `Bad Request` body shown below.
 
         :param passport_validate_only_request: (required)
         :type passport_validate_only_request: PassportValidateOnlyRequest

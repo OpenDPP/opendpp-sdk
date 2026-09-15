@@ -47,6 +47,7 @@ opendpp_sdk/models/bulk_battery_unit_events_request.py
 opendpp_sdk/models/bulk_battery_unit_events_request_events_inner.py
 opendpp_sdk/models/bulk_battery_unit_events_response.py
 opendpp_sdk/models/bulk_export_passport_labels_request.py
+opendpp_sdk/models/carrier_declaration.py
 opendpp_sdk/models/create_grant_request.py
 opendpp_sdk/models/create_passport413_response.py
 opendpp_sdk/models/decode_gs1200_response.py
@@ -62,6 +63,7 @@ opendpp_sdk/models/did_web_document_verification_method_inner.py
 opendpp_sdk/models/dpp_json_ld_context_document.py
 opendpp_sdk/models/dpp_vocab_context_document.py
 opendpp_sdk/models/economic_operator_node.py
+opendpp_sdk/models/en18223_data_element.py
 opendpp_sdk/models/epcis_capture_response.py
 opendpp_sdk/models/epcis_capture_response_errors_inner.py
 opendpp_sdk/models/epcis_capture_response_results_inner.py
@@ -118,6 +120,10 @@ opendpp_sdk/models/passport_enrichment_input_images_inner.py
 opendpp_sdk/models/passport_enrichment_input_links_inner.py
 opendpp_sdk/models/passport_get_not_found.py
 opendpp_sdk/models/passport_get_too_many_requests.py
+opendpp_sdk/models/passport_history_error.py
+opendpp_sdk/models/passport_history_list.py
+opendpp_sdk/models/passport_history_version.py
+opendpp_sdk/models/passport_history_version_summary.py
 opendpp_sdk/models/passport_ingest_created.py
 opendpp_sdk/models/passport_list_item.py
 opendpp_sdk/models/passport_list_response.py
@@ -139,6 +145,7 @@ opendpp_sdk/models/passport_vc_readiness_report200_response_results_inner.py
 opendpp_sdk/models/public_battery_unit_json_ld.py
 opendpp_sdk/models/public_facility_node.py
 opendpp_sdk/models/public_passport_json_ld.py
+opendpp_sdk/models/public_passport_json_ld_expanded.py
 opendpp_sdk/models/record_battery_unit_event_request.py
 opendpp_sdk/models/record_battery_unit_event_request_recorded_at.py
 opendpp_sdk/models/record_battery_unit_event_response.py
