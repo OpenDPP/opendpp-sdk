@@ -592,6 +592,53 @@ export type BulkBatteryUnitEventsResponse = {
 };
 
 /**
+ * EN 18222:2026 Table 13 — a message carrying information for the requester.
+ */
+export type En18222Message = {
+    /**
+     * EN 18222:2026 Table 14 — MessageTypeEnum.
+     */
+    messageType: 'Info' | 'Warning' | 'Error' | 'Exception';
+    /**
+     * The message text.
+     */
+    text: string;
+    /**
+     * The EN 18222 Table 15 generic status code this message reports, e.g. `ClientErrorResourceNotFound`. The same fact as the HTTP status; Table 15 is where their correspondence is defined.
+     */
+    code?: string;
+    /**
+     * Relates several result messages across systems. This node uses the request id it also returns as `X-Request-Id`.
+     */
+    correlationId?: string;
+    timestamp?: string;
+};
+
+/**
+ * EN 18222:2026 Table 12 — the result object returned when a method fails to execute (clause 7.2). Table 12 states the class's `semanticId` as `https://jtc24/dpp/API/DataTypes/Result`, in the class header beside `Inherits from` rather than among the attributes — so it identifies the TYPE and is not serialised into each instance; `message` is the class's only attribute.
+ */
+export type En18222Result = {
+    message: Array<En18222Message>;
+};
+
+/**
+ * EN 18222 Table 4 — the `digitalProductPassportId` of every passport matching the supplied product identifiers.
+ */
+export type En18222DppIdList = Array<string>;
+
+/**
+ * The product identifiers to resolve. EN 18222 Table 4 names the input parameter `productId` and gives it cardinality 1..*; Table 16 describes the same body as "a set of Product IDs".
+ *
+ * **This schema declares Table 4's form, and the node also accepts two others**: a bare JSON array — `["09501101530003"]` — for a client written literally to Table 16's wording, and the same object keyed `productIds`, which is the plural an English reader of Table 16 reaches for. They are accepted and not declared for one reason: a schema that is "an array or an object" has no single generated type in Java or Python, so declaring the union would cost every SDK a model it cannot compile. One documented shape, one generated model, and a client that guessed differently still works instead of receiving a 400.
+ */
+export type En18222ProductIdQuery = {
+    /**
+     * EN 18219 unique product identifiers, 1..*, at most 500 per request.
+     */
+    productId: Array<string>;
+};
+
+/**
  * A facility (GS1 GLN) master-data row, exactly as stored. Returned in full to the owning tenant. Public exposure in passport documents differs by format: the *JSON-LD* document exposes `id`, `gln`, `name`, `activity` and `country` of a linked facility; the *AAS* export emits only the GLN, name and country (`manufacturingFacilityGln`/`Name`/`Country`). `streetAddress`, `city` and `postalCode` are emitted only to the owning/bound tenant in both formats.
  */
 export type FacilityRow = {
@@ -3865,6 +3912,541 @@ export type BulkRecordBatteryUnitEventsResponses = {
 
 export type BulkRecordBatteryUnitEventsResponse = BulkRecordBatteryUnitEventsResponses[keyof BulkRecordBatteryUnitEventsResponses];
 
+export type DeleteDppByIdData = {
+    body?: never;
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+    };
+    query?: never;
+    url: '/v1/dpps/{dppId}';
+};
+
+export type DeleteDppByIdErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The passport was published or sealed and persists under ESPR Article 77(8) (`ClientResourceConflict`).
+     */
+    409: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type DeleteDppByIdError = DeleteDppByIdErrors[keyof DeleteDppByIdErrors];
+
+export type DeleteDppByIdResponses = {
+    /**
+     * The passport was removed (EN 18222 Table 15 `SuccessNoContent`).
+     */
+    204: void;
+};
+
+export type DeleteDppByIdResponse = DeleteDppByIdResponses[keyof DeleteDppByIdResponses];
+
+export type ReadDppByIdData = {
+    body?: never;
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+    };
+    query?: {
+        /**
+         * EN 18222 clause 8.1 — `compressed` (the default, EN 18223 clause 5.2) or `full` (EN 18223 Annex A). `expanded` is accepted as an alias of `full`, the word EN 18223 itself uses for the form. A value outside that set is refused, never silently downgraded.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dpps/{dppId}';
+};
+
+export type ReadDppByIdErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type ReadDppByIdError = ReadDppByIdErrors[keyof ReadDppByIdErrors];
+
+export type ReadDppByIdResponses = {
+    /**
+     * The digital product passport. `representation=compressed` (the default) returns the EN 18223 clause 5.2 form; `representation=full` returns the EN 18223 Annex A form. The serialisation is chosen by `Accept` (EN 18216 clause 5), defaulting to `application/ld+json`.
+     */
+    200: PublicPassportJsonLd;
+};
+
+export type ReadDppByIdResponse = ReadDppByIdResponses[keyof ReadDppByIdResponses];
+
+export type UpdateDppByIdData = {
+    /**
+     * EN 18222 Table 6 — a DigitalProductPassport carrying only the parts that need to be updated.
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+    };
+    query?: {
+        /**
+         * EN 18222 clause 8.1 — `compressed` (the default, EN 18223 clause 5.2) or `full` (EN 18223 Annex A). `expanded` is accepted as an alias of `full`, the word EN 18223 itself uses for the form. A value outside that set is refused, never silently downgraded.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dpps/{dppId}';
+};
+
+export type UpdateDppByIdErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The passport is sealed, or the update would demote a published passport to a draft (`ClientResourceConflict`).
+     */
+    409: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type UpdateDppByIdError = UpdateDppByIdErrors[keyof UpdateDppByIdErrors];
+
+export type UpdateDppByIdResponses = {
+    /**
+     * The updated digital product passport (EN 18222 Table 6: the output payload is the updated DPP).
+     */
+    200: PublicPassportJsonLd;
+};
+
+export type UpdateDppByIdResponse = UpdateDppByIdResponses[keyof UpdateDppByIdResponses];
+
+export type ReadDppByProductIdData = {
+    body?: never;
+    path: {
+        /**
+         * The unique product identifier as defined in EN 18219 (GTIN-14, GRAI or the operator's own SKU), percent-encoded as one path segment.
+         */
+        productId: string;
+    };
+    query?: {
+        /**
+         * EN 18222 clause 8.1 — `compressed` (the default, EN 18223 clause 5.2) or `full` (EN 18223 Annex A). `expanded` is accepted as an alias of `full`, the word EN 18223 itself uses for the form. A value outside that set is refused, never silently downgraded.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dppsByProductId/{productId}';
+};
+
+export type ReadDppByProductIdErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * More than one passport in this workspace carries that product identifier, so no single current passport can be returned (`ClientResourceConflict`).
+     */
+    409: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type ReadDppByProductIdError = ReadDppByProductIdErrors[keyof ReadDppByProductIdErrors];
+
+export type ReadDppByProductIdResponses = {
+    /**
+     * The digital product passport. `representation=compressed` (the default) returns the EN 18223 clause 5.2 form; `representation=full` returns the EN 18223 Annex A form. The serialisation is chosen by `Accept` (EN 18216 clause 5), defaulting to `application/ld+json`.
+     */
+    200: PublicPassportJsonLd;
+};
+
+export type ReadDppByProductIdResponse = ReadDppByProductIdResponses[keyof ReadDppByProductIdResponses];
+
+export type ReadDppVersionByIdAndDateData = {
+    body?: never;
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+    };
+    query: {
+        /**
+         * The instant the passport is requested for — a UTC-based timestamp in the ISO 8601-1 format EN 18223 uses, e.g. `2026-09-03T12:00:00Z`. A value without a UTC designator is refused rather than read in the server's local zone.
+         */
+        date: string;
+        /**
+         * EN 18222 clause 8.1 — `compressed` (the default, EN 18223 clause 5.2) or `full` (EN 18223 Annex A). `expanded` is accepted as an alias of `full`, the word EN 18223 itself uses for the form. A value outside that set is refused, never silently downgraded.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dppsByIdAndDate/{dppId}';
+};
+
+export type ReadDppVersionByIdAndDateErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type ReadDppVersionByIdAndDateError = ReadDppVersionByIdAndDateErrors[keyof ReadDppVersionByIdAndDateErrors];
+
+export type ReadDppVersionByIdAndDateResponses = {
+    /**
+     * The digital product passport as it stood at the requested instant.
+     */
+    200: PublicPassportJsonLd;
+};
+
+export type ReadDppVersionByIdAndDateResponse = ReadDppVersionByIdAndDateResponses[keyof ReadDppVersionByIdAndDateResponses];
+
+export type ReadDppIdsByProductIdsData = {
+    body: En18222ProductIdQuery;
+    path?: never;
+    query?: {
+        /**
+         * Maximum identifiers per page, 1–500 (default 100). A value outside that range is refused, not clamped — a client that asked for more and silently received a short page cannot tell it from the last one.
+         */
+        limit?: number;
+        /**
+         * The continuation from a previous page's `Link: rel="next"` header. EN 18222 clause 4.5: the value shall not be empty — omit the parameter to start from the first page.
+         */
+        cursor?: string;
+    };
+    url: '/v1/dppsByProductIds';
+};
+
+export type ReadDppIdsByProductIdsErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type ReadDppIdsByProductIdsError = ReadDppIdsByProductIdsErrors[keyof ReadDppIdsByProductIdsErrors];
+
+export type ReadDppIdsByProductIdsResponses = {
+    /**
+     * The DPP identifiers matching the supplied product identifiers. A `Link` header with `rel="next"` is present when another page exists.
+     */
+    200: En18222DppIdList;
+};
+
+export type ReadDppIdsByProductIdsResponse = ReadDppIdsByProductIdsResponses[keyof ReadDppIdsByProductIdsResponses];
+
+export type CreateDppData = {
+    /**
+     * EN 18222 Table 5 — the DigitalProductPassport to create.
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    path?: never;
+    query?: {
+        /**
+         * EN 18222 clause 8.1 names this flag on GET, POST and PATCH, so it is accepted here — but **on this method it selects nothing**. The result is an identifier, not a passport document. A value outside `compressed` / `full` / `expanded` is nonetheless refused with `400`: the flag is honoured or refused, never ignored, and silently accepting a value the node did not read would tell you your request was understood when it was not.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dpps';
+};
+
+export type CreateDppErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * A passport already exists for that product identifier in this workspace (`ClientResourceConflict`).
+     */
+    409: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type CreateDppError = CreateDppErrors[keyof CreateDppErrors];
+
+export type CreateDppResponses = {
+    /**
+     * The passport was created. The body is its `digitalProductPassportId` (EN 18222 Table 5).
+     */
+    201: string;
+};
+
+export type CreateDppResponse = CreateDppResponses[keyof CreateDppResponses];
+
+export type ReadDataElementData = {
+    body?: never;
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+        /**
+         * The absolute path to the data element, as an RFC 9535 JSONPath (EN 18222 clause 8.1), percent-encoded as one path segment.
+         *
+         * **Declared subset.** This node resolves the deterministic single-node subset: the root identifier `$`, name selectors in both spellings (`$.name`, `$['name']`, `$["name"]`) and the index selector including RFC 9535's negative form (`$.materials[0]`, `$.materials[-1]`). The wildcard, descendant (`..`), slice and filter selectors, and a comma union of several selectors, are **refused with `400`** naming the construct used. EN 18222 Table 9 and Table 10 both return a single `DataElement`, and RFC 9535's general grammar produces a nodelist of any length — the series states no rule for what a multi-node address means to a method that returns one element, so this node refuses rather than resolving the first match and presenting it as the addressed one.
+         */
+        elementIdPath: string;
+    };
+    query?: {
+        /**
+         * EN 18222 clause 8.1 — `compressed` (the default, EN 18223 clause 5.2) or `full` (EN 18223 Annex A). `expanded` is accepted as an alias of `full`, the word EN 18223 itself uses for the form. A value outside that set is refused, never silently downgraded.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dpps/{dppId}/elements/{elementIdPath}';
+};
+
+export type ReadDataElementErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type ReadDataElementError = ReadDataElementErrors[keyof ReadDataElementErrors];
+
+export type ReadDataElementResponses = {
+    /**
+     * EN 18222 Table 9 — the requested DataElement, as defined in EN 18223.
+     */
+    200: unknown;
+};
+
+export type UpdateDataElementData = {
+    /**
+     * EN 18222 Table 10 — the content of the data element to write. An explicit `null` removes the element.
+     */
+    body: unknown;
+    path: {
+        /**
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         */
+        dppId: string;
+        /**
+         * The absolute path to the data element, as an RFC 9535 JSONPath (EN 18222 clause 8.1), percent-encoded as one path segment.
+         *
+         * **Declared subset.** This node resolves the deterministic single-node subset: the root identifier `$`, name selectors in both spellings (`$.name`, `$['name']`, `$["name"]`) and the index selector including RFC 9535's negative form (`$.materials[0]`, `$.materials[-1]`). The wildcard, descendant (`..`), slice and filter selectors, and a comma union of several selectors, are **refused with `400`** naming the construct used. EN 18222 Table 9 and Table 10 both return a single `DataElement`, and RFC 9535's general grammar produces a nodelist of any length — the series states no rule for what a multi-node address means to a method that returns one element, so this node refuses rather than resolving the first match and presenting it as the addressed one.
+         */
+        elementIdPath: string;
+    };
+    query?: {
+        /**
+         * EN 18222 clause 8.1 names this flag on GET, POST and PATCH, so it is accepted here — but **on this method it selects nothing**. The result is an identifier, not a passport document. A value outside `compressed` / `full` / `expanded` is nonetheless refused with `400`: the flag is honoured or refused, never ignored, and silently accepting a value the node did not read would tell you your request was understood when it was not.
+         */
+        representation?: 'compressed' | 'full' | 'expanded';
+    };
+    url: '/v1/dpps/{dppId}/elements/{elementIdPath}';
+};
+
+export type UpdateDataElementErrors = {
+    /**
+     * Bad or malformed request (EN 18222 Table 15 `ClientErrorBadRequest`).
+     */
+    400: En18222Result;
+    /**
+     * Wrong or missing authorization credentials (`ClientNotAuthorized`).
+     */
+    401: En18222Result;
+    /**
+     * Authorization has been refused (`ClientForbidden`).
+     */
+    403: En18222Result;
+    /**
+     * Resource not found (`ClientErrorResourceNotFound`).
+     */
+    404: En18222Result;
+    /**
+     * The passport is sealed, so its data elements cannot be changed (`ClientResourceConflict`).
+     */
+    409: En18222Result;
+    /**
+     * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
+     */
+    429: En18222Result;
+    /**
+     * Unexpected error (`ServerInternalError`).
+     */
+    500: En18222Result;
+};
+
+export type UpdateDataElementError = UpdateDataElementErrors[keyof UpdateDataElementErrors];
+
+export type UpdateDataElementResponses = {
+    /**
+     * The data element as it now stands.
+     */
+    200: unknown;
+    /**
+     * The data element was removed (EN 18222 Table 15 `SuccessNoContent`).
+     */
+    204: void;
+};
+
+export type UpdateDataElementResponse = UpdateDataElementResponses[keyof UpdateDataElementResponses];
+
 export type ListFacilitiesData = {
     body?: never;
     path?: never;
@@ -6495,7 +7077,7 @@ export type BulkExportPassportLabelsError = BulkExportPassportLabelsErrors[keyof
 
 export type BulkExportPassportLabelsResponses = {
     /**
-     * A ZIP archive of QR images (one per resolved passport) plus a `manifest.json` reporting included/skipped ids.
+     * A ZIP archive of QR images (one per resolved passport) plus a `manifest.json` reporting the print parameters used and the included/skipped ids.
      */
     200: Blob | File;
 };

@@ -5,6 +5,7 @@ opendpp_sdk/api/account_api.py
 opendpp_sdk/api/battery_units_api.py
 opendpp_sdk/api/economic_operators_api.py
 opendpp_sdk/api/eidas_keys_api.py
+opendpp_sdk/api/en18222_life_cycle_api_api.py
 opendpp_sdk/api/facilities_api.py
 opendpp_sdk/api/passports_api.py
 opendpp_sdk/api/public_resolution_api.py
@@ -63,6 +64,9 @@ opendpp_sdk/models/did_web_document_verification_method_inner.py
 opendpp_sdk/models/dpp_json_ld_context_document.py
 opendpp_sdk/models/dpp_vocab_context_document.py
 opendpp_sdk/models/economic_operator_node.py
+opendpp_sdk/models/en18222_message.py
+opendpp_sdk/models/en18222_product_id_query.py
+opendpp_sdk/models/en18222_result.py
 opendpp_sdk/models/en18223_data_element.py
 opendpp_sdk/models/epcis_capture_response.py
 opendpp_sdk/models/epcis_capture_response_errors_inner.py

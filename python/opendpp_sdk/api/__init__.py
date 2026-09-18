@@ -4,6 +4,7 @@
 from opendpp_sdk.api.access_grants_api import AccessGrantsApi
 from opendpp_sdk.api.account_api import AccountApi
 from opendpp_sdk.api.battery_units_api import BatteryUnitsApi
+from opendpp_sdk.api.en18222_life_cycle_api_api import EN18222LifeCycleAPIApi
 from opendpp_sdk.api.economic_operators_api import EconomicOperatorsApi
 from opendpp_sdk.api.facilities_api import FacilitiesApi
 from opendpp_sdk.api.passports_api import PassportsApi

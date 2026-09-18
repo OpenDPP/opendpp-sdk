@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ApproveGrantRequestData, ApproveGrantRequestErrors, ApproveGrantRequestResponses, BulkExportPassportLabelsData, BulkExportPassportLabelsErrors, BulkExportPassportLabelsResponses, BulkIngestPassportsData, BulkIngestPassportsErrors, BulkIngestPassportsResponses, BulkRecordBatteryUnitEventsData, BulkRecordBatteryUnitEventsErrors, BulkRecordBatteryUnitEventsResponses, CaptureEpcisDocumentData, CaptureEpcisDocumentErrors, CaptureEpcisDocumentResponses, CreateFacilityData, CreateFacilityErrors, CreateFacilityResponses, CreateGrantData, CreateGrantErrors, CreateGrantResponses, CreatePassportData, CreatePassportErrors, CreatePassportResponses, CreateWebhookSubscriptionData, CreateWebhookSubscriptionErrors, CreateWebhookSubscriptionResponses, DecodeGs1BatchData, DecodeGs1BatchErrors, DecodeGs1BatchResponses, DecodeGs1Data, DecodeGs1Errors, DecodeGs1Responses, DeleteBatteryUnitData, DeleteBatteryUnitErrors, DeleteDraftPassportData, DeleteDraftPassportErrors, DeleteDraftPassportResponses, DeleteFacilityData, DeleteFacilityErrors, DeleteFacilityResponses, DeleteOperatorData, DeleteOperatorErrors, DeleteOperatorResponses, DeleteWebhookSubscriptionData, DeleteWebhookSubscriptionErrors, DeleteWebhookSubscriptionResponses, DenyGrantRequestData, DenyGrantRequestErrors, DenyGrantRequestResponses, GetApiVersionData, GetApiVersionErrors, GetApiVersionResponses, GetBatteryUnitData, GetBatteryUnitErrors, GetBatteryUnitQrCodeData, GetBatteryUnitQrCodeErrors, GetBatteryUnitQrCodeResponses, GetBatteryUnitResponses, GetDppJsonLdContextData, GetDppJsonLdContextErrors, GetDppJsonLdContextResponses, GetDppVocabularyData, GetDppVocabularyErrors, GetDppVocabularyResponses, GetEventLineageData, GetEventLineageErrors, GetEventLineageResponses, GetFacilityData, GetFacilityErrors, GetFacilityResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetJsonLdContextData, GetJsonLdContextErrors, GetJsonLdContextResponses, GetOperatorData, GetOperatorErrors, GetOperatorResponses, GetPassportData, GetPassportErrors, GetPassportQrCodeData, GetPassportQrCodeErrors, GetPassportQrCodeResponses, GetPassportResponses, GetPassportVersionAtDateData, GetPassportVersionAtDateErrors, GetPassportVersionAtDateResponses, GetPassportVersionData, GetPassportVersionErrors, GetPassportVersionResponses, GetSealCaCertificateData, GetSealCaCertificateErrors, GetSealCaCertificateResponses, GetSectorSchemaData, GetSectorSchemaErrors, GetSectorSchemaResponses, GetTenantDidDocumentData, GetTenantDidDocumentErrors, GetTenantDidDocumentResponses, GetTenantRevocationStatusListData, GetTenantRevocationStatusListErrors, GetTenantRevocationStatusListResponses, IngestPassportFromAasData, IngestPassportFromAasErrors, IngestPassportFromAasResponses, ListBatteryUnitEventsData, ListBatteryUnitEventsErrors, ListBatteryUnitEventsResponses, ListBatteryUnitsData, ListBatteryUnitsErrors, ListBatteryUnitsResponses, ListFacilitiesData, ListFacilitiesErrors, ListFacilitiesResponses, ListGrantsData, ListGrantsErrors, ListGrantsResponses, ListMaterialsData, ListMaterialsErrors, ListMaterialsResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListPassportHistoryData, ListPassportHistoryErrors, ListPassportHistoryResponses, ListPassportsData, ListPassportsErrors, ListPassportsResponses, ListWebhookDeliveriesData, ListWebhookDeliveriesErrors, ListWebhookDeliveriesResponses, ListWebhookSubscriptionsData, ListWebhookSubscriptionsErrors, ListWebhookSubscriptionsResponses, MintGtinCheckDigitData, MintGtinCheckDigitErrors, MintGtinCheckDigitResponses, PassportVcReadinessReportData, PassportVcReadinessReportResponses, RecordBatteryUnitEventData, RecordBatteryUnitEventErrors, RecordBatteryUnitEventResponses, RegisterOperatorData, RegisterOperatorErrors, RegisterOperatorResponses, RegisterTraceabilityEventData, RegisterTraceabilityEventErrors, RegisterTraceabilityEventResponses, ResolveGs1GraiData, ResolveGs1GraiErrors, ResolveGs1GraiResponses, ResolveGs1GtinData, ResolveGs1GtinErrors, ResolveGs1GtinResponses, ResolveGs1GtinSerialData, ResolveGs1GtinSerialErrors, ResolvePublicBatteryUnitData, ResolvePublicBatteryUnitErrors, ResolvePublicBatteryUnitResponses, ResolvePublicPassportData, ResolvePublicPassportErrors, ResolvePublicPassportResponses, RestoreOperatorData, RestoreOperatorErrors, RestoreOperatorResponses, RevokeGrantData, RevokeGrantErrors, RevokeGrantResponses, RotateTenantKeysData, RotateTenantKeysErrors, RotateTenantKeysResponses, RotateWebhookSecretData, RotateWebhookSecretErrors, RotateWebhookSecretResponses, SealPassportData, SealPassportErrors, SealPassportResponses, SerializeBatteryUnitsData, SerializeBatteryUnitsErrors, SerializeBatteryUnitsResponses, TestWebhookSubscriptionData, TestWebhookSubscriptionErrors, TestWebhookSubscriptionResponses, UpdateFacilityData, UpdateFacilityErrors, UpdateFacilityResponses, UpdateOperatorData, UpdateOperatorErrors, UpdateOperatorResponses, UpdatePassportData, UpdatePassportErrors, UpdatePassportResponses, UpdatePassportStatusData, UpdatePassportStatusErrors, UpdatePassportStatusResponses, UpdateWebhookSubscriptionData, UpdateWebhookSubscriptionErrors, UpdateWebhookSubscriptionResponses, ValidateBatteryUnitsData, ValidateBatteryUnitsErrors, ValidateBatteryUnitsResponses, ValidatePassportData, ValidatePassportErrors, ValidatePassportPublicData, ValidatePassportPublicErrors, ValidatePassportPublicResponses, ValidatePassportResponses, VerifyPassportSealData, VerifyPassportSealErrors, VerifyPassportSealResponses, WhoamiData, WhoamiErrors, WhoamiResponses } from './types.gen';
+import type { ApproveGrantRequestData, ApproveGrantRequestErrors, ApproveGrantRequestResponses, BulkExportPassportLabelsData, BulkExportPassportLabelsErrors, BulkExportPassportLabelsResponses, BulkIngestPassportsData, BulkIngestPassportsErrors, BulkIngestPassportsResponses, BulkRecordBatteryUnitEventsData, BulkRecordBatteryUnitEventsErrors, BulkRecordBatteryUnitEventsResponses, CaptureEpcisDocumentData, CaptureEpcisDocumentErrors, CaptureEpcisDocumentResponses, CreateDppData, CreateDppErrors, CreateDppResponses, CreateFacilityData, CreateFacilityErrors, CreateFacilityResponses, CreateGrantData, CreateGrantErrors, CreateGrantResponses, CreatePassportData, CreatePassportErrors, CreatePassportResponses, CreateWebhookSubscriptionData, CreateWebhookSubscriptionErrors, CreateWebhookSubscriptionResponses, DecodeGs1BatchData, DecodeGs1BatchErrors, DecodeGs1BatchResponses, DecodeGs1Data, DecodeGs1Errors, DecodeGs1Responses, DeleteBatteryUnitData, DeleteBatteryUnitErrors, DeleteDppByIdData, DeleteDppByIdErrors, DeleteDppByIdResponses, DeleteDraftPassportData, DeleteDraftPassportErrors, DeleteDraftPassportResponses, DeleteFacilityData, DeleteFacilityErrors, DeleteFacilityResponses, DeleteOperatorData, DeleteOperatorErrors, DeleteOperatorResponses, DeleteWebhookSubscriptionData, DeleteWebhookSubscriptionErrors, DeleteWebhookSubscriptionResponses, DenyGrantRequestData, DenyGrantRequestErrors, DenyGrantRequestResponses, GetApiVersionData, GetApiVersionErrors, GetApiVersionResponses, GetBatteryUnitData, GetBatteryUnitErrors, GetBatteryUnitQrCodeData, GetBatteryUnitQrCodeErrors, GetBatteryUnitQrCodeResponses, GetBatteryUnitResponses, GetDppJsonLdContextData, GetDppJsonLdContextErrors, GetDppJsonLdContextResponses, GetDppVocabularyData, GetDppVocabularyErrors, GetDppVocabularyResponses, GetEventLineageData, GetEventLineageErrors, GetEventLineageResponses, GetFacilityData, GetFacilityErrors, GetFacilityResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetJsonLdContextData, GetJsonLdContextErrors, GetJsonLdContextResponses, GetOperatorData, GetOperatorErrors, GetOperatorResponses, GetPassportData, GetPassportErrors, GetPassportQrCodeData, GetPassportQrCodeErrors, GetPassportQrCodeResponses, GetPassportResponses, GetPassportVersionAtDateData, GetPassportVersionAtDateErrors, GetPassportVersionAtDateResponses, GetPassportVersionData, GetPassportVersionErrors, GetPassportVersionResponses, GetSealCaCertificateData, GetSealCaCertificateErrors, GetSealCaCertificateResponses, GetSectorSchemaData, GetSectorSchemaErrors, GetSectorSchemaResponses, GetTenantDidDocumentData, GetTenantDidDocumentErrors, GetTenantDidDocumentResponses, GetTenantRevocationStatusListData, GetTenantRevocationStatusListErrors, GetTenantRevocationStatusListResponses, IngestPassportFromAasData, IngestPassportFromAasErrors, IngestPassportFromAasResponses, ListBatteryUnitEventsData, ListBatteryUnitEventsErrors, ListBatteryUnitEventsResponses, ListBatteryUnitsData, ListBatteryUnitsErrors, ListBatteryUnitsResponses, ListFacilitiesData, ListFacilitiesErrors, ListFacilitiesResponses, ListGrantsData, ListGrantsErrors, ListGrantsResponses, ListMaterialsData, ListMaterialsErrors, ListMaterialsResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListPassportHistoryData, ListPassportHistoryErrors, ListPassportHistoryResponses, ListPassportsData, ListPassportsErrors, ListPassportsResponses, ListWebhookDeliveriesData, ListWebhookDeliveriesErrors, ListWebhookDeliveriesResponses, ListWebhookSubscriptionsData, ListWebhookSubscriptionsErrors, ListWebhookSubscriptionsResponses, MintGtinCheckDigitData, MintGtinCheckDigitErrors, MintGtinCheckDigitResponses, PassportVcReadinessReportData, PassportVcReadinessReportResponses, ReadDataElementData, ReadDataElementErrors, ReadDataElementResponses, ReadDppByIdData, ReadDppByIdErrors, ReadDppByIdResponses, ReadDppByProductIdData, ReadDppByProductIdErrors, ReadDppByProductIdResponses, ReadDppIdsByProductIdsData, ReadDppIdsByProductIdsErrors, ReadDppIdsByProductIdsResponses, ReadDppVersionByIdAndDateData, ReadDppVersionByIdAndDateErrors, ReadDppVersionByIdAndDateResponses, RecordBatteryUnitEventData, RecordBatteryUnitEventErrors, RecordBatteryUnitEventResponses, RegisterOperatorData, RegisterOperatorErrors, RegisterOperatorResponses, RegisterTraceabilityEventData, RegisterTraceabilityEventErrors, RegisterTraceabilityEventResponses, ResolveGs1GraiData, ResolveGs1GraiErrors, ResolveGs1GraiResponses, ResolveGs1GtinData, ResolveGs1GtinErrors, ResolveGs1GtinResponses, ResolveGs1GtinSerialData, ResolveGs1GtinSerialErrors, ResolvePublicBatteryUnitData, ResolvePublicBatteryUnitErrors, ResolvePublicBatteryUnitResponses, ResolvePublicPassportData, ResolvePublicPassportErrors, ResolvePublicPassportResponses, RestoreOperatorData, RestoreOperatorErrors, RestoreOperatorResponses, RevokeGrantData, RevokeGrantErrors, RevokeGrantResponses, RotateTenantKeysData, RotateTenantKeysErrors, RotateTenantKeysResponses, RotateWebhookSecretData, RotateWebhookSecretErrors, RotateWebhookSecretResponses, SealPassportData, SealPassportErrors, SealPassportResponses, SerializeBatteryUnitsData, SerializeBatteryUnitsErrors, SerializeBatteryUnitsResponses, TestWebhookSubscriptionData, TestWebhookSubscriptionErrors, TestWebhookSubscriptionResponses, UpdateDataElementData, UpdateDataElementErrors, UpdateDataElementResponses, UpdateDppByIdData, UpdateDppByIdErrors, UpdateDppByIdResponses, UpdateFacilityData, UpdateFacilityErrors, UpdateFacilityResponses, UpdateOperatorData, UpdateOperatorErrors, UpdateOperatorResponses, UpdatePassportData, UpdatePassportErrors, UpdatePassportResponses, UpdatePassportStatusData, UpdatePassportStatusErrors, UpdatePassportStatusResponses, UpdateWebhookSubscriptionData, UpdateWebhookSubscriptionErrors, UpdateWebhookSubscriptionResponses, ValidateBatteryUnitsData, ValidateBatteryUnitsErrors, ValidateBatteryUnitsResponses, ValidatePassportData, ValidatePassportErrors, ValidatePassportPublicData, ValidatePassportPublicErrors, ValidatePassportPublicResponses, ValidatePassportResponses, VerifyPassportSealData, VerifyPassportSealErrors, VerifyPassportSealResponses, WhoamiData, WhoamiErrors, WhoamiResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -182,6 +182,169 @@ export const recordBatteryUnitEvent = <ThrowOnError extends boolean = false>(opt
 export const bulkRecordBatteryUnitEvents = <ThrowOnError extends boolean = false>(options: Options<BulkRecordBatteryUnitEventsData, ThrowOnError>): RequestResult<BulkRecordBatteryUnitEventsResponses, BulkRecordBatteryUnitEventsErrors, ThrowOnError> => (options.client ?? client).post<BulkRecordBatteryUnitEventsResponses, BulkRecordBatteryUnitEventsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/units/{id}/events/bulk',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * DeleteDPPById — remove the DPP with the specified DPP ID
+ *
+ * **EN 18222:2026 clause 4.8, Table 7; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **should** be made available by the main DPP service provider and by a back-up provider — expressly not by the creator.
+ *
+ * Table 7 declares no output payload, so a successful deletion answers `204` (EN 18222 Table 15 `SuccessNoContent`).
+ *
+ * **Access rules control whether deletion is allowed**, and here they are strict: a passport that was ever published or sealed is **not** deletable, because ESPR Article 77(8) makes it persist. That refusal is reported, not softened — this method removes a passport that was never published.
+ *
+ * **Permission:** `passport:update`.
+ */
+export const deleteDppById = <ThrowOnError extends boolean = false>(options: Options<DeleteDppByIdData, ThrowOnError>): RequestResult<DeleteDppByIdResponses, DeleteDppByIdErrors, ThrowOnError> => (options.client ?? client).delete<DeleteDppByIdResponses, DeleteDppByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps/{dppId}',
+    ...options
+});
+
+/**
+ * ReadDPPById — return the DPP with the specified DPP ID
+ *
+ * **EN 18222:2026 clause 4.2, Table 1; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **shall** be made available by the creator of the digital product passport or their main DPP service provider, as well as by a back-up DPP service provider. OpenDPP is declared the **main** provider.
+ *
+ * The response is the passport itself: Table 16 reports the result "except status code", so the status code is the HTTP status (EN 18222 Table 15) and the body is the payload alone, with no envelope.
+ *
+ * **Permission:** `passport:read`. Access rules decide which data elements the response carries — an owner key sees the owner tier, other credentials the public-redacted one.
+ */
+export const readDppById = <ThrowOnError extends boolean = false>(options: Options<ReadDppByIdData, ThrowOnError>): RequestResult<ReadDppByIdResponses, ReadDppByIdErrors, ThrowOnError> => (options.client ?? client).get<ReadDppByIdResponses, ReadDppByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps/{dppId}',
+    ...options
+});
+
+/**
+ * UpdateDPPById — partial update of a DPP with a specified DPP ID
+ *
+ * **EN 18222:2026 clause 4.7, Table 6; bound by clause 8.2, Table 16.** Clause 4.1 makes this a **shall** for the creator or their main provider *if authorized third parties have access rights to update parts of the DPP*.
+ *
+ * The body is a `partialDPP` — "only contains data that need to be updated or are extended with new data". It is applied as an RFC 7396 JSON Merge Patch, which clause 8.1 names for update operations: a member set to `null` is removed, an object member merges recursively, anything else replaces. Data elements may be named directly (they are the passport's own product data) or wrapped in `metadata`.
+ *
+ * Clause 4.7 requires that "if the update of some parts fails the complete update process will fail and there should be no changes adopted in the DPP" — the merge is computed in full and written in one transaction, so a rejected member changes nothing. It also requires that "all changes to the digital product passport shall be archived in accordance with EN 18221:2026": the write goes through this node's single passport-mutation seam, which snapshots the passport as it was and chains a content hash over the previous version.
+ *
+ * Members this node **derives** — the EN 18223 Table 1 header attributes, the seal, the lifecycle status and the embedded operator and facility nodes — are refused with `403` rather than silently ignored.
+ *
+ * **Permission:** `passport:update`.
+ */
+export const updateDppById = <ThrowOnError extends boolean = false>(options: Options<UpdateDppByIdData, ThrowOnError>): RequestResult<UpdateDppByIdResponses, UpdateDppByIdErrors, ThrowOnError> => (options.client ?? client).patch<UpdateDppByIdResponses, UpdateDppByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps/{dppId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * ReadDPPByProductId — return the current active DPP for a product identifier
+ *
+ * **EN 18222:2026 clause 4.3, Table 2; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **shall** be made available.
+ *
+ * Table 2 returns "the current active DPP (latest version)" for the unique product identifier as defined in EN 18219. This door reads the product identifier and nothing else — a `digitalProductPassportId` is not accepted, because EN 18222 gives that its own path.
+ *
+ * **Permission:** `passport:read`.
+ */
+export const readDppByProductId = <ThrowOnError extends boolean = false>(options: Options<ReadDppByProductIdData, ThrowOnError>): RequestResult<ReadDppByProductIdResponses, ReadDppByProductIdErrors, ThrowOnError> => (options.client ?? client).get<ReadDppByProductIdResponses, ReadDppByProductIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dppsByProductId/{productId}',
+    ...options
+});
+
+/**
+ * ReadDPPVersionByIdAndDate — return the DPP version current at a given date
+ *
+ * **EN 18222:2026 clause 4.4, Table 3; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **should** be made available by the main provider and by a back-up provider — expressly not by the creator. Table 3 notes the method is optional for the economic operator.
+ *
+ * The version returned is the one that was current at the instant given: the node archives a snapshot before each change, so the first snapshot recorded after the instant holds the state that was current at it.
+ *
+ * **Permission:** `passport:read`.
+ */
+export const readDppVersionByIdAndDate = <ThrowOnError extends boolean = false>(options: Options<ReadDppVersionByIdAndDateData, ThrowOnError>): RequestResult<ReadDppVersionByIdAndDateResponses, ReadDppVersionByIdAndDateErrors, ThrowOnError> => (options.client ?? client).get<ReadDppVersionByIdAndDateResponses, ReadDppVersionByIdAndDateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dppsByIdAndDate/{dppId}',
+    ...options
+});
+
+/**
+ * ReadDPPIdsByProductIds — return the DPP identifiers matching a set of product identifiers
+ *
+ * **EN 18222:2026 clause 4.5, Table 4; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **shall** be made available, and it is the method EN 18222's own Annex ZA leans on hardest — five of Table ZA.1's six rows cite clause 4.5.
+ *
+ * The result is the set of `digitalProductPassportId` values, not the passports; fetch each with `ReadDPPById`.
+ *
+ * **Pagination.** Clause 4.5 lets the client set `limit` and `cursor`, and requires that "the value of the cursor shall not be empty" — a `cursor` present but empty is refused rather than treated as a restart, which would repeat rows the client already holds. Table 16 reports the result "except status code **and pagination**", so the continuation is carried out of band as an RFC 8288 `Link` header with `rel="next"`; its absence means the last page.
+ *
+ * **Permission:** `passport:read`.
+ */
+export const readDppIdsByProductIds = <ThrowOnError extends boolean = false>(options: Options<ReadDppIdsByProductIdsData, ThrowOnError>): RequestResult<ReadDppIdsByProductIdsResponses, ReadDppIdsByProductIdsErrors, ThrowOnError> => (options.client ?? client).post<ReadDppIdsByProductIdsResponses, ReadDppIdsByProductIdsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dppsByProductIds',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * CreateDPP — create a new DPP and return its identifier
+ *
+ * **EN 18222:2026 clause 4.6, Table 5; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **should** be made available by the main DPP service provider and by a back-up provider — expressly not by the creator. OpenDPP is declared the main provider and never the creator: the economic operator is always the creator, and this method is how a creator's passport comes to be hosted here.
+ *
+ * Table 5's output is the **DPP ID**, not the passport, so a successful creation answers `201` (EN 18222 Table 15 `SuccessCreated`) with the new `digitalProductPassportId` as the body and a `Location` header pointing at its `ReadDPPById` path.
+ *
+ * **Permission:** `passport:create`.
+ */
+export const createDpp = <ThrowOnError extends boolean = false>(options: Options<CreateDppData, ThrowOnError>): RequestResult<CreateDppResponses, CreateDppErrors, ThrowOnError> => (options.client ?? client).post<CreateDppResponses, CreateDppErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * ReadDataElement — return one data element by its absolute path
+ *
+ * **EN 18222:2026 clause 6.2, Table 9; bound by clause 8.4, Table 18.** Clause 4.1 lists this among the methods that **should** be made available by the creator or their main provider, as well as by a back-up provider. Clause 6.1 itself is permissive ("may be made available"), so the obligation is the one clause 4.1 states.
+ *
+ * The element is addressed within the passport document in the requested representation, so the access tier that governs `ReadDPPById` governs which elements are addressable here too.
+ *
+ * **Permission:** `passport:read`.
+ */
+export const readDataElement = <ThrowOnError extends boolean = false>(options: Options<ReadDataElementData, ThrowOnError>): RequestResult<ReadDataElementResponses, ReadDataElementErrors, ThrowOnError> => (options.client ?? client).get<ReadDataElementResponses, ReadDataElementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps/{dppId}/elements/{elementIdPath}',
+    ...options
+});
+
+/**
+ * UpdateDataElement — update, amend or remove one data element
+ *
+ * **EN 18222:2026 clause 6.3, Table 10; bound by clause 8.4, Table 18.** Clause 4.1 lists this among the methods that **should** be made available if authorized third parties have access rights to update parts of the DPP.
+ *
+ * Clause 6.3: the method "also allows to amend or remove data element information". So a path whose parent exists but whose member does not is **created**, and an explicit `null` body **removes** the element — the RFC 7396 convention clause 8.1 points at. A removal has nothing to return and answers `204` (EN 18222 Table 15 `SuccessNoContent`); any other update answers `200` with the changed element (Table 10).
+ *
+ * Elements this node **derives** — the EN 18223 Table 1 header attributes, the seal, the lifecycle status, the embedded operator and facility nodes — are refused with `403`: they are published in the document but are computed from the record and its seal, not written by the operator.
+ *
+ * The write goes through the same passport-mutation seam as every other, so the EN 18221 archiving duty is discharged identically.
+ *
+ * **Permission:** `passport:update`.
+ */
+export const updateDataElement = <ThrowOnError extends boolean = false>(options: Options<UpdateDataElementData, ThrowOnError>): RequestResult<UpdateDataElementResponses, UpdateDataElementErrors, ThrowOnError> => (options.client ?? client).patch<UpdateDataElementResponses, UpdateDataElementErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/dpps/{dppId}/elements/{elementIdPath}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1139,7 +1302,7 @@ export const getPassportQrCode = <ThrowOnError extends boolean = false>(options:
 /**
  * Bulk-export print-grade QR labels for many passports as a ZIP
  *
- * Renders a GS1 Digital Link QR code for each of the supplied passports and returns them as a single `application/zip` download (`Content-Disposition: attachment; filename="labels.zip"`) — the export counterpart to the bulk import. One image entry per resolved passport, named `<productId>.<png|svg>` (characters outside `[A-Za-z0-9._-]` replaced by `_`, truncated to 80 chars; duplicate names get a `-2`, `-3`, … suffix), plus a `manifest.json` listing what was `included` and `skipped`.
+ * Renders a GS1 Digital Link QR code for each of the supplied passports and returns them as a single `application/zip` download (`Content-Disposition: attachment; filename="labels.zip"`) — the export counterpart to the bulk import. One image entry per resolved passport, named `<productId>.<png|svg>` (characters outside `[A-Za-z0-9._-]` replaced by `_`, truncated to 80 chars; duplicate names get a `-2`, `-3`, … suffix), plus a `manifest.json` listing what was `included` and `skipped` and echoing back the print parameters the batch was rendered with — `format`, `size`, `errorCorrection`, `hri`, and `xDimensionMm` when one was requested. An `included` entry also carries `divergesFromDeclaration` when that passport's EN 18220 carrier declaration names a parameter these labels do not match, each as `{ parameter, declared, rendered, reason? }` — `reason` appearing only where the artwork could not have carried the declared value rather than not having been asked to. Those are the factors that decide whether a printed symbol scans, so the manifest states them rather than leaving a print shop to infer them from the images.
  *
  * **Permission:** `passport:read` (read-only — no subscription/402 gate, and NOT subject to the programmatic API-write entitlement).
  *

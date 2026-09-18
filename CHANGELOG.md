@@ -29,6 +29,33 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.17.0] — TypeScript · Java/Kotlin · Python
+
+Generated from API contract **1.17.0**, which adds the CEN EN 18222:2026 Life Cycle API.
+
+### Added
+
+- Nine new operations, named by the standard rather than by this node: `readDPPById`,
+  `readDPPByProductId`, `readDPPVersionByIdAndDate`, `readDPPIdsByProductIds`, `createDPP`,
+  `updateDPPById`, `deleteDPPById`, `readDataElement`, `updateDataElement`.
+- New models: `En18222Result` and `En18222Message` (the EN 18222 Table 12/13 failure object),
+  `En18222DppIdList`, `En18222ProductIdQuery`.
+
+### Notes for integrators
+
+- **These operations do not replace the `/api/v1/passports` ones** — they reach the same passports
+  through the EN 18222 binding. Use them when your client is written against the standard; use the
+  contract's own operations when it is written against this node.
+- **The success body is the payload itself**, not a wrapper: `readDPPById` returns the passport
+  document, `createDPP` returns the identifier string, `readDPPIdsByProductIds` returns the identifier
+  array. Errors deserialise as `En18222Result`, whose `message[].code` carries the EN 18222 Table 15
+  generic status code beside the HTTP status.
+- **`readDPPIdsByProductIds` paginates out of band**: pass `limit` and `cursor` as query parameters and
+  read the next page from the RFC 8288 `Link` header with `rel="next"`. Its absence means the last page.
+  An empty `cursor` is refused — EN 18222 clause 4.5 requires the value not be empty.
+- **`updateDataElement` accepts a bare JSON scalar** as the body, because an EN 18223 data element
+  frequently is one. Sending `null` removes the element and answers `204`.
+
 ## [1.16.0] — TypeScript · Java/Kotlin · Python
 
 Targets API contract **1.16.0** (the passport document, its identifiers and the API's conduct aligned
