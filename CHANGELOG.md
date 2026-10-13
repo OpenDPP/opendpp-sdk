@@ -29,6 +29,98 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.18.0] — TypeScript · Java/Kotlin · Python
+
+Generated from API contract **1.18.0**, which adds the node's EN 18222 clause 4.1 service-provider
+role to the version endpoint.
+
+### Added
+
+- A `BatteryUnitRefusalReason` model: a stable `code` and its `params`. It appears as the new optional
+  `reasons` on the unit-serialisation responses (`201` and the all-items-failed `400`) and as `reason`
+  on each refused result of the validate pre-flight. Existing fields are unchanged.
+
+- `getApiVersion` now returns **`providerRole`** on the `ServiceVersion` model — `"main"` or
+  `"backup"`, the CEN EN 18222:2026 clause 4.1 role the node operates as.
+- `CarrierDeclaration` gains an optional **`presenceMark`** string: how a person can tell an NFC or
+  RFID carrier is there (EN 18220 §5.7.1). `AdvisoryItem.code` gains `CARRIER_PRESENCE_UNMARKED`,
+  a warning for a radio carrier declared without one. A client switching exhaustively on the code
+  should add a case; an unknown code is still just a warning.
+
+### Notes
+
+- The property is **optional** in every generated language (`Optional[str]` in Python, `string | undefined`
+  in TypeScript, a nullable getter in Java), even though a 1.18.0 node always sends it. That is
+  deliberate: a node still serving 1.17.x does not send it, and a required model would make the
+  client throw on a perfectly valid response from such a node. Read the value; do not treat its
+  absence as a role.
+- Compatibility runs both ways: a client built against 1.17.x keeps working against a 1.18.0 node and
+  simply does not see the field, and a client built against 1.18.0 keeps working against a 1.17.x node.
+
+### Changed
+
+- `getTenantRevocationStatusList` is limited to 30 requests per minute per IP, so a client that
+  fetches the status list in a tight loop now receives `429` sooner. No generated signature changes;
+  cache the list per issuer, as a verifier should.
+
+- Updating a sealed passport no longer fails with `403`: `updatePassport`, `ingestPassportFromAas`,
+  `bulkIngestPassports` (with `upsert`), `updateDPPById` and `updateDataElement` succeed and the update
+  responses gain an optional **`resealRequired`** (`true` when a seal was cleared). The sealed version
+  stays in the archive; call `sealPassport` to seal the new one. No generated signature changes.
+- `registerOperator` can answer `409` with the new `Error.code` value **`OPERATOR_DUPLICATE`**. A client
+  switching exhaustively on the code should add a case.
+- A `402` now carries `code: "subscription_inactive"` and is never returned for a read.
+
+- `readDPPVersionByIdAndDate` declares the same response representations as `readDPPById` (JSON-LD,
+  XML, HTML, AAS and the credential encodings) and a `406`. A client that sends no `Accept`, or asks for
+  JSON-LD, receives what it did before; the `representation` parameter it already exposed now takes
+  effect.
+- The `productId` parameter of `readDPPByProductId` and `readDPPIdsByProductIds` also accepts the
+  passport document's `uniqueProductIdentifier`. No generated signature changes.
+- `retentionUntil` now means the instant a passport's lifetime ended, and is set far less often.
+  Decommissioning (`updatePassportStatus`) and archiving no longer set it: no instrument gives a
+  passport a fixed number of years. It is set, 30 days ahead, when a battery model is decommissioned and
+  every battery under it has been recycled (Battery Regulation Art. 77(8)). Inside those 30 days,
+  reactivating the model or serialising a live battery under it clears it again. A value already
+  written is kept.
+- `updatePassportStatus` and `serializeBatteryUnits` can answer `409` with the new
+  `Error.code` value `PASSPORT_LIFETIME_ENDED`, once `retentionUntil` has passed. A client switching
+  exhaustively on the code should add a case.
+- `deleteDraftPassport` (the name is kept, so no generated method changes) and `deleteDPPById` delete
+  what the law allows:
+  - a never-published draft, as before, or a passport whose lifetime has ended — a second success
+    message, `Passport deleted: its lifetime has ended.`;
+  - everything else is refused with `409`, and the house operation now carries
+    `Error.code` `PASSPORT_RETENTION_REQUIRED`;
+  - on a back-up node, `deleteDPPById` answers `409` instead of `405`, and a copy is never deleted on
+    request.
+- `CarrierDeclaration` gains `printQuality`, the print-quality grade structured by its method: an
+  ISO/IEC 15415:2024 grade with its aperture and wavelength (`CarrierPrintQuality15415`), or an ISO/IEC
+  29158 direct-part-mark grade A–F (`CarrierPrintQuality29158`). It also gains `printMethod`. The method
+  must follow the placement (`ISO_IEC_29158` for `PRODUCT` only); a mismatch is a `400`.
+  `printQualityGrade` is deprecated and still accepted, but not together with `printQuality`.
+- Ingest `warnings[]` gain four codes: `CARRIER_QUALITY_UNGRADED`, `CARRIER_GRADE_BELOW_TYPICAL`,
+  `CARRIER_GRADE_UNSTRUCTURED` and `CARRIER_LABEL_UNASSESSED`. They are advisory; a client switching
+  exhaustively on the code should add cases.
+- On a back-up node, `createDPP` refuses a replicated document that declares itself a draft
+  (`status: DRAFT`) with `400`. A node never replicates a draft.
+- On a back-up node, the document reads (`readDPPById`, `readDPPByProductId`,
+  `readDPPVersionByIdAndDate`, `readDataElement`) serve a portal session the public tier, as a main node
+  does. The owner tier needs an API key sent as `Authorization: Bearer`, in both roles. No generated
+  signature changes.
+
+### Fixed
+
+- `listGrants` gains an optional **`status`** parameter (`PENDING`, `ACTIVE`, `DENIED`, `REVOKED`).
+- `updateDPPById` and `updateDataElement` responses carry the `x-opendpp-reseal-required` and
+  `x-opendpp-warnings` headers; read them from the raw response if you need to know a seal was cleared.
+- `ingestPassportFromAas` no longer stores an embedded environment seal as the passport seal, and an
+  unchanged re-ingest keeps an existing seal. The battery-unit operations may now answer `409` for an
+  ambiguous `productId` and `400` for a `manufacturedAt` that names no real day.
+- The `400` response example on `GET /01/{productId}` and `GET /8003/{productId}` names
+  `brand.<the node's own base domain>` instead of `brand.opendpp.eu`. Example text only; nothing a
+  generated client executes differs.
+
 ## [1.17.0] — TypeScript · Java/Kotlin · Python
 
 Generated from API contract **1.17.0**, which adds the CEN EN 18222:2026 Life Cycle API.

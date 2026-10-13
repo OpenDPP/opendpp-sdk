@@ -40,7 +40,7 @@ export const whoami = <ThrowOnError extends boolean = false>(options?: Options<W
  *
  * NON-MUTATING pre-flight for bulk unit import. Runs the SAME engine-backed AI-21 / GS1 Digital Link conformance + field checks as `POST /api/v1/passports/{passportId}/units` and returns a per-item verdict — **persisting nothing**. Send a single unit or `{"units": [...]}` (≤200). Lets a bulk importer ask "would these serials be GS1-conformant?" before committing a batch.
  *
- * **Permission:** `battery:write` (gated as the write permission, like other validate-only checks; subscription gating → 402). **Validation:** `serialNumber` charset/length (`^[A-Za-z0-9._-]{1,20}$`, a URL-safe subset of GS1 AI-21 CSET 82) PLUS authoritative GS1-engine conformance for EVERY unit — a GTIN-keyed passport's unit Digital Link must parse cleanly through the engine, and a non-GTIN passport's AI-21 serial VALUE is validated through the same engine (CSET-82 charset + length); `status` must be a valid unit status; `manufacturedAt` must be Date-parseable. Predecessor linkage is NOT checked here (a persistence-time concern). The verdict order matches the input order.
+ * **Permission:** `battery:write` (gated as the write permission, like other validate-only checks; subscription gating → 402). **Validation:** `serialNumber` charset/length (`^[A-Za-z0-9._-]{1,20}$`, a URL-safe subset of GS1 AI-21 CSET 82) PLUS authoritative GS1-engine conformance for EVERY unit — a GTIN-keyed passport's unit Digital Link must parse cleanly through the engine, and a non-GTIN passport's AI-21 serial VALUE is validated through the same engine (CSET-82 charset + length); `status` must be a valid unit status; `manufacturedAt` must name a real calendar date (an impossible day such as `2026-02-30` is refused, never rolled into the next month) in a year from 1900 to next year, and must not be written with the day and month as two small numbers (`03/04/2026`, `03-04-2026`, `3.4.26` — refused, since they read as different days in different places; write `YYYY-MM-DD`). Predecessor linkage is NOT checked here (a persistence-time concern). The verdict order matches the input order.
  *
  * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
@@ -76,11 +76,11 @@ export const listBatteryUnits = <ThrowOnError extends boolean = false>(options: 
  *
  * **Permission:** `battery:write`. Bearer API key (`op_dpp_token_…`) or session JWT; cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only serialise under passports of their own Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
  *
- * **Per-item validation (collected as plain-string errors, not a rejection of the whole batch):** `serialNumber` is trimmed then must match `^[A-Za-z0-9._-]{1,20}$` (a URL-safe subset of GS1 AI-21 CSET 82, ≤ 20 chars) AND is validated to full AI-21 conformance by GS1's authoritative engine — a GTIN-keyed unit through its full Digital Link, a non-GTIN unit through its AI-21 serial value; `status` must be a valid unit status; `manufacturedAt` must be Date-parseable; duplicate `(passport, serialNumber)` pairs are skipped with *"A unit with this serial already exists for this passport"*. Each created unit gets a per-unit GS1 Digital Link URI `/{01|8003}/{productId}/21/{serialNumber}` carrying the **real physical serial** in AI-21.
+ * **Per-item validation (collected as plain-string errors, not a rejection of the whole batch):** `serialNumber` is trimmed then must match `^[A-Za-z0-9._-]{1,20}$` (a URL-safe subset of GS1 AI-21 CSET 82, ≤ 20 chars) AND is validated to full AI-21 conformance by GS1's authoritative engine — a GTIN-keyed unit through its full Digital Link, a non-GTIN unit through its AI-21 serial value; `status` must be a valid unit status; `manufacturedAt` must name a real calendar date (an impossible day such as `2026-02-30` is refused, never rolled into the next month) in a year from 1900 to next year, and must not be written with the day and month as two small numbers (`03/04/2026`, `03-04-2026`, `3.4.26` — refused, since they read as different days in different places; write `YYYY-MM-DD`); a serial already registered under the passport is skipped with *"Serial number {serialNumber} is already registered under this model."*, and any other failure to store a unit with a generic sentence (the cause is logged server-side, never returned). Each created unit gets a per-unit GS1 Digital Link URI `/{01|8003}/{productId}/21/{serialNumber}` carrying the **real physical serial** in AI-21.
  *
- * **Predecessor linkage (repurpose/remanufacture):** `predecessorUnitId` must reference an existing unit **in your tenant** (any passport). A recycled predecessor (`ceasedAt` set) is refused — its passport has ceased to exist. (A unit *created* with status `RECYCLED` is ceased from birth — `ceasedAt` is stamped at creation — and is refused as a predecessor exactly like one recycled via the events route.) In one transaction the new unit is created, an append-only `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}` payload) is written to the predecessor, and the predecessor's status is set to `predecessorStatus` (default `REPURPOSED`; only `REPURPOSED|REMANUFACTURED|REUSED` allowed).
+ * **Predecessor linkage (repurpose/remanufacture):** `predecessorUnitId` must reference an existing unit **in your tenant** (any passport). A recycled predecessor (`ceasedAt` set) is refused — its passport has ceased to exist. (A unit *created* with status `RECYCLED` is ceased from birth — `ceasedAt` is stamped at creation — and is refused as a predecessor exactly like one recycled via the events route.) In one transaction the new unit is created, an append-only `STATUS_CHANGE` event (`{status, from, to, successorUnitId, successorSerial}` payload — `from` the predecessor's previous status, `to` the new one) is written to the predecessor, and the predecessor's status is set to `predecessorStatus` (default `REPURPOSED`; only `REPURPOSED|REMANUFACTURED|REUSED` allowed).
  *
- * **Partial success:** the response is **201 when at least one unit was created**; skipped items are listed in `errors`. If *every* item failed you get **400 `Serialisation Failed`** with the same string array. A `batteryunit.created` audit event and a tenant notification are emitted on success.
+ * **Partial success:** the response is **201 when at least one unit was created**; skipped items are listed in `errors`. If *every* item failed you get **400 `Serialisation Failed`** with a `message` and the same string array. A `batteryunit.created` audit event and a tenant notification are emitted on success.
  *
  * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
@@ -116,7 +116,7 @@ export const deleteBatteryUnit = <ThrowOnError extends boolean = false>(options:
  *
  * **Content negotiation:** the representation is chosen by RFC 7231 §5.3.2 `Accept` q-value negotiation — `text/html` → the server-rendered unit page, localized from `Accept-Language`; anything else, including an absent `Accept`, `**` or `application/json`, → JSON-LD. Both forms carry the same privileged tier. `Vary: Accept, Accept-Language` is always set on the 200. The public twin `GET /unit/{id}` additionally negotiates the UNTP credential representations; those are public-tier artifacts and are not offered here.
  *
- * **Caveat:** this authenticated endpoint does **not** load lineage relations, so `repurposedFrom` is always `null` and `successorUnits` is always `[]` here even when lineage exists; the public resolver view (`GET /unit/{id}`) does resolve them.
+ * **Lineage:** `repurposedFrom` names the unit this battery was repurposed or remanufactured from, and `successorUnits` the units repurposed from it (at most 100, oldest first) — both drawn from your workspace only.
  *
  * **Permission:** `battery:read`. Operator-scoped credentials may only read units whose passport belongs to their Economic Operator (403).
  *
@@ -146,13 +146,13 @@ export const listBatteryUnitEvents = <ThrowOnError extends boolean = false>(opti
 /**
  * Append an immutable telemetry event to a battery unit
  *
- * Appends one **append-only** per-unit dynamic-data record (Annex XIII / Art. 77: SoH, cycle count, remaining capacity, temperature, negative events). History is immutable — there is **no update or delete path** for events.
+ * Appends one **append-only** per-unit dynamic-data record (EU Battery Regulation Annex XIII: SoH, cycle count, remaining capacity, temperature, negative events). History is immutable — there is **no update or delete path** for events.
  *
  * **Permission:** `battery:write`. Cookie-session clients must send `X-CSRF-Token`. Operator-scoped credentials may only write to units whose passport belongs to their Economic Operator (403). Write operations pass subscription gating (402) and optional tenant MFA enforcement (403).
  *
  * **Validation (400 with the standard error triple):** `eventType` is required and must be one of `SOH_MEASUREMENT|CHARGE_CYCLE|STATUS_CHANGE|NEGATIVE_EVENT|OTHER`; `stateOfHealth` 0–100; `cycleCount` and `remainingCapacityAh` 0–9007199254740991; `temperatureC` −273.15–10000 (each may also be `null`/omitted); `status`, if present, must be a valid unit status; `recordedAt` must be Date-parseable (defaults to server time when omitted). `cycleCount` is truncated to an integer before persisting; a `payload` that is not an object or array is silently dropped (stored as `null`) — JSON **arrays** pass the server's `typeof` check and are persisted verbatim.
  *
- * **Status transition:** when `status` is present and differs from the unit's current status, the unit is updated **in the same transaction** as the event — this works with *any* `eventType`, though `STATUS_CHANGE` is the conventional carrier. Transitioning to **`RECYCLED`** additionally stamps `ceasedAt` (if not already set; never cleared), after which the public unit view becomes a 410 tombstone and the unit can no longer gain successor units. `RECYCLED` is terminal: once the unit's status is `RECYCLED` this endpoint refuses **every** further event with **400** `Terminal Unit Status` — neither `status` nor telemetry can change again. A second life must be linked with `predecessorUnitId` **before** the predecessor is recycled — a terminal unit is itself refused as a `predecessorUnitId`, so there is no path back once it is recycled.
+ * **Status transition:** when `status` is present and differs from the unit's current status, the unit is updated **in the same transaction** as the event — this works with *any* `eventType`, though `STATUS_CHANGE` is the conventional carrier. The event's stored `payload` then records the transition as `from` (the unit's previous status) and `to` (the new one), set by the server over any keys of those names the request sent; the request's other payload keys are kept, and an array payload is kept under `detail`. Transitioning to **`RECYCLED`** additionally stamps `ceasedAt` (if not already set; never cleared), after which the public unit view becomes a 410 tombstone and the unit can no longer gain successor units. `RECYCLED` is terminal: once the unit's status is `RECYCLED` this endpoint refuses **every** further event with **400** `Terminal Unit Status` — neither `status` nor telemetry can change again. A second life must be linked with `predecessorUnitId` **before** the predecessor is recycled — a terminal unit is itself refused as a `predecessorUnitId`, so there is no path back once it is recycled.
  *
  * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
@@ -196,7 +196,9 @@ export const bulkRecordBatteryUnitEvents = <ThrowOnError extends boolean = false
  *
  * Table 7 declares no output payload, so a successful deletion answers `204` (EN 18222 Table 15 `SuccessNoContent`).
  *
- * **Access rules control whether deletion is allowed**, and here they are strict: a passport that was ever published or sealed is **not** deletable, because ESPR Article 77(8) makes it persist. That refusal is reported, not softened — this method removes a passport that was never published.
+ * **Access rules control whether deletion is allowed** (clause 4.8), and the rule is the passport lifetime: a passport must stay available for as long as its product group's regulation requires (the ESPR and, for batteries, the Battery Regulation). A **main** provider therefore deletes a never-published draft, or a passport whose lifetime has ended — its `retentionUntil` due, after any grace window — and refuses everything else with `409`. It is the same rule the house `DELETE /api/v1/passports/{id}` and the retention sweep apply.
+ *
+ * A **back-up** provider offers the method and **never deletes a copy on request**, answering `409`. The copy exists for the case where the origin cannot be relied on (EN 18221 clause 4.3), and the origin holds the back-up workspace's credential. A copy deleted on request would be one the origin could destroy on the strength of state it asserts itself. A copy not held answers `404`, as the reads do.
  *
  * **Permission:** `passport:update`.
  */
@@ -279,7 +281,7 @@ export const readDppVersionByIdAndDate = <ThrowOnError extends boolean = false>(
  *
  * **EN 18222:2026 clause 4.5, Table 4; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **shall** be made available, and it is the method EN 18222's own Annex ZA leans on hardest — five of Table ZA.1's six rows cite clause 4.5.
  *
- * The result is the set of `digitalProductPassportId` values, not the passports; fetch each with `ReadDPPById`.
+ * The result is the set of `digitalProductPassportId` values, not the passports; fetch each with `ReadDPPById`. Each product identifier may be given as the key the passport was created under or as the EN 18223 `uniqueProductIdentifier` its document carries.
  *
  * **Pagination.** Clause 4.5 lets the client set `limit` and `cursor`, and requires that "the value of the cursor shall not be empty" — a `cursor` present but empty is refused rather than treated as a restart, which would repeat rows the client already holds. Table 16 reports the result "except status code **and pagination**", so the continuation is carried out of band as an RFC 8288 `Link` header with `rel="next"`; its absence means the last page.
  *
@@ -301,6 +303,8 @@ export const readDppIdsByProductIds = <ThrowOnError extends boolean = false>(opt
  * **EN 18222:2026 clause 4.6, Table 5; bound by clause 8.2, Table 16.** Clause 4.1 lists this among the methods that **should** be made available by the main DPP service provider and by a back-up provider — expressly not by the creator. OpenDPP is declared the main provider and never the creator: the economic operator is always the creator, and this method is how a creator's passport comes to be hosted here.
  *
  * Table 5's output is the **DPP ID**, not the passport, so a successful creation answers `201` (EN 18222 Table 15 `SuccessCreated`) with the new `digitalProductPassportId` as the body and a `Location` header pointing at its `ReadDPPById` path.
+ *
+ * On a **back-up** workspace this files a replicated copy instead. A document that declares itself a never-published draft (`status: DRAFT`) is refused `400`: a back-up holds copies of passports placed on the market (EN 18221 clause 4.3), and this node never replicates a draft. So is a copy that cannot be filed as sent: an `x-opendpp-dpp-sequence` that is not a plain decimal integer between 1 and 2147483647, an identifier containing a NUL character or longer than 2000 bytes, or a `lastUpdated` outside the years 0001–9999. A body that is not JSON (`Content-Type` other than `application/json`, `application/ld+json` or another `+json` type) is refused `415`.
  *
  * **Permission:** `passport:create`.
  */
@@ -479,7 +483,7 @@ export const updateFacility = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Permission:** `grant:read`. **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
- * Paginated with `?page` (default 1) and `?limit` (default 100, max 200), grouped by `status` ascending (alphabetical: `ACTIVE`, `DENIED`, `PENDING`, `REVOKED`) and newest-first within each group. `AUTHORITY` grants (platform-issued market-surveillance access) are listed for transparency but are not tenant-revocable (`revocable: false`). Raw capability tokens are never included — only issuance/approval responses contain them, once.
+ * Paginated with `?page` (default 1) and `?limit` (default 100, max 200), grouped by `status` ascending (alphabetical: `ACTIVE`, `DENIED`, `PENDING`, `REVOKED`) and newest-first within each group. `?status=` narrows the list to one state — `?status=PENDING` is the approval queue. `AUTHORITY` grants (platform-issued market-surveillance access) are listed for transparency but are not tenant-revocable (`revocable: false`). Raw capability tokens are never included — only issuance/approval responses contain them, once.
  *
  * **Pagination:** results are paged with `?page` (default 1) and `?limit` (default 100, max 200). The response now also carries `success`, `count`, `total` and `totalPages` alongside `grants`.
  */
@@ -555,7 +559,7 @@ export const denyGrantRequest = <ThrowOnError extends boolean = false>(options: 
  * Behavioral caveats (no status precondition — only the kind is checked):
  * - Works on a grant in **any** status: revoking a `PENDING` request withdraws it; revoking a `DENIED` grant flips it to `REVOKED`.
  * - Re-revoking an already-`REVOKED` grant returns 200 again and preserves the original `revokedAt`.
- * - `AUTHORITY` grants (`kind: AUTHORITY`, platform-issued market-surveillance access) are **not tenant-revocable** — 403. Battery Reg. Art. 77 market-surveillance access must not depend on manufacturer consent; platform admins manage those.
+ * - `AUTHORITY` grants (`kind: AUTHORITY`, platform-issued market-surveillance access) are **not tenant-revocable** — 403. EU Battery Regulation market-surveillance access must not depend on manufacturer consent; platform admins manage those.
  *
  * **Permission:** `grant:write` (subscription gating ⇒ 402 possible; cookie sessions need `X-CSRF-Token`; on workspaces enforcing multi-factor authentication, user sessions without a second factor get 403 — API-key clients exempt). **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  */
@@ -589,7 +593,7 @@ export const listOperators = <ThrowOnError extends boolean = false>(options?: Op
  *
  * **Permission:** `operator:create`. Cookie-session clients must send the `X-CSRF-Token` header (double-submit); Bearer clients (API key / JWT) are exempt.
  *
- * **Deduplication (per workspace):** operators are scoped to your workspace — `regId` is unique *within* your workspace, not across the platform. If **your workspace** already has an operator with the submitted `regId`, that existing record is returned and the submitted `name`, `role` and `regIdScheme` are **ignored**. A `regId` already used by *another* workspace is irrelevant — you always get **your own** operator row (so one workspace can never bind to, rename, or archive another's operator). The call is idempotent: re-registering an already-bound operator succeeds with `201` again. The per-workspace match includes **archived** operators: if your workspace's operator for that `regId` is archived, the archived record is returned as-is (`archivedAt` non-null) with `201` — registration does not un-archive it; use `POST /api/v1/operators/{id}/restore` to reactivate it.
+ * **Duplicates (per workspace):** operators are scoped to your workspace — `regId` is unique *within* your workspace, not across the platform. If **your workspace** already has an operator with the submitted `regId`, the call is refused with `409` and `code: "OPERATOR_DUPLICATE"`, and nothing is created or changed; list your operators (`GET /api/v1/operators`) to find the existing one. A `regId` already used by *another* workspace is irrelevant — you always get **your own** operator row (so one workspace can never bind to, rename, or archive another's operator). The per-workspace match includes **archived** operators: if your workspace's operator for that `regId` is archived, registering it again is refused the same way; use `POST /api/v1/operators/{id}/restore` to reactivate it.
  *
  * **Operator identifier (EN 18219 clause 6):** `regIdScheme` is required and names the ISO/IEC 6523 scheme `regId` is issued under — `VAT` (an EU VAT identification number: member-state prefix + 5–12 alphanumerics), `DUNS` (nine digits), `LEI` (20 characters, ISO 17442 check digits) or `GLN` (13 digits, GS1 check digit); `regId` is checked against that shape, and fabricated `EORI-MOCK…` ids are rejected on every path. Each scheme has an ICD (0223, 0060, 0199, 0088), which is how the EN 18223 `economicOperatorId` is written on every passport. The EORI is a customs identifier with no ICD: send it as the OPTIONAL `eori` field, syntax-checked (`^[A-Z]{2}[A-Za-z0-9]{1,15}$`). When the node operator enables the OPT-IN EORI existence check, a supplied `eori` is additionally checked for EXISTENCE against the EU Commission EOS validation service and, if not found, a NON-BLOCKING advisory is added to the 201 `warnings[]` — the operator is still registered (best-effort, fail-open). With the check off, or no `eori`, `warnings` is `[]`.
  *
@@ -612,7 +616,7 @@ export const registerOperator = <ThrowOnError extends boolean = false>(options: 
  *
  * Removes an operator, choosing automatically between two outcomes (ESPR passport-persistence compliance — an operator that still has passports must never be hard-deleted):
  *
- * - **Archive (soft delete)** — if the operator has one or more passports, it is archived instead of deleted: `archivedAt` is set on the operator and every active passport of the operator is archived with a `retentionUntil` deadline set to a platform-configured retention period from now (default 10 years). Archived passports remain **publicly resolvable** (the persistence duty) but are excluded from active management lists. Response: `{success: true, archived: true, archivedPassports: <n>}`. Fully reversible via `POST /api/v1/operators/{id}/restore`.
+ * - **Archive (soft delete)** — if the operator has one or more passports, it is archived instead of deleted: `archivedAt` is set on the operator and every active passport of the operator is archived. No retention deadline is set: a passport is kept for the lifetime its product group's regulation sets, and is never purged while no instrument fixes one. Archived passports remain **publicly resolvable** (the persistence duty) but are excluded from active management lists. Response: `{success: true, archived: true, archivedPassports: <n>}`. Fully reversible via `POST /api/v1/operators/{id}/restore`.
  * - **Hard delete** — if the operator has no passports it is permanently deleted (tenant bindings cascade-delete; user/facility/API-key references are set to null). Response: `{success: true, archived: false}` — no `archivedPassports` field.
  * - **Fallback** — if the hard delete fails on a residual foreign-key reference, the operator is archived instead and the response is `{success: true, archived: true}` **without** `archivedPassports`. If even the fallback archive fails, `409` is returned.
  *
@@ -671,7 +675,7 @@ export const updateOperator = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Restore an archived operator and its archived passports
  *
- * Un-archives an operator that was soft-deleted by `DELETE /api/v1/operators/{id}` and brings its archived passports back into the active catalogue: clears the operator's `archivedAt`, then clears `archivedAt` and `retentionUntil` on every archived passport of the operator **except** passports that were independently `DECOMMISSIONED` (those keep their own retention clock and stay archived).
+ * Un-archives an operator that was soft-deleted by `DELETE /api/v1/operators/{id}` and brings its archived passports back into the active catalogue: clears the operator's `archivedAt`, then clears `archivedAt` on every archived passport of the operator **except** passports that were independently `DECOMMISSIONED` (those stay archived). A `retentionUntil` the old fixed window wrote at archival is cleared with the archive; a lifetime end already stamped (`lifetimeEndedAt` set) is left in place.
  *
  * Safe to call on a non-archived operator — it simply restores any archived passports the operator may have (`restoredPassports` may be `0`). No request body.
  *
@@ -698,6 +702,8 @@ export const restoreOperator = <ThrowOnError extends boolean = false>(options: O
  * - A best-effort X.509 identity certificate is minted from the platform seal CA, binding the new key to the tenant's legal name (creator identification); a certificate-minting failure does **not** fail the rotation (the certificate fields simply stay null until backfilled).
  *
  * **Operational impact:** rotation does not invalidate existing seals. Each sealed passport embeds the signing public key and certificate chain at sealing time, so previously sealed passports keep verifying with their embedded key material. Passports sealed after rotation use the new key.
+ *
+ * Side effects: a `tenant.keys_rotated` audit event is recorded.
  *
  * **Permission:** `key:write`. Cookie-session clients must send `X-CSRF-Token`; Bearer clients are exempt.
  *
@@ -899,9 +905,9 @@ export const bulkIngestPassports = <ThrowOnError extends boolean = false>(option
  *
  * **Parsing.** The environment must contain a `submodels` array including a submodel with `idShort: "ComplianceMetadata"`, whose `submodelElements` are parsed back into the metadata object; missing it fails 400 (`Ingestion Failed`). `productId` is resolved from `metadata.gtin` || `metadata.grai` || `metadata.productId` || the first shell's `assetInformation.specificAssetIds` entry named `productId` — unresolvable → 400 `Bad Request`. The parsed metadata then passes the full ESPR category validation (400 `Validation Failed` with `errors[]`).
  *
- * **seal verification.** If the environment embeds an `eidasVerificationSeal` submodel (`digitalSealHash` / `cryptographicSignature` / `pemPublicKey` elements), the seal is verified against **your tenant's server-held signing public key** — never the key embedded in the request (self-signing is rejected by design). An embedded seal that fails verification → **400 `Signature Verification Failed`**; this includes the case where your workspace holds no matching key. `isSealed`/`signatureVerified` in the 201 echo the outcome (both `false` for unsealed documents).
+ * **seal verification.** If the environment embeds an `eidasVerificationSeal` submodel (`digitalSealHash` / `cryptographicSignature` / `pemPublicKey` elements), the seal is verified against **your tenant's server-held signing public key** — never the key embedded in the request (self-signing is rejected by design). An embedded seal that fails verification → **400 `Signature Verification Failed`**; this includes the case where your workspace holds no matching key. `isSealed`/`signatureVerified` in the 201 echo the outcome (both `false` for unsealed documents). The embedded seal is verified, never stored: it signs the environment, not the passport's Merkle root, so a passport created or updated here is sealed only by `POST /api/v1/passports/{id}/seal`.
  *
- * **Upsert semantics.** If a passport already exists for the resolved `(productId, operator)` pair: a **sealed** existing passport refuses re-ingestion (**403** — re-seal explicitly after changes); an unsealed one has its metadata, Merkle tree and seal fields **replaced**, still answering **201**. Operator resolution: operator-scoped API keys use their own operator and **403** when that operator is not bound to your workspace; otherwise the workspace's first bound operator is used; none bound → 400.
+ * **Upsert semantics.** If a passport already exists for the resolved `(productId, operator)` pair: its metadata and Merkle tree are **replaced**, still answering **201**. A **sealed** existing passport is not refused: when the environment's metadata differs from the sealed metadata, the sealed version is archived in the version history with its seal intact, the new version carries no seal, and the 201 says `resealRequired: true` (seal it with `POST /api/v1/passports/{id}/seal`); an environment carrying the same metadata keeps the passport's seal. Operator resolution: operator-scoped API keys use their own operator and **403** when that operator is not bound to your workspace; otherwise the workspace's first bound operator is used; none bound → 400.
  *
  * **Caveats:**
  * - **NO webhook is emitted** — unlike `POST /api/v1/passports` and `/bulk`, AAS ingestion never enqueues `passport.ingested` (or any other event).
@@ -936,11 +942,11 @@ export const passportVcReadinessReport = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * Permanently delete a DRAFT passport
+ * Permanently delete a passport the law allows to go (a draft, or one whose lifetime has ended)
  *
- * Hard-deletes a passport **only while it is a DRAFT** (never published, not publicly resolvable, no retention duty). Children (history, access logs, battery units) cascade on delete.
+ * Hard-deletes a passport **only where the law allows it to go**: a **draft**, never published, whose lifetime never began; or a passport whose **lifetime has ended**, its `retentionUntil` due (for a battery model: decommissioned with every battery under it recycled, as the EU Battery Regulation provides, and past the 30-day grace window). This is the same rule, and the same executor, the retention sweep applies, re-decided under a row lock at the moment of deletion. The archived versions are deleted with it explicitly, and access logs, grants and battery units cascade. A draft's issued identifier is released; an ended passport's is retired and never re-issued. Its credential's status-list bit reads revoked from then on.
  *
- * Published passports (ACTIVE/RECALLED/DECOMMISSIONED) are refused with **409** — they must be decommissioned/archived through the status lifecycle (`PUT /api/v1/passports/{id}/status`) to satisfy the ESPR persistence duty.
+ * Anything the law still requires to be available is refused with **409** `PASSPORT_RETENTION_REQUIRED`: a published, recalled, decommissioned or sealed passport, or one whose lifetime end is still inside its grace window (the message says when it becomes deletable). Take it out of use with `PUT /api/v1/passports/{id}/status` instead.
  *
  * **Permission:** `passport:update` (write — subscription gating applies, see 402). Cookie sessions must send `X-CSRF-Token`; Bearer/API-key clients are exempt.
  *
@@ -990,7 +996,7 @@ export const getPassport = <ThrowOnError extends boolean = false>(options: Optio
  *
  * **Validation divergence:** the 400 validation body here contains `errors` but — unlike `POST /api/v1/passports` — **never a `warnings` array**. `friendlyMessage` is localized via the `lang` query parameter or `Accept-Language` (28 languages, default `en`; unsupported values silently fall back).
  *
- * **Sealed passports are immutable in place:** if `digitalSeal` is set the update is refused with **403** (message: "This passport is sealed and cannot be edited in place — editing would invalidate the eIDAS advanced electronic seal. Re-seal explicitly after any change.").
+ * **Editing a sealed passport's metadata creates a new, unsealed version:** the update is accepted, the sealed version is archived in the version history with its seal intact (so it stays verifiable), and the current passport carries no seal until it is sealed again (`POST /api/v1/passports/{id}/seal`). The 200 body then carries `resealRequired: true`. The seal covers the metadata only, so an update that leaves the metadata as it was (a change of facility, enrichment or carrier declaration alone) keeps the seal, and an update that changes nothing at all records no new version.
  *
  * **Facility:** omit `facilityId` to leave it unchanged; pass `null` or `""` to detach; pass a facility UUID owned by your tenant to attach (400 if not found in your workspace).
  *
@@ -1024,7 +1030,7 @@ export const updatePassport = <ThrowOnError extends boolean = false>(options: Op
  * **Behavioral caveats:**
  * - The route does **not** modify the passport's `status` — despite the success message's "and published" wording, a DRAFT stays a DRAFT after sealing. Publish via `PUT /api/v1/passports/{id}` (validated save) instead.
  * - Re-sealing an already-sealed passport is allowed and **overwrites** the previous seal/timestamp.
- * - Once sealed, in-place metadata edits are refused (403 on `PUT /api/v1/passports/{id}`).
+ * - A later edit (`PUT /api/v1/passports/{id}`, a bulk re-import, an AAS re-ingest) creates a new, unsealed version and archives the sealed one with its seal; seal the new version to seal it.
  * - Requires the tenant's signing key pair to exist — otherwise 400.
  * - The returned `passport` document is serialized at the **public** redaction tier (masked keys keep their true leaf hashes in `proof.redactedLeaves`, so the seal stays offline-verifiable after redaction).
  *
@@ -1046,8 +1052,9 @@ export const sealPassport = <ThrowOnError extends boolean = false>(options: Opti
  * **Lookup:** passport **UUID or `productId`** (UUID tried first), scoped to operators bound to your workspace.
  *
  * **Effects:**
- * - `DECOMMISSIONED` — sets `retentionUntil = now + the configured retention period` (default 10 years), starting the minimum-availability retention clock. The passport stays publicly resolvable.
- * - `ACTIVE` (reactivation) — clears `retentionUntil` **and** `archivedAt`.
+ * - `DECOMMISSIONED` — the passport stays publicly resolvable, and no retention deadline is set: a passport is kept for the lifetime its product group's regulation sets. For a **battery model**, decommissioning once every battery under it has been recycled ends that lifetime, as the EU Battery Regulation provides. `retentionUntil` is then set 30 days ahead: inside that grace window, reactivating the model or serialising a live battery under it takes the end back; after it, the retention purge may remove the model and its units.
+ * - `ACTIVE` (reactivation) — clears `archivedAt`. A written `retentionUntil` is never cleared.
+ * - A passport whose `retentionUntil` has passed takes no further status: **409** `PASSPORT_LIFETIME_ENDED`.
  * - `RECALLED` — marks the product recalled.
  * - The status change, the version-history entry (who/when/what) and the webhook enqueue are **transactional**; an in-app notification is created **best-effort after the transaction commits** (a notification failure never affects the response).
  *
@@ -1209,14 +1216,14 @@ export const getJsonLdContext = <ThrowOnError extends boolean = false>(options?:
 /**
  * Service health check
  *
- * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt` — the same fields as `GET /api/v1/version`). No authentication, no permission. **Exempt from the platform rate limit** so a monitor or uptime check can poll it freely — it carries no `x-ratelimit-*` headers. This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
+ * Liveness probe. Always returns 200 with the service identity, the current server time (ISO 8601 UTC with milliseconds), and the running build identity (`apiVersion`/`commit`/`builtAt`, which `GET /api/v1/version` also returns alongside this node's service-provider role). No authentication, no permission. **Exempt from the platform rate limit** so a monitor or uptime check can poll it freely — it carries no `x-ratelimit-*` headers. This is the one path exempt from tenant-subdomain resolution — it answers 200 on any host.
  */
 export const getHealth = <ThrowOnError extends boolean = false>(options?: Options<GetHealthData, ThrowOnError>): RequestResult<GetHealthResponses, GetHealthErrors, ThrowOnError> => (options?.client ?? client).get<GetHealthResponses, GetHealthErrors, ThrowOnError>({ url: '/health', ...options });
 
 /**
  * Running API contract version & build identity
  *
- * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP anonymous, higher for authenticated callers; standard `x-ratelimit-*` headers on responses).
+ * Returns the SemVer of the public API contract currently served (`apiVersion`), plus the source build identity (`commit`, `builtAt`) and the CEN EN 18222:2026 clause 4.1 service-provider role this node operates as (`providerRole`). The contract's MAJOR equals the `/api/v1` URL major; a breaking change ships as a new `/api/v1`-style major (`/api/v2`), never as an edit to this contract — so a stable `apiVersion` major is a safe thing for an integration or a generated SDK to pin to. `commit`/`builtAt` read `"unknown"` when a build did not inject them. No authentication, no permission; subject only to the global platform rate limit (100 req/min/IP anonymous, higher for authenticated callers; standard `x-ratelimit-*` headers on responses).
  */
 export const getApiVersion = <ThrowOnError extends boolean = false>(options?: Options<GetApiVersionData, ThrowOnError>): RequestResult<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError> => (options?.client ?? client).get<GetApiVersionResponses, GetApiVersionErrors, ThrowOnError>({ url: '/api/v1/version', ...options });
 
@@ -1429,7 +1436,7 @@ export const captureEpcisDocument = <ThrowOnError extends boolean = false>(optio
  *
  * **Rate limit:** your plan's per-key budget applies — **Growth** 120/min, **Scale** 600/min, **Enterprise** unlimited — with a ceiling of 3x that rate across all of the workspace's keys. The per-IP ceiling is not the binding limit for authenticated calls. Standard `x-ratelimit-*` headers; **429** carries `Retry-After`.
  *
- * **Caveats:** if the lineage graph contains a circular reference the walk aborts with 400. Any other failure (unknown id, other-tenant id, missing parent) is reported as the same deliberately generic 404 body. `eventTime` is serialized as ISO 8601 UTC; `epcs` is parsed from the stored EPC list (a non-array value degrades to `[]`); `location` mirrors the stored `bizLocation`.
+ * **Caveats:** if the lineage graph contains a circular reference the walk aborts with 400. An unknown id and another tenant's id are reported as the same deliberately generic 404 body; an upstream parent that cannot be read under your scope is omitted from the walk rather than failing it. A server-side fault while building the trace is a 500 (`Internal Server Error`), never a 404. `eventTime` is serialized as ISO 8601 UTC; `epcs` is parsed from the stored EPC list (a non-array value degrades to `[]`); `location` mirrors the stored `bizLocation`.
  *
  * **Content negotiation (EPCIS projection):** `Accept: application/ld+json` returns the SAME tenant-scoped lineage as a native **GS1 EPCIS 2.0 document** (`EPCISDocument` with the walk's events under `epcisBody.eventList`, ordered by `eventTime`, bounded to 500 events) instead of the recursive JSON tree — another projection of the same canonical rows, mirroring the AAS/VC Accept-header pattern on the passport resolution routes. Emitted documents use the official CBV short names (stored `urn:epcglobal:cbv:*` values are mapped back), expose row ids as `eventID` URNs (`urn:uuid:*`, or `urn:opendpp:event:*` for non-UUID ids), and wrap non-URI stored locations as `urn:opendpp:location:*`.
  */
@@ -1482,7 +1489,7 @@ export const getTenantDidDocument = <ThrowOnError extends boolean = false>(optio
  *
  * Serves the workspace's W3C **Bitstring Status List** as a signed enveloping `vc+jwt` (`application/vc+jwt`) — a `BitstringStatusListCredential` whose GZIP+base64 encoded bitstring sets the bit of every passport whose status is RECALLED or DECOMMISSIONED. An OpenDPP-issued DPP credential's `credentialStatus.statusListCredential` points here; a verifier fetches this list and checks the bit at the credential's `statusListIndex` to determine whether it has been revoked. Signed by the workspace's current key (stable `kid`), verifiable via the DID document at `/tenants/{tenantId}/did.json`.
  *
- * No authentication, no permission (public endpoint). Subject only to the global platform rate limit (100 req/min/IP). A workspace with no signing key returns 404.
+ * No authentication, no permission (public endpoint). **Rate limit:** 30 requests/min/IP, because every call signs with the workspace's key; a 429 carries `{"error": "Too Many Requests", "message": "Rate limit exceeded."}`. The global platform limit (100 req/min/IP) applies on top. A workspace with no signing key returns 404.
  */
 export const getTenantRevocationStatusList = <ThrowOnError extends boolean = false>(options: Options<GetTenantRevocationStatusListData, ThrowOnError>): RequestResult<GetTenantRevocationStatusListResponses, GetTenantRevocationStatusListErrors, ThrowOnError> => (options.client ?? client).get<GetTenantRevocationStatusListResponses, GetTenantRevocationStatusListErrors, ThrowOnError>({ url: '/tenants/{tenantId}/status/revocation', ...options });
 

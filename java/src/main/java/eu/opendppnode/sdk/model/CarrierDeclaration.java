@@ -2,7 +2,7 @@
  * OpenDPP Integration API
  * OpenDPP is a B2B platform for EU Digital Product Passports (DPPs), aligned with the ESPR data requirements and the EU Battery Regulation. This specification documents the **public integration surface**: everything an external system needs to create, validate, seal, publish, resolve and verify passports.  ## Authentication Authenticate with a tenant **API key** sent as a Bearer token: `Authorization: Bearer op_dpp_token_…`. Keys are created in the Client Console (Developers → API keys), are shown **once** at creation, carry a role plus optional narrowed permissions and optional expiry, and can be revoked at any time. API-key clients are exempt from CSRF requirements. Public endpoints (tagged **Public Resolution**, plus the public validators and the audit verifier) need no credentials.  ## Tenancy Tenant identity is **token-bound** — it is derived from your API key, never from the request host. The same paths work on the apex host and on tenant workspace hosts (`https://<workspace>.opendpp-node.eu`); when a workspace host is used, it must match the key's tenant (requests across workspaces are rejected with `403`).  ## Versioning & compatibility This contract carries a SemVer version, readable at runtime from `GET /api/v1/version`. **Pin the MAJOR.** It equals the `/api/v1` URL major, so a breaking change ships as a new path major (`/api/v2`) that you adopt deliberately — not as an edit to the contract you already integrated against.  Within a major line:  - **MINOR** is additive — a new endpoint, a new optional parameter, a new field on a response. A client that ignores what it does not recognise keeps working. Do not treat unknown response fields as errors. - **PATCH** is documentation only: wording, examples, descriptions. Nothing observable in the contract changes.  The tier is not asserted by hand. Every change is diffed structurally against the previous contract in CI, and a version bump lower than the diff requires fails the build — so the number you pin to is derived from the contract itself.  **One exception, disclosed rather than hidden.** While this contract is pre-GA, a breaking change may exceptionally ship on the existing major line under a recorded waiver instead of forcing a new path major. It is not a standing option: it requires a maintainer to enable it for a single merge, and every use is recorded with its justification. It has been used during the pre-GA period. Once this line reaches GA the waiver is retired, and the MAJOR promise above becomes unconditional. If you need a contract that cannot move under you before then, pin the exact version you generated your client from and upgrade deliberately.  ## Errors Authenticated endpoints return `{ success: false, error, message }` (some omit `success`). Across the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) the body also carries a **machine-stable `code`** you can branch on instead of parsing `message` — see the `code` enum on the shared **Error** schema for the full set. ESPR metadata validation failures return the richer shape documented as **ValidationFailed** with per-field `errors[]`/`warnings[]` (localizable via `?lang=` or `Accept-Language`; 28 languages). Bulk endpoints report row-level problems as `errors: string[]`. Malformed JSON and query-string violations are rejected before the handler runs and return a `{ statusCode, code, error, message }` body.  Every response — success or error — carries an **`X-Request-Id`** header; generic (server-error / framework) bodies also include it as `requestId`. Quote it to support to correlate with server logs. Send your own well-formed `X-Request-Id` and it is adopted for end-to-end tracing.  ## Advisories: `warnings[]` & `notices[]` Success responses may carry two non-blocking advisory channels of **coded** items (`AdvisoryItem`: `{ code, path?, message, friendlyMessage }`). **`warnings[]`** are heads-ups the request still succeeded on (`NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`, `UNIT_NO_SCANNABLE_LINK`, `EORI_NOT_FOUND`, `CARRIER_SYMBOLOGY_NOT_RENDERED`, `CATEGORY_GRANULARITY_UNEXPECTED`); **`notices[]`** are informational — helpful things the API did (`OPERATOR_AUTO_ATTRIBUTED`, `GTIN_AUTO_COPIED`). Branch on the STABLE `code`; treat `message` (developer English) and `friendlyMessage` (end-user, localized via `?lang=`/`Accept-Language` across 28 languages) as display text that may be reworded. Interfaces may also map a `code` to their own localized string.  ## Rate limits Two limits apply, and the one that bites first depends on how you call us.  **Per API key (authenticated calls).** Each key gets a per-minute budget set by the plan: **Growth 120**, **Scale 600**, **Enterprise unlimited**. A second ceiling of **3x that rate** applies across all of a workspace's keys together, so issuing more keys divides throughput fairly between your own systems rather than multiplying it. Plans below Growth do not include API access. Exceeding either budget returns `429` with a `Retry-After` header giving the seconds to wait.  **Per IP (all traffic).** A ceiling of **100 requests/min per IP** applies to anonymous traffic. Authenticated calls sit on a higher ceiling, so that several integrations behind one egress address are not held to the anonymous budget. `x-ratelimit-*` response headers report the applicable ceiling. Every plan that can reach the API sits at or above the anonymous figure, so an authenticated caller never meets a stricter limit than the number above.  Public passport resolution is additionally limited to **30 requests/min per IP** (no headers). The public validator is limited to **10 requests/min per IP**.  Stay under these limits with client-side queueing; on `429`, back off and retry after the indicated window. A `429` never indicates a credential problem — an invalid or revoked key returns `401`, so do not rotate a key in response to rate limiting.  ## Methods  A request whose path exists but whose method this API does not serve returns **`405 Method Not Allowed`** with an `Allow` header listing the methods that path does serve (RFC 9110 §15.5.6); `HEAD` is listed wherever `GET` is, and is served. A path no route matches returns `404`, as does a path whose method IS allowed but whose resource does not exist — so a `405` always means the verb, and never the identifier. `405` is not listed per operation below because it is not a property of any operation: it is the answer to a method for which no operation exists.  ## Sealing & verification Passport seals are **advanced electronic seals** — ECDSA P-256 over a Merkle root of the passport content, with an optional RFC 3161 timestamp. (Advanced, not qualified: a qualified seal would require a QTSP.) `POST /api/v1/audit/verify` is public and unauthenticated, and verifies seals issued on this node — the signing key must be registered to a tenant here, so a seal from another node is declined without cryptographic evaluation. It recomputes every Merkle leaf from the submitted values, so it requires the unredacted document (caller-supplied redacted-leaf hashes are deliberately not trusted). Redacted documents remain verifiable **offline**: masked fields keep their true leaf hashes in `proof.redactedLeaves`, letting any verifier rebuild the sealed root without the privileged values.  ## Public access tiers Public resolution endpoints serve **tiered** views of the same URL: the public tier for anonymous callers; a restricted tier for holders of legitimate-interest (`dpp_li_…`) or authority (`dpp_auth_…`) capability tokens (presented as a Bearer token or `?grant=` query parameter); and the owner tier for the issuing tenant's own credentials.  ## Webhooks Subscribe to passport lifecycle events (`passport.ingested`, `passport.sealed`, `passport.recalled`, or `*`). Deliveries are HMAC-SHA256-signed; see the **webhooks** section of this document for the exact signature scheme, retry schedule, and payloads.  This document is also served machine-readably at [`/openapi.json`](https://opendpp-node.eu/openapi.json) and [`/openapi.yaml`](https://opendpp-node.eu/openapi.yaml).  ## Role in the data exchange This node is **not a DPP registry**. It hosts passports on behalf of the economic operators that create them and provides no registration service, so the registry methods of EN 18222:2026 clause 5 (Table 17, `registerDPP`) are outside this API's scope. Which service-provider role the node holds for a given passport is a property of the agreement with that operator rather than of this document, so it is not asserted here.  ## Open interoperability kit The interoperability boundary — the official AAS + UNTP/W3C-VC schemas, live-reproducible samples, an offline conformance validator, and the field mappings — is **open source** at [github.com/OpenDPP/opendpp-interop](https://github.com/OpenDPP/opendpp-interop) (Apache-2.0). It lets any integrator validate and verify OpenDPP's standards-conformant output without access to the product source.
  *
- * The version of the OpenAPI document: 1.17.0
+ * The version of the OpenAPI document: 1.18.0
  * Contact: support@opendpp-node.eu
  *
  * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import eu.opendppnode.sdk.model.CarrierDeclarationPrintQuality;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -31,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import eu.opendppnode.sdk.invoker.ApiClient;
 /**
- * EN 18220 data-carrier declaration — what the economic operator states about the PHYSICAL carrier that links the product to this passport: the symbology (Clause 6), where it is placed (§5.4.2–5.4.6), the X dimension it is printed at (§5.5.2), the print-quality grade and method (§5.6.2) and, for a label or a reused product, the durability assessment (§5.4.4, §4.3.1). Optional: absent means undeclared. Stored on the passport and versioned with it; NOT regulated metadata and outside the Merkle seal. Two cross-field rules: a radio-frequency carrier carries no X dimension, error-correction level or quality grade; &#x60;errorCorrection&#x60; applies to &#x60;QR_CODE&#x60; only, because ECC 200 is fixed by the other 2D symbology.
+ * EN 18220 data-carrier declaration — what the economic operator states about the PHYSICAL carrier that links the product to this passport: the symbology (Clause 6), where it is placed (§5.4.2–5.4.6), the X dimension it is printed at and the print method and media (§5.5.2), the print-quality grade and method (§5.6.2), for a label or a reused product the durability assessment (§5.4.4, §4.3.1) and, for a radio-frequency carrier, the mark that signals it is there (§5.7.1). Optional: absent means undeclared. Stored on the passport and versioned with it; NOT regulated metadata and outside the Merkle seal. Cross-field rules: a radio-frequency carrier carries no X dimension, error-correction level or quality grade; &#x60;presenceMark&#x60; applies to a radio-frequency carrier only, because a printed symbol is visible; &#x60;errorCorrection&#x60; applies to &#x60;QR_CODE&#x60; only, because ECC 200 is fixed by the other 2D symbology; &#x60;printQuality&#x60; and &#x60;printQualityGrade&#x60; are not both given; and a &#x60;printQuality&#x60; method follows the placement — &#x60;ISO_IEC_29158&#x60; for &#x60;PRODUCT&#x60;, a mark on the item&#39;s own surface, &#x60;ISO_IEC_15415&#x60; for every other placement (§5.6.2). The recommendations of the same clauses are advised, never refused: a printed symbol on a physical placement with no grade (&#x60;CARRIER_QUALITY_UNGRADED&#x60;), an ISO/IEC 15415 grade below the typical 1.5 (&#x60;CARRIER_GRADE_BELOW_TYPICAL&#x60;), a grade in the free-text field (&#x60;CARRIER_GRADE_UNSTRUCTURED&#x60;), and a label with no durability assessment (&#x60;CARRIER_LABEL_UNASSESSED&#x60;).
  */
 @JsonPropertyOrder({
   CarrierDeclaration.JSON_PROPERTY_SYMBOLOGY,
@@ -40,7 +41,10 @@ import eu.opendppnode.sdk.invoker.ApiClient;
   CarrierDeclaration.JSON_PROPERTY_ERROR_CORRECTION,
   CarrierDeclaration.JSON_PROPERTY_TARGET_ENVIRONMENT,
   CarrierDeclaration.JSON_PROPERTY_PRINT_QUALITY_GRADE,
-  CarrierDeclaration.JSON_PROPERTY_DURABILITY_ASSESSMENT
+  CarrierDeclaration.JSON_PROPERTY_PRINT_QUALITY,
+  CarrierDeclaration.JSON_PROPERTY_PRINT_METHOD,
+  CarrierDeclaration.JSON_PROPERTY_DURABILITY_ASSESSMENT,
+  CarrierDeclaration.JSON_PROPERTY_PRESENCE_MARK
 })
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class CarrierDeclaration {
@@ -195,9 +199,21 @@ public class CarrierDeclaration {
   @jakarta.annotation.Nullable
   private String printQualityGrade;
 
+  public static final String JSON_PROPERTY_PRINT_QUALITY = "printQuality";
+  @jakarta.annotation.Nullable
+  private CarrierDeclarationPrintQuality printQuality;
+
+  public static final String JSON_PROPERTY_PRINT_METHOD = "printMethod";
+  @jakarta.annotation.Nullable
+  private String printMethod;
+
   public static final String JSON_PROPERTY_DURABILITY_ASSESSMENT = "durabilityAssessment";
   @jakarta.annotation.Nullable
   private String durabilityAssessment;
+
+  public static final String JSON_PROPERTY_PRESENCE_MARK = "presenceMark";
+  @jakarta.annotation.Nullable
+  private String presenceMark;
 
   public CarrierDeclaration() { 
   }
@@ -330,9 +346,11 @@ public class CarrierDeclaration {
   }
 
   /**
-   * Print-quality grade and the method it was assessed by (§5.6.2). Free text, because the clause admits two methods whose grades take incompatible forms: a printed 2D symbol is graded under ISO/IEC 15415:2024 as overall grade / measuring aperture as a percentage of the X dimension / peak illumination wavelength in nm (e.g. &#x60;1.5/08/660&#x60;), while a direct part mark is graded under ISO/IEC 29158 as a letter (e.g. &#x60;DPM grade B&#x60;). State the method alongside the grade.
+   * Print-quality grade and the method it was assessed by (§5.6.2), as free text. **Deprecated in favour of &#x60;printQuality&#x60;**, which states the same grade structured by its method and is validated; still accepted, with a &#x60;CARRIER_GRADE_UNSTRUCTURED&#x60; warning. Not given together with &#x60;printQuality&#x60;.
    * @return printQualityGrade
+   * @deprecated
    */
+  @Deprecated
   @jakarta.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PRINT_QUALITY_GRADE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
@@ -345,6 +363,54 @@ public class CarrierDeclaration {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPrintQualityGrade(@jakarta.annotation.Nullable String printQualityGrade) {
     this.printQualityGrade = printQualityGrade;
+  }
+
+
+  public CarrierDeclaration printQuality(@jakarta.annotation.Nullable CarrierDeclarationPrintQuality printQuality) {
+    this.printQuality = printQuality;
+    return this;
+  }
+
+  /**
+   * Get printQuality
+   * @return printQuality
+   */
+  @jakarta.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_PRINT_QUALITY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public CarrierDeclarationPrintQuality getPrintQuality() {
+    return printQuality;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PRINT_QUALITY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setPrintQuality(@jakarta.annotation.Nullable CarrierDeclarationPrintQuality printQuality) {
+    this.printQuality = printQuality;
+  }
+
+
+  public CarrierDeclaration printMethod(@jakarta.annotation.Nullable String printMethod) {
+    this.printMethod = printMethod;
+    return this;
+  }
+
+  /**
+   * The print method and media the symbol is produced with, e.g. &#x60;Thermal transfer on polyester label stock&#x60; (§5.5.2).
+   * @return printMethod
+   */
+  @jakarta.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_PRINT_METHOD)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public String getPrintMethod() {
+    return printMethod;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PRINT_METHOD)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setPrintMethod(@jakarta.annotation.Nullable String printMethod) {
+    this.printMethod = printMethod;
   }
 
 
@@ -372,6 +438,30 @@ public class CarrierDeclaration {
   }
 
 
+  public CarrierDeclaration presenceMark(@jakarta.annotation.Nullable String presenceMark) {
+    this.presenceMark = presenceMark;
+    return this;
+  }
+
+  /**
+   * How a person can tell a radio-frequency carrier is there, e.g. &#x60;NFC N-Mark on the care label&#x60; (§5.7.1, a recommendation). NFC and RFID carriers only. The mark is the operator&#39;s to apply; declaring a radio carrier without one is accepted with a &#x60;CARRIER_PRESENCE_UNMARKED&#x60; warning.
+   * @return presenceMark
+   */
+  @jakarta.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_PRESENCE_MARK)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public String getPresenceMark() {
+    return presenceMark;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PRESENCE_MARK)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setPresenceMark(@jakarta.annotation.Nullable String presenceMark) {
+    this.presenceMark = presenceMark;
+  }
+
+
   /**
    * Return true if this CarrierDeclaration object is equal to o.
    */
@@ -390,12 +480,15 @@ public class CarrierDeclaration {
         Objects.equals(this.errorCorrection, carrierDeclaration.errorCorrection) &&
         Objects.equals(this.targetEnvironment, carrierDeclaration.targetEnvironment) &&
         Objects.equals(this.printQualityGrade, carrierDeclaration.printQualityGrade) &&
-        Objects.equals(this.durabilityAssessment, carrierDeclaration.durabilityAssessment);
+        Objects.equals(this.printQuality, carrierDeclaration.printQuality) &&
+        Objects.equals(this.printMethod, carrierDeclaration.printMethod) &&
+        Objects.equals(this.durabilityAssessment, carrierDeclaration.durabilityAssessment) &&
+        Objects.equals(this.presenceMark, carrierDeclaration.presenceMark);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(symbology, placement, xDimensionMm, errorCorrection, targetEnvironment, printQualityGrade, durabilityAssessment);
+    return Objects.hash(symbology, placement, xDimensionMm, errorCorrection, targetEnvironment, printQualityGrade, printQuality, printMethod, durabilityAssessment, presenceMark);
   }
 
   @Override
@@ -408,7 +501,10 @@ public class CarrierDeclaration {
     sb.append("    errorCorrection: ").append(toIndentedString(errorCorrection)).append("\n");
     sb.append("    targetEnvironment: ").append(toIndentedString(targetEnvironment)).append("\n");
     sb.append("    printQualityGrade: ").append(toIndentedString(printQualityGrade)).append("\n");
+    sb.append("    printQuality: ").append(toIndentedString(printQuality)).append("\n");
+    sb.append("    printMethod: ").append(toIndentedString(printMethod)).append("\n");
     sb.append("    durabilityAssessment: ").append(toIndentedString(durabilityAssessment)).append("\n");
+    sb.append("    presenceMark: ").append(toIndentedString(presenceMark)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -486,9 +582,24 @@ public class CarrierDeclaration {
       joiner.add(String.format("%sprintQualityGrade%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrintQualityGrade()))));
     }
 
+    // add `printQuality` to the URL query string
+    if (getPrintQuality() != null) {
+      joiner.add(getPrintQuality().toUrlQueryString(prefix + "printQuality" + suffix));
+    }
+
+    // add `printMethod` to the URL query string
+    if (getPrintMethod() != null) {
+      joiner.add(String.format("%sprintMethod%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrintMethod()))));
+    }
+
     // add `durabilityAssessment` to the URL query string
     if (getDurabilityAssessment() != null) {
       joiner.add(String.format("%sdurabilityAssessment%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDurabilityAssessment()))));
+    }
+
+    // add `presenceMark` to the URL query string
+    if (getPresenceMark() != null) {
+      joiner.add(String.format("%spresenceMark%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPresenceMark()))));
     }
 
     return joiner.toString();

@@ -38,6 +38,8 @@ opendpp_sdk/models/battery_unit_event_type.py
 opendpp_sdk/models/battery_unit_json_ld.py
 opendpp_sdk/models/battery_unit_lineage_ref.py
 opendpp_sdk/models/battery_unit_list_response.py
+opendpp_sdk/models/battery_unit_refusal_reason.py
+opendpp_sdk/models/battery_unit_refusal_reason_params_value.py
 opendpp_sdk/models/battery_unit_restricted_data_notice.py
 opendpp_sdk/models/battery_unit_row.py
 opendpp_sdk/models/battery_unit_serialisation_failed_error.py
@@ -49,6 +51,9 @@ opendpp_sdk/models/bulk_battery_unit_events_request_events_inner.py
 opendpp_sdk/models/bulk_battery_unit_events_response.py
 opendpp_sdk/models/bulk_export_passport_labels_request.py
 opendpp_sdk/models/carrier_declaration.py
+opendpp_sdk/models/carrier_declaration_print_quality.py
+opendpp_sdk/models/carrier_print_quality15415.py
+opendpp_sdk/models/carrier_print_quality29158.py
 opendpp_sdk/models/create_grant_request.py
 opendpp_sdk/models/create_passport413_response.py
 opendpp_sdk/models/decode_gs1200_response.py

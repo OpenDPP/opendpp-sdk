@@ -29,7 +29,7 @@ export type Error = {
     /**
      * Optional MACHINE-STABLE error code for the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) — branch on this instead of parsing `message`. Present on the errors it covers — the `code` enum below is the full set — and omitted otherwise.
      */
-    code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'UNSUPPORTED_KEY_QUALIFIER' | 'UNSUPPORTED_REPRESENTATION' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'DRAFT_DEMOTION_REFUSED' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
+    code?: 'OPERATOR_NOT_BOUND' | 'OPERATOR_AMBIGUOUS' | 'OPERATOR_SCOPE_FORBIDDEN' | 'OPERATOR_DUPLICATE' | 'GTIN_CHECK_DIGIT_INVALID' | 'GLN_CHECK_DIGIT_INVALID' | 'UNSUPPORTED_KEY_QUALIFIER' | 'UNSUPPORTED_REPRESENTATION' | 'COMPRESSED_DIGITAL_LINK' | 'PASSPORT_DUPLICATE' | 'PASSPORT_SEALED_IMMUTABLE' | 'CATEGORY_IMMUTABLE' | 'DRAFT_DEMOTION_REFUSED' | 'PASSPORT_LIFETIME_ENDED' | 'PASSPORT_RETENTION_REQUIRED' | 'FACILITY_NOT_FOUND' | 'FACILITY_DUPLICATE' | 'WEBHOOK_NOT_FOUND' | 'WEBHOOK_LIMIT_REACHED' | 'WEBHOOK_URL_REJECTED';
 };
 
 /**
@@ -55,9 +55,9 @@ export type ValidationErrorItem = {
  */
 export type AdvisoryItem = {
     /**
-     * Stable advisory code. WARNINGS: `NON_GS1_PRODUCT_ID` (the productId is not a GS1 GTIN/GRAI → issued as an Identification Link, not a GS1 Digital Link), `PII_SHAPE_DETECTED` (metadata looks like personal data), `UNIT_NO_SCANNABLE_LINK` (units under a non-GTIN passport carry an Identification Link, not a GS1 unit Digital Link), `EORI_NOT_FOUND` (a declared EORI was not in the EU EOS register), `CARRIER_SYMBOLOGY_NOT_RENDERED` (the declared EN 18220 Clause 6 carrier is a symbology this node does not encode, so the symbol served is a QR Code), `CATEGORY_GRANULARITY_UNEXPECTED` (the passport's identification granularity differs from the level the product group's own instrument requires; EN 18220 §4.2 leaves that level to sector legislation). NOTICES: `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's first bound operator was used), `GTIN_AUTO_COPIED` (a valid GTIN-14/GRAI productId was copied into metadata.gtin/metadata.grai).
+     * Stable advisory code. WARNINGS: `NON_GS1_PRODUCT_ID` (the productId is not a GS1 GTIN/GRAI → issued as an Identification Link, not a GS1 Digital Link), `PII_SHAPE_DETECTED` (metadata looks like personal data), `UNIT_NO_SCANNABLE_LINK` (units under a non-GTIN passport carry an Identification Link, not a GS1 unit Digital Link), `EORI_NOT_FOUND` (a declared EORI was not in the EU EOS register), `CARRIER_SYMBOLOGY_NOT_RENDERED` (the declared EN 18220 Clause 6 carrier is a symbology this node does not encode, so the symbol served is a QR Code), `CATEGORY_GRANULARITY_UNEXPECTED` (the passport's identification granularity differs from the level the product group's own instrument requires; EN 18220 §4.2 leaves that level to sector legislation), `CARRIER_PRESENCE_UNMARKED` (a radio-frequency carrier a consumer cannot see is declared with no presence mark; EN 18220 §5.7.1 recommends one), `CARRIER_QUALITY_UNGRADED` (a printed 2D symbol on a physical placement is declared with no print-quality grade; EN 18220 §5.6.1), `CARRIER_GRADE_BELOW_TYPICAL` (an ISO/IEC 15415 grade below the typical 1.5 EN 18220 §5.6.2 names), `CARRIER_GRADE_UNSTRUCTURED` (the grade is in the deprecated free-text `printQualityGrade` rather than `printQuality`), `CARRIER_LABEL_UNASSESSED` (a label is declared with no durability assessment; EN 18220 §5.4.4 recommends one). NOTICES: `OPERATOR_AUTO_ATTRIBUTED` (operatorId omitted → the workspace's first bound operator was used), `GTIN_AUTO_COPIED` (a valid GTIN-14/GRAI productId was copied into metadata.gtin/metadata.grai).
      */
-    code: 'NON_GS1_PRODUCT_ID' | 'PII_SHAPE_DETECTED' | 'UNIT_NO_SCANNABLE_LINK' | 'EORI_NOT_FOUND' | 'CARRIER_SYMBOLOGY_NOT_RENDERED' | 'CATEGORY_GRANULARITY_UNEXPECTED' | 'OPERATOR_AUTO_ATTRIBUTED' | 'GTIN_AUTO_COPIED';
+    code: 'NON_GS1_PRODUCT_ID' | 'PII_SHAPE_DETECTED' | 'UNIT_NO_SCANNABLE_LINK' | 'EORI_NOT_FOUND' | 'CARRIER_SYMBOLOGY_NOT_RENDERED' | 'CATEGORY_GRANULARITY_UNEXPECTED' | 'CARRIER_PRESENCE_UNMARKED' | 'CARRIER_QUALITY_UNGRADED' | 'CARRIER_GRADE_BELOW_TYPICAL' | 'CARRIER_GRADE_UNSTRUCTURED' | 'CARRIER_LABEL_UNASSESSED' | 'OPERATOR_AUTO_ATTRIBUTED' | 'GTIN_AUTO_COPIED';
     /**
      * The field the advisory is about (e.g. `productId`, `draft`, `regId`), when applicable.
      */
@@ -73,7 +73,7 @@ export type AdvisoryItem = {
 };
 
 /**
- * 402 body for a write blocked by billing. Always carries `error` + `message`. A block caused by the subscription tier's published-passport CAP additionally sets `code: "passport_quota_exceeded"` plus `quota` and `upgradeUrl`. A programmatic (API-key) write on a tier without API access sets `code: "api_access_required"` plus `upgradeUrl` instead. Clients distinguish each from a lapsed-subscription 402 (no `code`) and can prompt an upgrade.
+ * 402 body for a write blocked by billing. Always carries `error` + `message`. A block caused by the subscription tier's published-passport CAP additionally sets `code: "passport_quota_exceeded"` plus `quota` and `upgradeUrl`. A programmatic (API-key) write on a tier without API access sets `code: "api_access_required"` plus `upgradeUrl` instead. A lapsed subscription sets `code: "subscription_inactive"`. Clients branch on `code` to tell them apart and can prompt an upgrade or a billing fix.
  */
 export type PassportQuotaError = {
     /**
@@ -89,7 +89,7 @@ export type PassportQuotaError = {
      */
     message: string;
     /**
-     * Machine-readable discriminator. `passport_quota_exceeded` = the tier's passport cap is reached; `api_access_required` = a programmatic (API-key) write was attempted on a tier without the API-access entitlement (use the dashboard session, or upgrade to a Growth+ plan); omitted for a lapsed-subscription 402.
+     * Machine-readable discriminator. `passport_quota_exceeded` = the tier's passport cap is reached; `api_access_required` = a programmatic (API-key) write was attempted on a tier without the API-access entitlement (use the dashboard session, or upgrade to a Growth+ plan); `subscription_inactive` = the workspace subscription is not active (lapsed, cancelled, or past its grace period), so writes are paused while reads and the data export keep working.
      */
     code?: string;
     /**
@@ -173,6 +173,16 @@ export type WhoamiResponse = {
 };
 
 /**
+ * Why one unit was refused, as a stable `code` and the values it concerns. Branch on or translate the `code`; the matching `errors` string is for people and may be reworded. `params` carries strings and numbers only — typically `serialNumber`, plus `value` (the refused input), `length`/`maxLength` (a serial over the limit), `minYear`/`maxYear` (a manufacture year outside the window), `passportId`, `predecessorUnitId` or `predecessorSerial`.
+ */
+export type BatteryUnitRefusalReason = {
+    code: 'SERIAL_MISSING' | 'SERIAL_TOO_LONG' | 'SERIAL_INVALID_CHARACTERS' | 'SERIAL_NOT_GS1_CONFORMANT' | 'STATUS_INVALID' | 'MANUFACTURED_AT_INVALID' | 'MANUFACTURED_AT_AMBIGUOUS' | 'MANUFACTURED_AT_OUT_OF_RANGE' | 'IDENTIFIER_ALREADY_ISSUED' | 'SERIAL_ALREADY_REGISTERED' | 'PREDECESSOR_NOT_FOUND' | 'PREDECESSOR_RECYCLED' | 'PREDECESSOR_STATUS_INVALID' | 'PASSPORT_LIFETIME_ENDED' | 'UNIT_NOT_STORED';
+    params: {
+        [key: string]: string | number;
+    };
+};
+
+/**
  * The three 400 bodies of unit serialisation: the standard error triple, the all-items-failed `Serialisation Failed` report, and the framework's default request-rejection body.
  */
 export type BatteryUnitSerialiseBadRequest = Error | BatteryUnitSerialisationFailedError | DefaultRequestRejectionError;
@@ -188,7 +198,7 @@ export type BatteryUnitEventBadRequest = Error | DefaultRequestRejectionError;
 export type BatteryUnitStatus = 'IN_SERVICE' | 'DECOMMISSIONED' | 'RECALLED' | 'REPURPOSED' | 'REMANUFACTURED' | 'REUSED' | 'WASTE' | 'RECYCLED';
 
 /**
- * Per-unit dynamic-data event category (Annex XIII / Art. 77 telemetry).
+ * Per-unit dynamic-data event category (EU Battery Regulation Annex XIII telemetry).
  */
 export type BatteryUnitEventType = 'SOH_MEASUREMENT' | 'CHARGE_CYCLE' | 'STATUS_CHANGE' | 'NEGATIVE_EVENT' | 'OTHER';
 
@@ -276,7 +286,7 @@ export type BatteryUnitCreateItem = {
      */
     serialNumber: string;
     /**
-     * Optional. Any value accepted by JavaScript `Date` parsing (ISO 8601 recommended; epoch milliseconds also work). Invalid dates skip the item.
+     * Optional. An ISO 8601 date or date-time (recommended; a bare date is midnight UTC), or epoch milliseconds. The calendar date must exist — `2026-02-30` is refused, not read as the 2nd of March — and its year must fall between 1900 and next year. A day-and-month form that reads either way round (`03/04/2026`, `03-04-2026`, `3.4.26`) is refused rather than guessed at. An invalid value skips the item.
      */
     manufacturedAt?: string | number;
     /**
@@ -284,7 +294,7 @@ export type BatteryUnitCreateItem = {
      */
     status?: BatteryUnitStatus;
     /**
-     * Optional lineage linkage: id of an existing unit **in your tenant** (any passport) that this battery was repurposed/remanufactured from. A recycled predecessor is refused — the check keys on terminality (`ceasedAt` set or a terminal `status`), however the unit reached it. Atomically with creation, a `STATUS_CHANGE` event (`{status, successorUnitId, successorSerial}`) is appended to the predecessor and its status set to `predecessorStatus`.
+     * Optional lineage linkage: id of an existing unit **in your tenant** (any passport) that this battery was repurposed/remanufactured from. A recycled predecessor is refused — the check keys on terminality (`ceasedAt` set or a terminal `status`), however the unit reached it. Atomically with creation, a `STATUS_CHANGE` event (`{status, from, to, successorUnitId, successorSerial}`) is appended to the predecessor and its status set to `predecessorStatus`.
      */
     predecessorUnitId?: string;
     /**
@@ -322,18 +332,27 @@ export type SerializeBatteryUnitsResponse = {
      */
     errors?: Array<string>;
     /**
+     * Present only when some items were skipped: one per `errors` entry, in the same order, each refusal as a stable code.
+     */
+    reasons?: Array<BatteryUnitRefusalReason>;
+    /**
      * Non-blocking advisories. Carries a single note when the passport's `productId` is NOT a GS1 GTIN — the created units then have no GS1 unit Digital Link (`/01/{gtin}/21/{serial}`); each is identified by an EN IEC 61406 Identification Link `/unit/{id}?.P={productId}&.S={serial}`, scannable but not through GS1 resolvers. Empty `[]` for a GTIN-keyed passport.
      */
     warnings: Array<AdvisoryItem>;
 };
 
 /**
- * 400 body when **every** item in the serialisation batch failed. Note: `errors` is an array of plain strings and there is **no `message` field** (unlike the standard error triple).
+ * 400 body when **every** item in the serialisation batch failed. `errors` is an array of plain strings, one per refused item; `message` summarises the batch.
  */
 export type BatteryUnitSerialisationFailedError = {
     success: false;
     error: 'Serialisation Failed';
+    message?: string;
     errors: Array<string>;
+    /**
+     * One per `errors` entry, in the same order: each refusal as a stable code.
+     */
+    reasons?: Array<BatteryUnitRefusalReason>;
 };
 
 /**
@@ -447,11 +466,11 @@ export type BatteryUnitJsonLd = {
     status: BatteryUnitStatus;
     manufacturedAt: string | null;
     /**
-     * Predecessor link. **Always `null` on `GET /api/v1/units/{id}`** — the authenticated handler does not load the lineage relation; use the public resolver `GET /unit/{id}` to see resolved lineage.
+     * Predecessor link: the unit this battery was repurposed or remanufactured from, or `null` for a first life. Only a unit in your workspace is named.
      */
     repurposedFrom: BatteryUnitLineageRef | null;
     /**
-     * Units repurposed/remanufactured from this one. **Always `[]` on `GET /api/v1/units/{id}`** (relation not loaded; see `repurposedFrom`).
+     * Units repurposed/remanufactured from this one, oldest first — at most 100, and only units in your workspace; `[]` when there are none.
      */
     successorUnits: Array<BatteryUnitLineageRef>;
     /**
@@ -1040,7 +1059,7 @@ export type OperatorRow = {
  */
 export type RegisterOperatorRequest = {
     /**
-     * Legal/display name. Ignored if your workspace already has an operator with this `regId` (the existing record is returned instead).
+     * Legal/display name.
      */
     name: string;
     /**
@@ -1048,7 +1067,7 @@ export type RegisterOperatorRequest = {
      */
     regId: string;
     /**
-     * Required: the EN 18219 clause 6 scheme `regId` is issued under, matched case-insensitively (uppercased server-side). Any other value — an EORI included — is rejected with `400`. Ignored when binding to an existing operator.
+     * Required: the EN 18219 clause 6 scheme `regId` is issued under, matched case-insensitively (uppercased server-side). Any other value — an EORI included — is rejected with `400`.
      */
     regIdScheme: 'VAT' | 'DUNS' | 'LEI' | 'GLN';
     /**
@@ -1132,7 +1151,7 @@ export type DeleteOperatorResponse = {
 export type RestoreOperatorResponse = {
     success: true;
     /**
-     * Number of archived passports returned to the active catalogue (`archivedAt` and `retentionUntil` cleared). Passports independently DECOMMISSIONED are not restored and not counted.
+     * Number of archived passports returned to the active catalogue (`archivedAt` cleared; a written `retentionUntil` is kept). Passports independently DECOMMISSIONED are not restored and not counted.
      */
     restoredPassports: number;
 };
@@ -1371,14 +1390,14 @@ export type PassportMetadataInput = {
      */
     originCountry?: string;
     /**
-     * Optional HS / TARIC commodity code (4–10 digits). Validated for every category when present (a malformed code is a 400). Not category-mandated, but required to project the passport into the EU DPP registry pointer (ESPR Art. 13).
+     * Optional HS / TARIC commodity code (4–10 digits). Validated for every category when present (a malformed code is a 400). Not category-mandated, but required to project the passport into the EU DPP registry pointer (ESPR).
      */
     commodityCode?: string;
     [key: string]: unknown;
 };
 
 /**
- * EN 18220 data-carrier declaration — what the economic operator states about the PHYSICAL carrier that links the product to this passport: the symbology (Clause 6), where it is placed (§5.4.2–5.4.6), the X dimension it is printed at (§5.5.2), the print-quality grade and method (§5.6.2) and, for a label or a reused product, the durability assessment (§5.4.4, §4.3.1). Optional: absent means undeclared. Stored on the passport and versioned with it; NOT regulated metadata and outside the Merkle seal. Two cross-field rules: a radio-frequency carrier carries no X dimension, error-correction level or quality grade; `errorCorrection` applies to `QR_CODE` only, because ECC 200 is fixed by the other 2D symbology.
+ * EN 18220 data-carrier declaration — what the economic operator states about the PHYSICAL carrier that links the product to this passport: the symbology (Clause 6), where it is placed (§5.4.2–5.4.6), the X dimension it is printed at and the print method and media (§5.5.2), the print-quality grade and method (§5.6.2), for a label or a reused product the durability assessment (§5.4.4, §4.3.1) and, for a radio-frequency carrier, the mark that signals it is there (§5.7.1). Optional: absent means undeclared. Stored on the passport and versioned with it; NOT regulated metadata and outside the Merkle seal. Cross-field rules: a radio-frequency carrier carries no X dimension, error-correction level or quality grade; `presenceMark` applies to a radio-frequency carrier only, because a printed symbol is visible; `errorCorrection` applies to `QR_CODE` only, because ECC 200 is fixed by the other 2D symbology; `printQuality` and `printQualityGrade` are not both given; and a `printQuality` method follows the placement — `ISO_IEC_29158` for `PRODUCT`, a mark on the item's own surface, `ISO_IEC_15415` for every other placement (§5.6.2). The recommendations of the same clauses are advised, never refused: a printed symbol on a physical placement with no grade (`CARRIER_QUALITY_UNGRADED`), an ISO/IEC 15415 grade below the typical 1.5 (`CARRIER_GRADE_BELOW_TYPICAL`), a grade in the free-text field (`CARRIER_GRADE_UNSTRUCTURED`), and a label with no durability assessment (`CARRIER_LABEL_UNASSESSED`).
  */
 export type CarrierDeclaration = {
     /**
@@ -1402,13 +1421,61 @@ export type CarrierDeclaration = {
      */
     targetEnvironment?: string;
     /**
-     * Print-quality grade and the method it was assessed by (§5.6.2). Free text, because the clause admits two methods whose grades take incompatible forms: a printed 2D symbol is graded under ISO/IEC 15415:2024 as overall grade / measuring aperture as a percentage of the X dimension / peak illumination wavelength in nm (e.g. `1.5/08/660`), while a direct part mark is graded under ISO/IEC 29158 as a letter (e.g. `DPM grade B`). State the method alongside the grade.
+     * Print-quality grade and the method it was assessed by (§5.6.2), as free text. **Deprecated in favour of `printQuality`**, which states the same grade structured by its method and is validated; still accepted, with a `CARRIER_GRADE_UNSTRUCTURED` warning. Not given together with `printQuality`.
+     *
+     * @deprecated
      */
     printQualityGrade?: string;
+    /**
+     * Print-quality grade structured by its assessment method (§5.6.2): ISO/IEC 15415:2024 for a printed 2D symbol, ISO/IEC 29158 for a direct part mark (placement `PRODUCT`). Printed 2D symbols only.
+     */
+    printQuality?: ({
+        method: 'ISO_IEC_15415';
+    } & CarrierPrintQuality15415) | ({
+        method: 'ISO_IEC_29158';
+    } & CarrierPrintQuality29158);
+    /**
+     * The print method and media the symbol is produced with, e.g. `Thermal transfer on polyester label stock` (§5.5.2).
+     */
+    printMethod?: string;
     /**
      * The operator's durability assessment for a label or a reused product (§5.4.4, §4.3.1).
      */
     durabilityAssessment?: string;
+    /**
+     * How a person can tell a radio-frequency carrier is there, e.g. `NFC N-Mark on the care label` (§5.7.1, a recommendation). NFC and RFID carriers only. The mark is the operator's to apply; declaring a radio carrier without one is accepted with a `CARRIER_PRESENCE_UNMARKED` warning.
+     */
+    presenceMark?: string;
+};
+
+/**
+ * An ISO/IEC 15415:2024 print-quality grade (EN 18220 §5.6.2): the grade "includes a grade level, measuring aperture and the wavelength of light used for the measurement", so all three are required. The clause's typical minimum is `1,5/80 %/660`.
+ */
+export type CarrierPrintQuality15415 = {
+    method: 'ISO_IEC_15415';
+    /**
+     * Overall symbol quality grade, 0.0–4.0.
+     */
+    grade: number;
+    /**
+     * Measuring aperture as a percentage of the measured X dimension, the 2024 edition's convention.
+     */
+    aperturePercent: number;
+    /**
+     * Peak illumination wavelength in nanometres.
+     */
+    wavelengthNm: number;
+};
+
+/**
+ * An ISO/IEC 29158 Direct Part Mark quality grade (EN 18220 §5.6.2), for a symbol marked on the item's own surface (placement `PRODUCT`).
+ */
+export type CarrierPrintQuality29158 = {
+    method: 'ISO_IEC_29158';
+    /**
+     * Symbol quality grade, A (best) to F.
+     */
+    grade: 'A' | 'B' | 'C' | 'D' | 'F';
 };
 
 /**
@@ -1599,7 +1666,7 @@ export type PassportBulkRequest = {
      */
     dryRun?: boolean;
     /**
-     * When `true`, a row whose `(productId, operator)` already exists **updates** the existing passport instead of being reported as a duplicate (a sealed passport is never overwritten). Enables idempotent re-import of a corrected catalog.
+     * When `true`, a row whose `(productId, operator)` already exists **updates** the existing passport instead of being reported as a duplicate. A sealed passport is updated too: when the row changes its metadata, the sealed version is archived with its seal intact, the new version carries no seal, and the row's result says `resealRequired: true`; a row carrying the same metadata keeps the seal. Enables idempotent re-import of a corrected catalog.
      */
     upsert?: boolean;
 };
@@ -1632,12 +1699,16 @@ export type PassportBulkResult = {
          */
         vcReadyReason?: string | null;
         /**
+         * Present, and `true`, only when the row changed a SEALED passport's metadata (on a `dryRun` preview: when it would). The sealed version is archived with its seal intact; the new version carries no seal until it is sealed again.
+         */
+        resealRequired?: true;
+        /**
          * Per-row non-blocking advisories — the non-GS1 "Identification Link, not a GS1 Digital Link" note and the PII-shape privacy advisory. Empty `[]` when the row is clean; never blocks the row.
          */
         warnings?: Array<AdvisoryItem>;
     }>;
     /**
-     * Human-readable per-row failure strings, prefixed `[SKU: <productId>]` (or "Missing or invalid productId in spreadsheet row"). Present ONLY when at least one row failed — omitted otherwise. A row whose identifier this economic operator already issued to a since-purged passport is reported here too: an issued identifier is never reassigned to a different product (EN 18219 §4.1.2).
+     * Human-readable per-row failure strings, prefixed `[SKU: <productId>]` (or "Missing or invalid productId in spreadsheet row"). Present ONLY when at least one row failed — omitted otherwise. A row whose identifier this economic operator already issued to a since-purged passport is reported here too: an issued identifier is never reassigned to a different product (EN 18219 §4.1.2). So is every net-new row sent to a workspace operating as a back-up provider, which hosts no passports of its own; a dry run reports the same rows.
      */
     errors?: Array<string>;
 };
@@ -1677,7 +1748,7 @@ export type AasEnvironmentInput = {
 };
 
 /**
- * 201 envelope of `POST /api/v1/passports/aas/ingest`. Returned for both newly created passports and in-place updates of existing UNSEALED passports. No webhook event is emitted by this endpoint. `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness and `warnings` carries the non-GS1 advisory, for parity with `POST /api/v1/passports`.
+ * 201 envelope of `POST /api/v1/passports/aas/ingest`. Returned for both newly created passports and in-place updates of existing ones (a sealed one included — see `resealRequired`). No webhook event is emitted by this endpoint. `vcReady`/`vcReadyReason` report UNTP Verifiable-Credential readiness and `warnings` carries the non-GS1 advisory, for parity with `POST /api/v1/passports`.
  */
 export type AasIngestCreated = {
     success: true;
@@ -1685,13 +1756,17 @@ export type AasIngestCreated = {
     passportId: string;
     productId: string;
     /**
-     * True when the environment embedded an `eidasVerificationSeal` submodel (the seal is then stored on the passport).
+     * True when the environment embedded an `eidasVerificationSeal` submodel (the seal is verified, never stored on the passport).
      */
     isSealed: boolean;
     /**
      * True when the embedded seal verified against the tenant's server-held signing public key. Always false for unsealed documents. (A sealed-but-unverified document never reaches 201 — it fails 400.)
      */
     signatureVerified: boolean;
+    /**
+     * Present, and `true`, only when this re-ingest replaced a SEALED passport with a version that carries no seal. The sealed version is archived with its seal intact; seal the new one with `POST /api/v1/passports/{id}/seal`.
+     */
+    resealRequired?: true;
     /**
      * Whether the ingested passport can emit a UNTP Verifiable Credential — true only when a manufacturing facility with a country of production is linked. AAS ingestion does not set a facility, so a newly created passport is false; an in-place update preserves whatever facility the existing passport had.
      */
@@ -1828,6 +1903,10 @@ export type PassportUpdateResponse = {
     message: 'Draft published' | 'Digital Product Passport successfully updated and history versioned';
     passport: PublicPassportJsonLd;
     /**
+     * Present, and `true`, only when the passport was sealed before this update and the update changed its metadata. The sealed version is archived in the version history with its seal intact; this new version carries no seal until it is sealed again with `POST /api/v1/passports/{id}/seal`.
+     */
+    resealRequired?: true;
+    /**
      * Non-blocking advisories on a validated save: the data-carrier declaration checks (a symbology that does not fit the declared print attributes, a category whose carrier granularity does not match). Always `[]` when `draft: true`.
      */
     warnings: Array<AdvisoryItem>;
@@ -1875,7 +1954,7 @@ export type PassportSealResponse = {
  */
 export type PassportStatusUpdateRequest = {
     /**
-     * Target lifecycle state. DECOMMISSIONED starts the retention clock (retentionUntil = now + the configured retention period, default 10 years); ACTIVE reactivates (clears retentionUntil and archivedAt); RECALLED marks the product recalled. DRAFT is not a valid target — drafts are published via PUT /api/v1/passports/{id}.
+     * Target lifecycle state. DECOMMISSIONED retires the passport without starting a clock (a battery model with every battery recycled ends its lifetime under the EU Battery Regulation); ACTIVE reactivates (clears archivedAt, never a written retentionUntil); RECALLED marks the product recalled. DRAFT is not a valid target — drafts are published via PUT /api/v1/passports/{id}.
      */
     status: 'ACTIVE' | 'RECALLED' | 'DECOMMISSIONED';
     [key: string]: unknown;
@@ -1989,7 +2068,7 @@ export type PassportListItem = {
      */
     archivedAt: string | null;
     /**
-     * Minimum-availability deadline; the passport is never purged before this instant.
+     * The instant from which the retention purge may remove the passport; null while its lifetime lasts. Set only by the product group's own rule — today, 30 days after a battery model is decommissioned with every battery under it recycled (the EU Battery Regulation); until then the end can still be taken back. A value written under an earlier fixed window is kept, except that restoring an archived passport clears it.
      */
     retentionUntil: string | null;
     createdAt: string;
@@ -2122,7 +2201,7 @@ export type PublicPassportJsonLd = {
      */
     archivedAt: string | null;
     /**
-     * Minimum-availability deadline; the passport is never purged before this instant.
+     * The instant from which the retention purge may remove the passport; null while its lifetime lasts. Set only by the product group's own rule — today, 30 days after a battery model is decommissioned with every battery under it recycled (the EU Battery Regulation); until then the end can still be taken back. A value written under an earlier fixed window is kept, except that restoring an archived passport clears it.
      */
     retentionUntil: string | null;
     /**
@@ -2261,7 +2340,7 @@ export type PublicPassportJsonLdExpanded = {
      */
     archivedAt: string | null;
     /**
-     * Minimum-availability deadline; the passport is never purged before this instant.
+     * The instant from which the retention purge may remove the passport; null while its lifetime lasts. Set only by the product group's own rule — today, 30 days after a battery model is decommissioned with every battery under it recycled (the EU Battery Regulation); until then the end can still be taken back. A value written under an earlier fixed window is kept, except that restoring an archived passport clears it.
      */
     retentionUntil: string | null;
     proof: MerkleTreeAttestationProof | null;
@@ -2565,7 +2644,7 @@ export type BatteryUnitRestrictedDataNotice = {
 };
 
 /**
- * Tombstone (HTTP 410): once a battery is recycled its passport has ceased to exist. This minimal record confirms the unit existed, that it was recycled and when, plus the (still living) model-passport link. Grants and owner credentials do not override the tombstone on the public URL; the underlying data is retained internally for the statutory retention window.
+ * Tombstone (HTTP 410): once a battery is recycled its passport has ceased to exist. This minimal record confirms the unit existed, that it was recycled and when, plus the (still living) model-passport link. Grants and owner credentials do not override the tombstone on the public URL; the underlying data is retained internally until its model passport's lifetime ends — the model retired and every battery under it recycled.
  */
 export type BatteryUnitTombstoneJsonLd = {
     /**
@@ -2712,6 +2791,10 @@ export type ServiceVersion = {
      * Build/deploy timestamp (ISO 8601 UTC), or `"unknown"` when a build did not inject it.
      */
     builtAt: string;
+    /**
+     * The CEN EN 18222:2026 clause 4.1 DPP service-provider role this node operates as: `main` for the creator's main service provider, `backup` for the back-up service provider. The standard assigns different method obligations per role, so an assessment of this node against that series starts here. **This value is deployment-scoped and is the same on every host this node answers on** — an individual operator agreement may record a different role, and that per-operator answer is deliberately not published here. A node serving this contract always sends it, and sends `main` when configured with no other role — but it is NOT declared required, because a node serving an earlier contract does not send it at all, and a client must not refuse that response. Read the value; never infer a role from the field's absence.
+     */
+    providerRole?: 'main' | 'backup';
 };
 
 /**
@@ -3441,7 +3524,7 @@ export type ValidateBatteryUnitsData = {
     body: SerializeBatteryUnitsRequest;
     path: {
         /**
-         * The SKU/type-level passport, addressed by its UUID or caller-supplied `productId` (GTIN-14 / GRAI / SKU), scoped to your tenant.
+         * The SKU/type-level passport, addressed by its UUID or caller-supplied `productId` (GTIN-14 / GRAI / SKU), scoped to your tenant. A `productId` is unique per Economic Operator, not per workspace: an operator-scoped credential resolves it among its own operator's passports, and a `productId` that still names more than one passport is refused with **409** rather than resolved to an arbitrary one — address the passport by its UUID instead.
          */
         passportId: string;
     };
@@ -3455,7 +3538,7 @@ export type ValidateBatteryUnitsErrors = {
      */
     400: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -3466,6 +3549,10 @@ export type ValidateBatteryUnitsErrors = {
      * Passport not found under your tenant workspace.
      */
     404: Error;
+    /**
+     * The `productId` in the path names more than one passport you can reach (see the `passportId` parameter); address the passport by its UUID.
+     */
+    409: Error;
 };
 
 export type ValidateBatteryUnitsError = ValidateBatteryUnitsErrors[keyof ValidateBatteryUnitsErrors];
@@ -3492,6 +3579,10 @@ export type ValidateBatteryUnitsResponses = {
              * Present only when ok=false.
              */
             error?: string;
+            /**
+             * Present only when ok=false: the refusal as a stable code, for a client to translate instead of showing `error`.
+             */
+            reason?: BatteryUnitRefusalReason;
         }>;
     };
 };
@@ -3502,7 +3593,7 @@ export type ListBatteryUnitsData = {
     body?: never;
     path: {
         /**
-         * The SKU/type-level passport, addressed either by its UUID **or** by its caller-supplied `productId` (GTIN-14 / GRAI / SKU). The UUID lookup is tried first, then `productId` — both scoped to your tenant.
+         * The SKU/type-level passport, addressed either by its UUID **or** by its caller-supplied `productId` (GTIN-14 / GRAI / SKU). The UUID lookup is tried first, then `productId` — both scoped to your tenant. A `productId` is unique per Economic Operator, not per workspace: an operator-scoped credential resolves it among its own operator's passports, and a `productId` that still names more than one passport is refused with **409** rather than resolved to an arbitrary one — address the passport by its UUID instead.
          */
         passportId: string;
     };
@@ -3533,6 +3624,10 @@ export type ListBatteryUnitsErrors = {
      */
     404: Error;
     /**
+     * The `productId` in the path names more than one passport you can reach (see the `passportId` parameter); address the passport by its UUID.
+     */
+    409: Error;
+    /**
      * Rate-limiter default body.
      */
     429: {
@@ -3562,7 +3657,7 @@ export type SerializeBatteryUnitsData = {
     body: SerializeBatteryUnitsRequest;
     path: {
         /**
-         * The SKU/type-level passport, addressed either by its UUID **or** by its caller-supplied `productId` (GTIN-14 / GRAI / SKU). The UUID lookup is tried first, then `productId` — both scoped to your tenant.
+         * The SKU/type-level passport, addressed either by its UUID **or** by its caller-supplied `productId` (GTIN-14 / GRAI / SKU). The UUID lookup is tried first, then `productId` — both scoped to your tenant. A `productId` is unique per Economic Operator, not per workspace: an operator-scoped credential resolves it among its own operator's passports, and a `productId` that still names more than one passport is refused with **409** rather than resolved to an arbitrary one — address the passport by its UUID instead.
          */
         passportId: string;
     };
@@ -3572,7 +3667,7 @@ export type SerializeBatteryUnitsData = {
 
 export type SerializeBatteryUnitsErrors = {
     /**
-     * Three shapes: (1) standard `Bad Request` triple when the body is not a JSON object, the `units` array is empty, or more than 200 units are sent; (2) `Serialisation Failed` (`{success:false, error:"Serialisation Failed", errors: string[]}` — **no `message` field**) when *every* item in the batch failed per-item validation/creation; (3) a syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
+     * Three shapes: (1) standard `Bad Request` triple when the body is not a JSON object, the `units` array is empty, or more than 200 units are sent; (2) `Serialisation Failed` (`{success:false, error:"Serialisation Failed", message, errors: string[]}`) when *every* item in the batch failed per-item validation/creation; (3) a syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
      */
     400: BatteryUnitSerialiseBadRequest;
     /**
@@ -3580,7 +3675,7 @@ export type SerializeBatteryUnitsErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -3591,6 +3686,10 @@ export type SerializeBatteryUnitsErrors = {
      * The resource does not exist or is not visible to the calling workspace.
      */
     404: Error;
+    /**
+     * Two cases. (1) The passport's lifetime has ended (`PASSPORT_LIFETIME_ENDED`): its `retentionUntil` has passed — for a battery model, it was decommissioned and every battery under it has been recycled (the EU Battery Regulation) — so it takes no new units and the retention purge may remove it. A new battery needs a new passport. A unit refused for this reason inside a batch is reported in `errors`. (2) The `productId` in the path names more than one passport you can reach (see the `passportId` parameter); address the passport by its UUID.
+     */
+    409: Error;
     /**
      * Rate-limiter default body.
      */
@@ -3635,7 +3734,7 @@ export type DeleteBatteryUnitErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -3802,7 +3901,7 @@ export type RecordBatteryUnitEventData = {
 
 export type RecordBatteryUnitEventErrors = {
     /**
-     * Two shapes: (1) the standard error triple from handler validation — messages: `Request body must be a valid JSON object`; `eventType must be one of: SOH_MEASUREMENT, CHARGE_CYCLE, STATUS_CHANGE, NEGATIVE_EVENT, OTHER`; `<field> must be a number between <lo> and <hi>` (stateOfHealth/cycleCount/remainingCapacityAh/temperatureC); `status must be one of: IN_SERVICE, DECOMMISSIONED, RECALLED, REPURPOSED, REMANUFACTURED, REUSED, WASTE, RECYCLED`; `recordedAt is not a valid date`. (2) A syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body.
+     * Two shapes: (1) the standard error triple from handler validation — messages: `Request body must be a valid JSON object`; `eventType must be one of: SOH_MEASUREMENT, CHARGE_CYCLE, STATUS_CHANGE, NEGATIVE_EVENT, OTHER`; `<field> must be a number between <lo> and <hi>` (stateOfHealth/cycleCount/remainingCapacityAh/temperatureC); `status must be one of: IN_SERVICE, DECOMMISSIONED, RECALLED, REPURPOSED, REMANUFACTURED, REUSED, WASTE, RECYCLED`; `recordedAt is not a valid date`. (2) A syntactically malformed JSON body is rejected by the framework before the handler runs, returning a `{statusCode:400, error:"Bad Request", message}` body. (3) A reading that would make the unit's history physically impossible is refused with `error: "Inconsistent Telemetry"`, a plain-English `errors` array, and `reasons` — one per `errors` entry, in the same order, each `{code, params}` with `code` one of `READING_IN_FUTURE`, `STATE_OF_HEALTH_ROSE`, `CYCLE_COUNT_FELL`, `CAPACITY_ABOVE_RATED`, `CAPACITY_INCONSISTENT_WITH_SOH` and `params` the values the rule concerns (numbers, and `recordedAt` as an ISO timestamp; the capacity rules add `ratedCapacityAh`, `maxAcceptedAh`, `expectedAh` and `toleranceAh`). Branch on or translate the `code`; the `errors` strings may be reworded.
      */
     400: BatteryUnitEventBadRequest;
     /**
@@ -3810,7 +3909,7 @@ export type RecordBatteryUnitEventErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -3875,7 +3974,7 @@ export type BulkRecordBatteryUnitEventsErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -3916,7 +4015,7 @@ export type DeleteDppByIdData = {
     body?: never;
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
     };
@@ -3942,7 +4041,7 @@ export type DeleteDppByIdErrors = {
      */
     404: En18222Result;
     /**
-     * The passport was published or sealed and persists under ESPR Article 77(8) (`ClientResourceConflict`).
+     * The law still requires the passport to be available, or this is a back-up copy, which is never deleted on request (`ClientResourceConflict`).
      */
     409: En18222Result;
     /**
@@ -3959,7 +4058,7 @@ export type DeleteDppByIdError = DeleteDppByIdErrors[keyof DeleteDppByIdErrors];
 
 export type DeleteDppByIdResponses = {
     /**
-     * The passport was removed (EN 18222 Table 15 `SuccessNoContent`).
+     * The passport was removed — a never-published draft, or one whose lifetime had ended (EN 18222 Table 15 `SuccessNoContent`).
      */
     204: void;
 };
@@ -3970,7 +4069,7 @@ export type ReadDppByIdData = {
     body?: never;
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
     };
@@ -4001,6 +4100,10 @@ export type ReadDppByIdErrors = {
      */
     404: En18222Result;
     /**
+     * A signed representation (AAS, or a verifiable credential) was negotiated where none can be produced truthfully: for an archived version, or — when this node holds the passport as a back-up copy — before the issuer's own signed form has been replicated. Never signed in the issuer's name.
+     */
+    406: En18222Result;
+    /**
      * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
      */
     429: En18222Result;
@@ -4030,7 +4133,7 @@ export type UpdateDppByIdData = {
     };
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
     };
@@ -4061,7 +4164,7 @@ export type UpdateDppByIdErrors = {
      */
     404: En18222Result;
     /**
-     * The passport is sealed, or the update would demote a published passport to a draft (`ClientResourceConflict`).
+     * The update would demote a published passport to a draft (`ClientResourceConflict`). A sealed passport is not refused: the update creates a new, unsealed version and the sealed one is archived with its seal.
      */
     409: En18222Result;
     /**
@@ -4078,7 +4181,7 @@ export type UpdateDppByIdError = UpdateDppByIdErrors[keyof UpdateDppByIdErrors];
 
 export type UpdateDppByIdResponses = {
     /**
-     * The updated digital product passport (EN 18222 Table 6: the output payload is the updated DPP).
+     * The updated digital product passport (EN 18222 Table 6: the output payload is the updated DPP). Whether the update cleared a seal, and which advisories it raised, travel as the `x-opendpp-reseal-required` and `x-opendpp-warnings` headers, since the body is the DPP alone.
      */
     200: PublicPassportJsonLd;
 };
@@ -4089,7 +4192,7 @@ export type ReadDppByProductIdData = {
     body?: never;
     path: {
         /**
-         * The unique product identifier as defined in EN 18219 (GTIN-14, GRAI or the operator's own SKU), percent-encoded as one path segment.
+         * The unique product identifier as defined in EN 18219, percent-encoded as one path segment — either the key the passport was created under (GTIN-14, GRAI or the operator's own SKU) or the EN 18223 `uniqueProductIdentifier` the passport document carries, matched exactly as this node issued it.
          */
         productId: string;
     };
@@ -4120,6 +4223,10 @@ export type ReadDppByProductIdErrors = {
      */
     404: En18222Result;
     /**
+     * A signed representation (AAS, or a verifiable credential) was negotiated where none can be produced truthfully: for an archived version, or — when this node holds the passport as a back-up copy — before the issuer's own signed form has been replicated. Never signed in the issuer's name.
+     */
+    406: En18222Result;
+    /**
      * More than one passport in this workspace carries that product identifier, so no single current passport can be returned (`ClientResourceConflict`).
      */
     409: En18222Result;
@@ -4148,7 +4255,7 @@ export type ReadDppVersionByIdAndDateData = {
     body?: never;
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
     };
@@ -4183,6 +4290,10 @@ export type ReadDppVersionByIdAndDateErrors = {
      */
     404: En18222Result;
     /**
+     * A signed representation (AAS, or a verifiable credential) was negotiated where none can be produced truthfully: for an archived version, or — when this node holds the passport as a back-up copy — before the issuer's own signed form has been replicated. Never signed in the issuer's name.
+     */
+    406: En18222Result;
+    /**
      * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
      */
     429: En18222Result;
@@ -4196,7 +4307,7 @@ export type ReadDppVersionByIdAndDateError = ReadDppVersionByIdAndDateErrors[key
 
 export type ReadDppVersionByIdAndDateResponses = {
     /**
-     * The digital product passport as it stood at the requested instant.
+     * The digital product passport as it stood at the requested instant, in the representation `Accept` selects (EN 18216 clause 5) and the form `representation` selects (EN 18222 clause 8.1). When that version is still the current one, every representation of `ReadDPPById` is available; an archived version answers JSON-LD (either form), XML and HTML generated from the archived document, and refuses a signed representation (AAS, verifiable credential) with `406`, because those are issued for a passport's current state.
      */
     200: PublicPassportJsonLd;
 };
@@ -4292,9 +4403,13 @@ export type CreateDppErrors = {
      */
     404: En18222Result;
     /**
-     * A passport already exists for that product identifier in this workspace (`ClientResourceConflict`).
+     * A passport already exists for that product identifier in this workspace — or, on a back-up workspace, that version is already held with different content (`ClientResourceConflict`).
      */
     409: En18222Result;
+    /**
+     * On a back-up workspace: the replicated document was not sent as JSON. Not an EN 18222 status code — the HTTP status stands alone and the Result object carries the explanation.
+     */
+    415: En18222Result;
     /**
      * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
      */
@@ -4320,7 +4435,7 @@ export type ReadDataElementData = {
     body?: never;
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
         /**
@@ -4382,7 +4497,7 @@ export type UpdateDataElementData = {
     body: unknown;
     path: {
         /**
-         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1, or the bare record id inside it. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
+         * The passport's `digitalProductPassportId` (EN 18223 clause 4.1.2.1) — either this node's resolvable instance URI `{base}/passport/{id}`, percent-encoded as one path segment per EN 18222 clause 8.1 (a trailing slash is ignored), or the bare record id inside it. A back-up workspace accepts the same forms for the copies it holds, matched against the origin's instance URI. A product identifier is **not** accepted here: EN 18222 gives that its own path, `/v1/dppsByProductId/{productId}`.
          */
         dppId: string;
         /**
@@ -4418,10 +4533,6 @@ export type UpdateDataElementErrors = {
      * Resource not found (`ClientErrorResourceNotFound`).
      */
     404: En18222Result;
-    /**
-     * The passport is sealed, so its data elements cannot be changed (`ClientResourceConflict`).
-     */
-    409: En18222Result;
     /**
      * The workspace or key exceeded its request allowance. Not an EN 18222 status code — the series defines none for rate limiting, so the HTTP status stands alone and the Result object carries the explanation.
      */
@@ -4515,7 +4626,7 @@ export type CreateFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4523,7 +4634,7 @@ export type CreateFacilityErrors = {
      */
     403: Error;
     /**
-     * A facility with this GLN is already registered. The GLN unique constraint is platform-wide, so the conflict can be caused by a facility owned by another tenant.
+     * This GLN is already registered on this node. A GLN is unique across the node, not per workspace, so the facility holding it may be yours or another workspace's; the reply is the same either way and does not say which.
      */
     409: Error;
     /**
@@ -4570,7 +4681,7 @@ export type DeleteFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4680,7 +4791,7 @@ export type UpdateFacilityErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4729,11 +4840,19 @@ export type ListGrantsData = {
          * Page size. Clamped to 1–200; non-numeric falls back to the default 100.
          */
         limit?: number;
+        /**
+         * Only grants in this state. Omitted (or empty) lists every state.
+         */
+        status?: 'PENDING' | 'ACTIVE' | 'DENIED' | 'REVOKED';
     };
     url: '/api/v1/grants';
 };
 
 export type ListGrantsErrors = {
+    /**
+     * `status` is not one of the grant states. Body omits the `success` field.
+     */
+    400: GrantRouteError;
     /**
      * Missing, invalid, revoked or expired credentials. Send a valid `Authorization: Bearer op_dpp_token_…` header.
      */
@@ -4785,7 +4904,7 @@ export type CreateGrantErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4844,7 +4963,7 @@ export type ApproveGrantRequestErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4903,7 +5022,7 @@ export type DenyGrantRequestErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -4962,7 +5081,7 @@ export type RevokeGrantErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5063,13 +5182,17 @@ export type RegisterOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
      * Authenticated but not allowed: the key lacks the required permission, the request crosses workspaces, or an MFA-gated write was attempted without an MFA session.
      */
     403: Error;
+    /**
+     * Your workspace already has an economic operator with this `regId` (archived ones included). Nothing is created or changed.
+     */
+    409: Error;
     /**
      * Rate-limiter default body.
      */
@@ -5089,7 +5212,7 @@ export type RegisterOperatorError = RegisterOperatorErrors[keyof RegisterOperato
 
 export type RegisterOperatorResponses = {
     /**
-     * Operator registered (or an existing operator with the same `regId` was bound to your workspace). Returned in both cases — inspect the returned `operator` to see whether your submitted `name`/`role` were applied or a pre-existing record was reused. A pre-existing record may even be archived (`archivedAt` non-null); binding does not un-archive it.
+     * Operator registered and bound to your workspace.
      */
     201: RegisterOperatorResponse;
 };
@@ -5114,7 +5237,7 @@ export type DeleteOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5224,7 +5347,7 @@ export type UpdateOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5279,7 +5402,7 @@ export type RestoreOperatorErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5329,7 +5452,7 @@ export type RotateTenantKeysErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5598,7 +5721,7 @@ export type CreatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5606,7 +5729,7 @@ export type CreatePassportErrors = {
      */
     403: Error;
     /**
-     * A passport already exists for this `(productId, operatorId)` pair — or the identifier this create would publish was already issued by this economic operator to a passport that has since been purged, and an issued identifier is never reassigned to a different product (EN 18219 §4.1.2). The message names which; only the first carries `code`.
+     * A passport already exists for this `(productId, operatorId)` pair — or the identifier this create would publish was already issued by this economic operator to a passport that has since been purged, and an issued identifier is never reassigned to a different product (EN 18219 §4.1.2) — or this workspace operates as a back-up provider, which holds copies of passports another provider publishes and hosts none of its own. The message names which; only the first carries `code`.
      */
     409: Error;
     /**
@@ -5666,7 +5789,7 @@ export type ValidatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5792,7 +5915,7 @@ export type BulkIngestPassportsErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5856,7 +5979,7 @@ export type IngestPassportFromAasErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5864,7 +5987,7 @@ export type IngestPassportFromAasErrors = {
      */
     403: Error;
     /**
-     * The identifier this ingest would publish was already issued by this economic operator to a passport that has since been purged. An issued identifier is never reassigned to a different product (EN 18219 §4.1.2); nothing was written.
+     * The identifier this ingest would publish was already issued by this economic operator to a passport that has since been purged. An issued identifier is never reassigned to a different product (EN 18219 §4.1.2); nothing was written. A workspace operating as a back-up provider is refused the same way, because it holds copies of passports another provider publishes and hosts none of its own.
      */
     409: Error;
     /**
@@ -5895,7 +6018,7 @@ export type IngestPassportFromAasError = IngestPassportFromAasErrors[keyof Inges
 
 export type IngestPassportFromAasResponses = {
     /**
-     * Passport created or (if it existed unsealed) updated from the AAS environment. Returned for both create and update. No webhook event is emitted.
+     * Passport created, or updated, from the AAS environment. Returned for both create and update. No webhook event is emitted.
      */
     201: AasIngestCreated;
 };
@@ -5974,7 +6097,7 @@ export type DeleteDraftPassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -5986,7 +6109,7 @@ export type DeleteDraftPassportErrors = {
      */
     404: Error;
     /**
-     * The passport is not a DRAFT — published passports cannot be hard-deleted.
+     * The law still requires the passport to be available (`PASSPORT_RETENTION_REQUIRED`) — it is neither a never-published draft nor a passport whose lifetime has ended.
      */
     409: Error;
     /**
@@ -6008,11 +6131,11 @@ export type DeleteDraftPassportError = DeleteDraftPassportErrors[keyof DeleteDra
 
 export type DeleteDraftPassportResponses = {
     /**
-     * Draft deleted.
+     * Deleted — a never-published draft, or a passport whose lifetime had ended.
      */
     200: {
         success: boolean;
-        message: 'Draft passport deleted.';
+        message: 'Draft passport deleted.' | 'Passport deleted: its lifetime has ended.';
     };
 };
 
@@ -6095,7 +6218,7 @@ export type UpdatePassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -6158,7 +6281,7 @@ export type SealPassportErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -6217,7 +6340,7 @@ export type UpdatePassportStatusErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -6229,7 +6352,7 @@ export type UpdatePassportStatusErrors = {
      */
     404: Error;
     /**
-     * The passport is a DRAFT — drafts cannot transition to a live status here.
+     * The passport is a DRAFT — drafts cannot transition to a live status here (the example) — or its lifetime has ended (`PASSPORT_LIFETIME_ENDED`): its `retentionUntil` has passed, so it takes no further status and the retention purge may remove it.
      */
     409: Error;
     /**
@@ -7230,7 +7353,7 @@ export type RegisterTraceabilityEventErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7280,7 +7403,7 @@ export type CaptureEpcisDocumentErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7335,7 +7458,7 @@ export type GetEventLineageErrors = {
      */
     403: Error;
     /**
-     * The event does not exist, belongs to another tenant, or an upstream node could not be retrieved. The `error` value is `Lineage Retrieval Failed` (not the standard `Not Found`).
+     * The event does not exist or belongs to another tenant (the two are indistinguishable). The `error` value is `Lineage Retrieval Failed` (not the standard `Not Found`).
      */
     404: Error;
     /**
@@ -7533,7 +7656,7 @@ export type CreateWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7588,7 +7711,7 @@ export type DeleteWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7647,7 +7770,7 @@ export type UpdateWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7702,7 +7825,7 @@ export type RotateWebhookSecretErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**
@@ -7808,7 +7931,7 @@ export type TestWebhookSubscriptionErrors = {
      */
     401: Error;
     /**
-     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (reads are unaffected), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected). A lapsed-subscription block carries no `code`.
+     * The write is blocked by billing — the workspace subscription is lapsed / its grace period expired (`code: "subscription_inactive"`; reads are unaffected — a `GET` or `HEAD` is never refused for this reason), OR (on passport-creating writes) the workspace has reached its plan's published-passport cap (`code: "passport_quota_exceeded"` + `quota` + `upgradeUrl`), OR a programmatic API-key write was attempted on a tier without API access (`code: "api_access_required"` + `upgradeUrl`; the dashboard/session path is unaffected).
      */
     402: PassportQuotaError;
     /**

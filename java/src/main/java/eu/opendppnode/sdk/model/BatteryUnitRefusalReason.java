@@ -1,0 +1,266 @@
+/*
+ * OpenDPP Integration API
+ * OpenDPP is a B2B platform for EU Digital Product Passports (DPPs), aligned with the ESPR data requirements and the EU Battery Regulation. This specification documents the **public integration surface**: everything an external system needs to create, validate, seal, publish, resolve and verify passports.  ## Authentication Authenticate with a tenant **API key** sent as a Bearer token: `Authorization: Bearer op_dpp_token_…`. Keys are created in the Client Console (Developers → API keys), are shown **once** at creation, carry a role plus optional narrowed permissions and optional expiry, and can be revoked at any time. API-key clients are exempt from CSRF requirements. Public endpoints (tagged **Public Resolution**, plus the public validators and the audit verifier) need no credentials.  ## Tenancy Tenant identity is **token-bound** — it is derived from your API key, never from the request host. The same paths work on the apex host and on tenant workspace hosts (`https://<workspace>.opendpp-node.eu`); when a workspace host is used, it must match the key's tenant (requests across workspaces are rejected with `403`).  ## Versioning & compatibility This contract carries a SemVer version, readable at runtime from `GET /api/v1/version`. **Pin the MAJOR.** It equals the `/api/v1` URL major, so a breaking change ships as a new path major (`/api/v2`) that you adopt deliberately — not as an edit to the contract you already integrated against.  Within a major line:  - **MINOR** is additive — a new endpoint, a new optional parameter, a new field on a response. A client that ignores what it does not recognise keeps working. Do not treat unknown response fields as errors. - **PATCH** is documentation only: wording, examples, descriptions. Nothing observable in the contract changes.  The tier is not asserted by hand. Every change is diffed structurally against the previous contract in CI, and a version bump lower than the diff requires fails the build — so the number you pin to is derived from the contract itself.  **One exception, disclosed rather than hidden.** While this contract is pre-GA, a breaking change may exceptionally ship on the existing major line under a recorded waiver instead of forcing a new path major. It is not a standing option: it requires a maintainer to enable it for a single merge, and every use is recorded with its justification. It has been used during the pre-GA period. Once this line reaches GA the waiver is retired, and the MAJOR promise above becomes unconditional. If you need a contract that cannot move under you before then, pin the exact version you generated your client from and upgrade deliberately.  ## Errors Authenticated endpoints return `{ success: false, error, message }` (some omit `success`). Across the developer-facing write/ingest surface (passport / operator / unit / resolver / facility / events / webhooks) the body also carries a **machine-stable `code`** you can branch on instead of parsing `message` — see the `code` enum on the shared **Error** schema for the full set. ESPR metadata validation failures return the richer shape documented as **ValidationFailed** with per-field `errors[]`/`warnings[]` (localizable via `?lang=` or `Accept-Language`; 28 languages). Bulk endpoints report row-level problems as `errors: string[]`. Malformed JSON and query-string violations are rejected before the handler runs and return a `{ statusCode, code, error, message }` body.  Every response — success or error — carries an **`X-Request-Id`** header; generic (server-error / framework) bodies also include it as `requestId`. Quote it to support to correlate with server logs. Send your own well-formed `X-Request-Id` and it is adopted for end-to-end tracing.  ## Advisories: `warnings[]` & `notices[]` Success responses may carry two non-blocking advisory channels of **coded** items (`AdvisoryItem`: `{ code, path?, message, friendlyMessage }`). **`warnings[]`** are heads-ups the request still succeeded on (`NON_GS1_PRODUCT_ID`, `PII_SHAPE_DETECTED`, `UNIT_NO_SCANNABLE_LINK`, `EORI_NOT_FOUND`, `CARRIER_SYMBOLOGY_NOT_RENDERED`, `CATEGORY_GRANULARITY_UNEXPECTED`); **`notices[]`** are informational — helpful things the API did (`OPERATOR_AUTO_ATTRIBUTED`, `GTIN_AUTO_COPIED`). Branch on the STABLE `code`; treat `message` (developer English) and `friendlyMessage` (end-user, localized via `?lang=`/`Accept-Language` across 28 languages) as display text that may be reworded. Interfaces may also map a `code` to their own localized string.  ## Rate limits Two limits apply, and the one that bites first depends on how you call us.  **Per API key (authenticated calls).** Each key gets a per-minute budget set by the plan: **Growth 120**, **Scale 600**, **Enterprise unlimited**. A second ceiling of **3x that rate** applies across all of a workspace's keys together, so issuing more keys divides throughput fairly between your own systems rather than multiplying it. Plans below Growth do not include API access. Exceeding either budget returns `429` with a `Retry-After` header giving the seconds to wait.  **Per IP (all traffic).** A ceiling of **100 requests/min per IP** applies to anonymous traffic. Authenticated calls sit on a higher ceiling, so that several integrations behind one egress address are not held to the anonymous budget. `x-ratelimit-*` response headers report the applicable ceiling. Every plan that can reach the API sits at or above the anonymous figure, so an authenticated caller never meets a stricter limit than the number above.  Public passport resolution is additionally limited to **30 requests/min per IP** (no headers). The public validator is limited to **10 requests/min per IP**.  Stay under these limits with client-side queueing; on `429`, back off and retry after the indicated window. A `429` never indicates a credential problem — an invalid or revoked key returns `401`, so do not rotate a key in response to rate limiting.  ## Methods  A request whose path exists but whose method this API does not serve returns **`405 Method Not Allowed`** with an `Allow` header listing the methods that path does serve (RFC 9110 §15.5.6); `HEAD` is listed wherever `GET` is, and is served. A path no route matches returns `404`, as does a path whose method IS allowed but whose resource does not exist — so a `405` always means the verb, and never the identifier. `405` is not listed per operation below because it is not a property of any operation: it is the answer to a method for which no operation exists.  ## Sealing & verification Passport seals are **advanced electronic seals** — ECDSA P-256 over a Merkle root of the passport content, with an optional RFC 3161 timestamp. (Advanced, not qualified: a qualified seal would require a QTSP.) `POST /api/v1/audit/verify` is public and unauthenticated, and verifies seals issued on this node — the signing key must be registered to a tenant here, so a seal from another node is declined without cryptographic evaluation. It recomputes every Merkle leaf from the submitted values, so it requires the unredacted document (caller-supplied redacted-leaf hashes are deliberately not trusted). Redacted documents remain verifiable **offline**: masked fields keep their true leaf hashes in `proof.redactedLeaves`, letting any verifier rebuild the sealed root without the privileged values.  ## Public access tiers Public resolution endpoints serve **tiered** views of the same URL: the public tier for anonymous callers; a restricted tier for holders of legitimate-interest (`dpp_li_…`) or authority (`dpp_auth_…`) capability tokens (presented as a Bearer token or `?grant=` query parameter); and the owner tier for the issuing tenant's own credentials.  ## Webhooks Subscribe to passport lifecycle events (`passport.ingested`, `passport.sealed`, `passport.recalled`, or `*`). Deliveries are HMAC-SHA256-signed; see the **webhooks** section of this document for the exact signature scheme, retry schedule, and payloads.  This document is also served machine-readably at [`/openapi.json`](https://opendpp-node.eu/openapi.json) and [`/openapi.yaml`](https://opendpp-node.eu/openapi.yaml).  ## Role in the data exchange This node is **not a DPP registry**. It hosts passports on behalf of the economic operators that create them and provides no registration service, so the registry methods of EN 18222:2026 clause 5 (Table 17, `registerDPP`) are outside this API's scope. Which service-provider role the node holds for a given passport is a property of the agreement with that operator rather than of this document, so it is not asserted here.  ## Open interoperability kit The interoperability boundary — the official AAS + UNTP/W3C-VC schemas, live-reproducible samples, an offline conformance validator, and the field mappings — is **open source** at [github.com/OpenDPP/opendpp-interop](https://github.com/OpenDPP/opendpp-interop) (Apache-2.0). It lets any integrator validate and verify OpenDPP's standards-conformant output without access to the product source.
+ *
+ * The version of the OpenAPI document: 1.18.0
+ * Contact: support@opendpp-node.eu
+ *
+ * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
+ * https://openapi-generator.tech
+ * Do not edit the class manually.
+ */
+
+
+package eu.opendppnode.sdk.model;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
+import java.util.Objects;
+import java.util.Map;
+import java.util.HashMap;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
+import eu.opendppnode.sdk.model.BatteryUnitRefusalReasonParamsValue;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+
+import eu.opendppnode.sdk.invoker.ApiClient;
+/**
+ * Why one unit was refused, as a stable &#x60;code&#x60; and the values it concerns. Branch on or translate the &#x60;code&#x60;; the matching &#x60;errors&#x60; string is for people and may be reworded. &#x60;params&#x60; carries strings and numbers only — typically &#x60;serialNumber&#x60;, plus &#x60;value&#x60; (the refused input), &#x60;length&#x60;/&#x60;maxLength&#x60; (a serial over the limit), &#x60;minYear&#x60;/&#x60;maxYear&#x60; (a manufacture year outside the window), &#x60;passportId&#x60;, &#x60;predecessorUnitId&#x60; or &#x60;predecessorSerial&#x60;.
+ */
+@JsonPropertyOrder({
+  BatteryUnitRefusalReason.JSON_PROPERTY_CODE,
+  BatteryUnitRefusalReason.JSON_PROPERTY_PARAMS
+})
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+public class BatteryUnitRefusalReason {
+  /**
+   * Gets or Sets code
+   */
+  public enum CodeEnum {
+    SERIAL_MISSING(String.valueOf("SERIAL_MISSING")),
+    
+    SERIAL_TOO_LONG(String.valueOf("SERIAL_TOO_LONG")),
+    
+    SERIAL_INVALID_CHARACTERS(String.valueOf("SERIAL_INVALID_CHARACTERS")),
+    
+    SERIAL_NOT_GS1_CONFORMANT(String.valueOf("SERIAL_NOT_GS1_CONFORMANT")),
+    
+    STATUS_INVALID(String.valueOf("STATUS_INVALID")),
+    
+    MANUFACTURED_AT_INVALID(String.valueOf("MANUFACTURED_AT_INVALID")),
+    
+    MANUFACTURED_AT_AMBIGUOUS(String.valueOf("MANUFACTURED_AT_AMBIGUOUS")),
+    
+    MANUFACTURED_AT_OUT_OF_RANGE(String.valueOf("MANUFACTURED_AT_OUT_OF_RANGE")),
+    
+    IDENTIFIER_ALREADY_ISSUED(String.valueOf("IDENTIFIER_ALREADY_ISSUED")),
+    
+    SERIAL_ALREADY_REGISTERED(String.valueOf("SERIAL_ALREADY_REGISTERED")),
+    
+    PREDECESSOR_NOT_FOUND(String.valueOf("PREDECESSOR_NOT_FOUND")),
+    
+    PREDECESSOR_RECYCLED(String.valueOf("PREDECESSOR_RECYCLED")),
+    
+    PREDECESSOR_STATUS_INVALID(String.valueOf("PREDECESSOR_STATUS_INVALID")),
+    
+    PASSPORT_LIFETIME_ENDED(String.valueOf("PASSPORT_LIFETIME_ENDED")),
+    
+    UNIT_NOT_STORED(String.valueOf("UNIT_NOT_STORED")),
+    
+    UNKNOWN_DEFAULT_OPEN_API(String.valueOf("unknown_default_open_api"));
+
+    private String value;
+
+    CodeEnum(String value) {
+      this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    @JsonCreator
+    public static CodeEnum fromValue(String value) {
+      for (CodeEnum b : CodeEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      return UNKNOWN_DEFAULT_OPEN_API;
+    }
+  }
+
+  public static final String JSON_PROPERTY_CODE = "code";
+  @jakarta.annotation.Nonnull
+  private CodeEnum code;
+
+  public static final String JSON_PROPERTY_PARAMS = "params";
+  @jakarta.annotation.Nonnull
+  private Map<String, BatteryUnitRefusalReasonParamsValue> params = new HashMap<>();
+
+  public BatteryUnitRefusalReason() { 
+  }
+
+  public BatteryUnitRefusalReason code(@jakarta.annotation.Nonnull CodeEnum code) {
+    this.code = code;
+    return this;
+  }
+
+  /**
+   * Get code
+   * @return code
+   */
+  @jakarta.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_CODE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public CodeEnum getCode() {
+    return code;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_CODE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public void setCode(@jakarta.annotation.Nonnull CodeEnum code) {
+    this.code = code;
+  }
+
+
+  public BatteryUnitRefusalReason params(@jakarta.annotation.Nonnull Map<String, BatteryUnitRefusalReasonParamsValue> params) {
+    this.params = params;
+    return this;
+  }
+
+  public BatteryUnitRefusalReason putParamsItem(String key, BatteryUnitRefusalReasonParamsValue paramsItem) {
+    if (this.params == null) {
+      this.params = new HashMap<>();
+    }
+    this.params.put(key, paramsItem);
+    return this;
+  }
+
+  /**
+   * Get params
+   * @return params
+   */
+  @jakarta.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_PARAMS)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public Map<String, BatteryUnitRefusalReasonParamsValue> getParams() {
+    return params;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PARAMS)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public void setParams(@jakarta.annotation.Nonnull Map<String, BatteryUnitRefusalReasonParamsValue> params) {
+    this.params = params;
+  }
+
+
+  /**
+   * Return true if this BatteryUnitRefusalReason object is equal to o.
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    BatteryUnitRefusalReason batteryUnitRefusalReason = (BatteryUnitRefusalReason) o;
+    return Objects.equals(this.code, batteryUnitRefusalReason.code) &&
+        Objects.equals(this.params, batteryUnitRefusalReason.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(code, params);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class BatteryUnitRefusalReason {\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    params: ").append(toIndentedString(params)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @return URL query string
+   */
+  public String toUrlQueryString() {
+    return toUrlQueryString(null);
+  }
+
+  /**
+   * Convert the instance into URL query string.
+   *
+   * @param prefix prefix of the query string
+   * @return URL query string
+   */
+  public String toUrlQueryString(String prefix) {
+    String suffix = "";
+    String containerSuffix = "";
+    String containerPrefix = "";
+    if (prefix == null) {
+      // style=form, explode=true, e.g. /pet?name=cat&type=manx
+      prefix = "";
+    } else {
+      // deepObject style e.g. /pet?id[name]=cat&id[type]=manx
+      prefix = prefix + "[";
+      suffix = "]";
+      containerSuffix = "]";
+      containerPrefix = "[";
+    }
+
+    StringJoiner joiner = new StringJoiner("&");
+
+    // add `code` to the URL query string
+    if (getCode() != null) {
+      joiner.add(String.format("%scode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCode()))));
+    }
+
+    // add `params` to the URL query string
+    if (getParams() != null) {
+      for (String _key : getParams().keySet()) {
+        if (getParams().get(_key) != null) {
+          joiner.add(getParams().get(_key).toUrlQueryString(String.format("%sparams%s%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix))));
+        }
+      }
+    }
+
+    return joiner.toString();
+  }
+}
+
