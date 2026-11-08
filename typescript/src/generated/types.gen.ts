@@ -5085,7 +5085,7 @@ export type RevokeGrantErrors = {
      */
     402: PassportQuotaError;
     /**
-     * Two distinct bodies share this status: (1) **route-level** — the grant is an `AUTHORITY` grant and cannot be revoked by the workspace; body is `{error, message}` **without** a `success` field (see example); (2) **middleware** — insufficient permission, missing/invalid CSRF token, cross-tenant access, or MFA required; standard envelope `{success: false, error, message}`.
+     * Two distinct bodies share this status: (1) **route-level** — the grant is an `AUTHORITY` grant and cannot be revoked by the workspace; body is `{error, message}` **without** a `success` field (see example); (2) the standard envelope `{success: false, error, message}` — insufficient permission, missing/invalid CSRF token, cross-tenant access, MFA required, or a credential limited to one economic operator revoking a grant about another operator's products (`code: OPERATOR_SCOPE_FORBIDDEN`).
      */
     403: GrantRevokeForbidden;
     /**

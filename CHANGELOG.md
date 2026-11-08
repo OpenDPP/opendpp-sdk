@@ -29,6 +29,19 @@ by the next sync — send it upstream instead. A section is authored when a vers
 *before* its tags exist — so newer sections name the lanes without a release date; the dated headings
 below predate that flow.
 
+## [1.18.2] — TypeScript · Java/Kotlin · Python
+
+Generated from API contract **1.18.2**, a documentation-only change: five passport-read operations now
+state what a back-up DPP service provider answers. Models, operations and their signatures are unchanged;
+only doc comments differ from 1.18.1.
+
+## [1.18.1] — TypeScript · Java/Kotlin · Python
+
+Generated from API contract **1.18.1**, a documentation-only change: the descriptions of the access-grant
+operations, the event-lineage read and the public resolvers now state how a credential limited to one
+economic operator is treated. Models, operations and their signatures are unchanged; only doc comments
+differ from 1.18.0.
+
 ## [1.18.0] — TypeScript · Java/Kotlin · Python
 
 Generated from API contract **1.18.0**, which adds the node's EN 18222 clause 4.1 service-provider
