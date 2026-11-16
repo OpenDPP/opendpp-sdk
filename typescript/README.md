@@ -32,7 +32,7 @@ const created = await createPassport({
   body: { productId: "09501101531000", metadata: { category: "batteries", /* … */ } },
 });
 
-const passport = await getPassport({ client, path: { id: created.data!.id } });
+const passport = await getPassport({ client, path: { id: created.data!.passport.id } });
 ```
 
 Every operation is a tree-shakeable, fully-typed function (`createPassport`, `sealPassport`,

@@ -37,15 +37,24 @@ import eu.opendppnode.sdk.OpenDpp;
 import eu.opendppnode.sdk.api.PassportsApi;
 import eu.opendppnode.sdk.api.ServiceApi;
 import eu.opendppnode.sdk.invoker.ApiClient;
+import eu.opendppnode.sdk.model.PassportCreateRequest;
+import eu.opendppnode.sdk.model.PassportMetadataInput;
 
 ApiClient client = OpenDpp.client(System.getenv("OPENDPP_API_KEY"));
 
 // Public, no key needed:
 var health = new ServiceApi(client).getHealth();
 
-// Behind your Developer-Plan key:
-var created = new PassportsApi(client).createPassport(request);
+// Behind your Developer-Plan key (add the category's required metadata fields):
+var request = new PassportCreateRequest()
+    .productId("09501101530003")
+    .metadata(new PassportMetadataInput().category(PassportMetadataInput.CategoryEnum.BATTERIES));
+var created = new PassportsApi(client).createPassport(request, null, null); // idempotencyKey, lang
+String passportId = created.getPassport().getId();
 ```
+
+Calls throw the checked `ApiException`. Optional parameters are positional and nullable: pass `null`
+to skip them.
 
 `OpenDpp.client(...)` defaults the base URL to the public node (`https://opendpp-node.eu`) and sends
 the key as `Authorization: Bearer …` on operations that require it; public operations work without one.
@@ -66,7 +75,7 @@ import eu.opendppnode.sdk.api.ServiceApi
 val client = OpenDpp.client(System.getenv("OPENDPP_API_KEY"))
 
 val health = ServiceApi(client).health                                  // public, no key needed
-val passport = PublicResolutionApi(client).resolvePublicPassport(id, null)
+val passport = PublicResolutionApi(client).resolvePublicPassport(id, null, null)
 println(passport.productId)
 ```
 
