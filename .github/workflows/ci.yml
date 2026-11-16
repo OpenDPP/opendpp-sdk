@@ -45,6 +45,8 @@ jobs:
         run: npm run check:version
 
       - run: npm run typecheck
+      - name: README quickstarts compile against the client
+        run: npm run check:readme
       - run: npm run build
       - run: npm test
 

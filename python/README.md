@@ -30,7 +30,8 @@ client = create_opendpp_client(api_key=os.environ["OPENDPP_API_KEY"])
 
 health = ServiceApi(client).get_health()          # public — works without a key too
 passports = PassportsApi(client)
-created = passports.create_passport({"productId": "09501101530003", "metadata": {"category": "batteries", ...}})
+created = passports.create_passport({"productId": "09501101530003", "metadata": {"category": "batteries"}})  # add the category's required metadata fields
+passport_id = created.passport.id
 ```
 
 `create_opendpp_client()` defaults to the public hosted node (`https://opendpp-node.eu`); pass

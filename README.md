@@ -75,12 +75,14 @@ MINOR server release must not crash deployed clients); the hand-written
 factory and the `resolve_*_as` helpers for the content-negotiated public resolvers.
 
 ```python
+import os
+
 from opendpp_sdk.api.service_api import ServiceApi
 from opendpp_sdk.ergonomics import create_opendpp_client, resolve_public_passport_as
 
 client = create_opendpp_client(api_key=os.environ["OPENDPP_API_KEY"])
 health = ServiceApi(client).get_health()
-doc = resolve_public_passport_as(client, passport_id, "application/ld+json")
+doc = resolve_public_passport_as(client, "<passport-id>", "application/ld+json")
 ```
 
 ## How it's built

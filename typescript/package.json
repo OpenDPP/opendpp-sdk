@@ -52,6 +52,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --import tsx 'test/*.test.ts'",
     "check:version": "node scripts/check-version-lock.mjs",
+    "check:readme": "node scripts/check-readme-snippets.mjs",
     "check:drift": "npm run generate && test -z \"$(git status --porcelain -- src/generated)\"",
     "prepublishOnly": "npm run build"
   },
